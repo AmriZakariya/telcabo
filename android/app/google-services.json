@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "131826341458",
+    "project_id": "castlit-7cade",
+    "storage_bucket": "castlit-7cade.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:131826341458:android:170e308aba408c8ae5f18b",
+        "android_client_info": {
+          "package_name": "com.castlit.telcabo.mobileapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "131826341458-gsskrfr9badqt2bqbipuckmrtf5kvqc0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6JjtQYufLLrCTgWZKETnrusiloRVWwjo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "131826341458-gsskrfr9badqt2bqbipuckmrtf5kvqc0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "131826341458-b2bs09um5dobhk3vjo7hhdk69tjf7rl4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.castlit.telcabo.mobileapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
