@@ -7,6 +7,7 @@ import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:telcabo/InterventionFormStep2.dart';
 import 'package:telcabo/InterventionWidgetStep1.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/models/response_get_demandes.dart';
@@ -160,7 +161,10 @@ class DemandeListItem extends StatelessWidget {
                     children: [
                       ElevatedButton(
                           child: Icon(Icons.remove_red_eye, size: 20),
-                          onPressed: () {},
+                          onPressed: () {
+                            Tools.selectedDemande = demande ;
+
+                          },
                           style: ElevatedButton.styleFrom(
                               fixedSize: const Size(10, 10),
                               shape: const CircleBorder(),
@@ -174,9 +178,21 @@ class DemandeListItem extends StatelessWidget {
                       ElevatedButton(
                           child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
                           onPressed: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (_) => InterventionFormStep1(),
-                            ));
+                            Tools.selectedDemande = demande ;
+                            print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+
+                            if(demande.etatId == "3"
+                            && demande.pPbiAvant != ""
+                            && demande.pPbiApres != ""){
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => InterventionFormStep2(),
+                              ));
+                            }else{
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => InterventionFormStep1(),
+                              ));
+                            }
+
                           },
                           style: ElevatedButton.styleFrom(
                             fixedSize: const Size(10, 10),
@@ -190,7 +206,10 @@ class DemandeListItem extends StatelessWidget {
                     children: [
                       ElevatedButton(
                           child: Icon(Icons.edit, size: 20),
-                          onPressed: () {},
+                          onPressed: () {
+                            Tools.selectedDemande = demande ;
+
+                          },
                           style: ElevatedButton.styleFrom(
                               fixedSize: const Size(10, 10),
                               shape: const CircleBorder(),
@@ -202,6 +221,8 @@ class DemandeListItem extends StatelessWidget {
                   ),
                 ],
               ),
+              SizedBox(height: 5.0,),
+
             ],
           )
       ),

@@ -74,7 +74,10 @@ dependencies:
   flutter_swipe_action_cell: ^2.2.0
   flutter_slider_drawer: ^2.1.1
   stamp_image: ^0.0.2
+  cool_alert: ^1.1.0
 
+  loading_animation_widget: ^1.1.0+3
+  pull_to_refresh: ^2.0.0
 
 dev_dependencies:
   flutter_test:

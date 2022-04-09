@@ -24,6 +24,9 @@ import 'package:flutter/services.dart';
 import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
 class Tools{
 
+  static Demandes? selectedDemande;
+
+
   static String deviceToken = "" ;
   static String userId = "" ;
   static String userName = "" ;
@@ -196,6 +199,71 @@ class Tools{
     // return ResponseGetDemandesList(demandes: []) ;
 
     return readfileDemandesList();
+  }
+  static  Future<bool> callWSSendMail() async {
+
+    FormData formData = FormData.fromMap({
+      "demande_id" : Tools.selectedDemande?.id
+    });
+
+    Response apiRespon ;
+    try {
+      print("************** callWSSendMail ***********");
+      Dio dio = new Dio();
+
+
+      apiRespon =
+      await dio.post("http://telcabo.castlit.com/traitements/send_mail",
+          data: formData,
+          options: Options(
+            // followRedirects: false,
+            // validateStatus: (status) { return status < 500; },
+            method: "POST",
+            headers: {
+              'Content-Type': 'multipart/form-data;charset=UTF-8',
+              'Charset': 'utf-8',
+              'Accept': 'application/json',
+            },
+          ));
+
+
+      print('Response status: ${apiRespon.statusCode}');
+      print('Response body: ${apiRespon.data}');
+
+      if (apiRespon.statusCode == 200) {
+        if(apiRespon.data == "000"){
+          return true ;
+        }
+      } else {
+        throw Exception('error fetching posts');
+      }
+
+
+
+    } on DioError catch (e) {
+
+      print("**************DioError***********");
+      print(e);
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx and is also not 304.
+      if (e.response != null) {
+        //        print(e.response.data);
+        //        print(e.response.headers);
+        //        print(e.response.);
+        //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
+        throw (e.response?.statusMessage ?? "");
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        //        print(e.request);
+        //        print(e.message);
+      }
+    } catch (e) {
+      throw ('API ERROR');
+    }
+
+    // return ResponseGetDemandesList(demandes: []) ;
+
+    return false;
   }
 
 

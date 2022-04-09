@@ -48,146 +48,163 @@ class _DemandeListState extends State<DemandeList> {
 
     return Scaffold(
       backgroundColor: Tools.colorPrimary,
-      body: Column(
-        children: <Widget>[
-          SizedBox(height: 50.0),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              TextButton.icon(
-                icon: Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                  size: 25,
-                ),
-                label: Container(
-                  child: Text(
-                    "Liste demandes".tr().capitalize(),
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.0),
+      body: Scrollbar(
+        isAlwaysShown: true,
+
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
+          // padding: const EdgeInsets.all(24.0),
+          child: Column(
+            children: <Widget>[
+              SizedBox(height: 50.0),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  TextButton.icon(
+                    icon: Icon(
+                      Icons.menu,
+                      color: Colors.white,
+                      size: 25,
+                    ),
+                    label: Container(
+                      child: Text(
+                        "Liste demandes".tr().capitalize(),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20.0),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
                   ),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                 ElevatedButton.icon(onPressed: () async {
+                   final prefs = await SharedPreferences.getInstance();
+
+                    prefs.remove('isOnline') ;
+                   Navigator.of(context).pushReplacement(MaterialPageRoute(
+                     builder: (_) => LoginWidget(),
+                   ));
+                 }, icon: Icon(Icons.logout), label: Text("Se Deconnecter"))
+                ],
               ),
-             ElevatedButton.icon(onPressed: (){
-                
-             }, icon: Icon(Icons.logout), label: Text("Se Deconnecter"))
-            ],
-          ),
-          SizedBox(height: 20.0),
+              SizedBox(height: 20.0),
 
-          Container(
-            height: MediaQuery.of(context).size.height - 185.0,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(children: <Widget>[
-                FormBuilderTextField(
-                  name: 'fullName',
-                  decoration: InputDecoration(
-                    labelText: 'Nom client'.tr().capitalize(),
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  onChanged: (value) {},
-                  // valueTransformer: (text) => num.tryParse(text),
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(context),
-                    // FormBuilderValidators.numeric(context),
-                    // FormBuilderValidators.max(context, 70),
-                  ]),
-                  keyboardType: TextInputType.text,
+              Container(
+                height: MediaQuery.of(context).size.height - 140.0,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(75.0)),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                TextButton.icon(
-                  icon: Icon(Icons.search),
-                  label: Text('search'.tr().capitalize()),
-                  style: TextButton.styleFrom(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(children: <Widget>[
+                    FormBuilderTextField(
+                      name: 'fullName',
+                      decoration: InputDecoration(
+                        labelText: 'Nom client'.tr().capitalize(),
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      onChanged: (value) {},
+                      // valueTransformer: (text) => num.tryParse(text),
+                      validator: FormBuilderValidators.compose([
+                        FormBuilderValidators.required(context),
+                        // FormBuilderValidators.numeric(context),
+                        // FormBuilderValidators.max(context, 70),
+                      ]),
+                      keyboardType: TextInputType.text,
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    TextButton.icon(
+                      icon: Icon(Icons.search),
+                      label: Text('rechaercher'.tr().capitalize()),
+                      style: TextButton.styleFrom(
 
-                    minimumSize: Size(500, 50),
-                    primary: Colors.white,
-                    backgroundColor: Tools.colorPrimary,
-                    // shape: const BeveledRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
-                  ),
-                  onPressed: () {
-
-                  },
-                ),
-                Expanded(
-                  child: Container(
-                    height: MediaQuery.of(context).size.height,
-                    child: FutureBuilder<ResponseGetDemandesList>(
-                      future: Tools.getListDemandeFromLocalAndINternet(), // a previously-obtained Future<String> or null
-                      builder: (BuildContext context, AsyncSnapshot<ResponseGetDemandesList> snapshot) {
-                        List<Widget> children;
-                        if (snapshot.hasData) {
-                          return ListView.builder(
-                            // Let the ListView know how many items it needs to build.
-                            itemCount: snapshot.data?.demandes?.length  ?? 0,
-                            // Provide a builder function. This is where the magic happens.
-                            // Convert each item into a widget based on the type of item it is.
-                            itemBuilder: (context, index) {
-                              final item = snapshot.data?.demandes?[index];
-
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                child: DemandeListItem(demande: item!,),
-                              );
-                            },);
-                        } else if (snapshot.hasError) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.error_outline,
-                                  color: Colors.red,
-                                  size: 60,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 16),
-                                  child: Text('Error: ${snapshot.error}'),
-                                )
-                              ],
-                            ),
-                          );
-
-                        } else {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 60,
-                                  height: 60,
-                                  child: CircularProgressIndicator(),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(top: 16),
-                                  child: Text('résultat en attente...'),
-                                )
-                              ],
-                            ),
-                          );
-
-                        }
+                        minimumSize: Size(500, 50),
+                        primary: Colors.white,
+                        backgroundColor: Tools.colorPrimary,
+                        // shape: const BeveledRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
+                      ),
+                      onPressed: () {
 
                       },
                     ),
-                  ),
+                    SizedBox(
+                      height: 20,
+                    ),
+
+                    Expanded(
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        child: FutureBuilder<ResponseGetDemandesList>(
+                          future: Tools.getListDemandeFromLocalAndINternet(), // a previously-obtained Future<String> or null
+                          builder: (BuildContext context, AsyncSnapshot<ResponseGetDemandesList> snapshot) {
+                            List<Widget> children;
+                            if (snapshot.hasData) {
+                              return ListView.builder(
+                                // Let the ListView know how many items it needs to build.
+                                itemCount: snapshot.data?.demandes?.length  ?? 0,
+                                // Provide a builder function. This is where the magic happens.
+                                // Convert each item into a widget based on the type of item it is.
+                                itemBuilder: (context, index) {
+                                  final item = snapshot.data?.demandes?[index];
+
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: DemandeListItem(demande: item!,),
+                                  );
+                                },);
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Colors.red,
+                                      size: 60,
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 16),
+                                      child: Text('Error: ${snapshot.error}'),
+                                    )
+                                  ],
+                                ),
+                              );
+
+                            } else {
+                              return Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 60,
+                                      height: 60,
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 16),
+                                      child: Text('résultat en attente...'),
+                                    )
+                                  ],
+                                ),
+                              );
+
+                            }
+
+                          },
+                        ),
+                      ),
+                    ),
+                  ]),
                 ),
-              ]),
-            ),
-          )
-        ],
+              )
+            ],
+          ),
+        ),
       ),
     );
 

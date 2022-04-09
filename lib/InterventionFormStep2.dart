@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:cool_alert/cool_alert.dart';
 import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:im_stepper/stepper.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/custome/QrScannerTextFieldBlocBuilder.dart';
@@ -362,28 +364,16 @@ class _InterventionFormStep2State extends State<InterventionFormStep2>
                     icon: Icons.mail_outline,
                     titleStyle: TextStyle(fontSize: 16, color: Colors.white),
                     onPress: () async {
-                      print("share wtsp");
-                      var whatsapp = "+919144040888";
-                      var whatsappURl_android =
-                          "whatsapp://send?phone=" + whatsapp + "&text=hello";
-                      var whatappURL_ios =
-                          "https://wa.me/$whatsapp?text=${Uri.parse("hello")}";
-                      if (Platform.isIOS) {
-                        // for iOS phone only
-                        if (await canLaunch(whatappURL_ios)) {
-                          await launch(whatappURL_ios, forceSafariVC: false);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: new Text("whatsapp no installed")));
-                        }
-                      } else {
-                        // android , web
-                        if (await canLaunch(whatsappURl_android)) {
-                          await launch(whatsappURl_android);
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: new Text("whatsapp no installed")));
-                        }
+                      bool success = await Tools.callWSSendMail();
+                      if(success){
+                        CoolAlert.show(
+                            context: context,
+                            type: CoolAlertType.success,
+                            text: "Email Envoyé avec succès",
+                            autoCloseDuration: Duration(seconds: 5),
+                            title: "Succès"
+
+                        );
                       }
                       _animationController.reverse();
                     },
@@ -412,15 +402,15 @@ class _InterventionFormStep2State extends State<InterventionFormStep2>
               //     FloatingActionButton.extended(
               //       heroTag: null,
               //       onPressed: formBloc.addErrors,
-              //       icon: const Icon(Icons.error_outline),
-              //       label: const Text('ADD ERRORS'),
+              //       icon: const Icon(Icons.whatsapp),
+              //       label: const Text(''),
               //     ),
               //     const SizedBox(height: 12),
               //     FloatingActionButton.extended(
               //       heroTag: null,
               //       onPressed: formBloc.submit,
-              //       icon: const Icon(Icons.send),
-              //       label: const Text('SUBMIT'),
+              //       icon: const Icon(Icons.mail),
+              //       label: const Text(''),
               //     ),
               //   ],
               // ),
@@ -458,6 +448,28 @@ class _InterventionFormStep2State extends State<InterventionFormStep2>
                             horizontal: 20, vertical: 34),
                         child: Column(
                           children: <Widget>[
+                            NumberStepper(
+                              numbers:[
+                                1,
+                                2,
+                                3,
+                              ],
+                              activeStep: 1,
+                              activeStepColor: Tools.colorPrimary,
+                              // stepColor: Colors.white,
+                              // lineColor: Colors.white,
+                              enableNextPreviousButtons: false,
+                              enableStepTapping: false,
+                              activeStepBorderColor: Tools.colorSecondary,
+
+                            ),
+                            SizedBox(
+                              height: 20,
+                              // child: Divider(
+                              //   height: 3,
+                              //   color: Colors.black,
+                              // ),
+                            ),
                             InterventionHeaderInfoClientWidget(),
                             SizedBox(
                               height: 20,

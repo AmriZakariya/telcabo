@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
@@ -12,12 +13,14 @@ import 'package:path_provider/path_provider.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/custome/ConnectivityCheckBlocBuilder.dart';
 import 'package:telcabo/custome/ImageFieldBlocbuilder.dart';
+import 'package:telcabo/models/response_get_demandes.dart';
 import 'package:telcabo/models/response_get_liste_etats.dart';
 import 'dart:convert';
 
 import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
+import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
 
 import 'NotificationExample.dart';
 // import 'package:http/http.dart' as http;
@@ -55,7 +58,7 @@ class InterventionStep1FormBloc extends FormBloc<String, String> {
   final commentaireTextField = TextFieldBloc(
     name: 'commentaire',
     validators: [
-      FieldBlocValidators.required,
+      // FieldBlocValidators.required,
     ],
 
   );
@@ -226,17 +229,20 @@ class InterventionStep1FormBloc extends FormBloc<String, String> {
 
 
       Map<String, dynamic> formDateValues = await state.toJson();
-      print(formDateValues);
 
       formDateValues.addAll({
         "etape" : "1",
-        "demande_id" : "demande_id",
+        "demande_id" : Tools.selectedDemande?.id ?? "",
         "user_id" : Tools.userId
       });
 
+      print(formDateValues);
 
-      writeToFileTraitementList(formDateValues);
-      return;
+
+      // writeToFileTraitementList(formDateValues);
+
+
+      // return;
 
      // AUtomatic fill data
      //  Map<String, dynamic> formDateValues = {};
@@ -380,13 +386,17 @@ class InterventionStep1FormBloc extends FormBloc<String, String> {
 
       print(apiRespon);
 
-      if (apiRespon.statusCode == 201) {
-        apiRespon.statusCode == 201;
-
+      if(apiRespon.data == "000"){
         return true ;
-      } else {
-        print('errr');
       }
+
+      // if (apiRespon.statusCode == 201) {
+      //   apiRespon.statusCode == 201;
+      //
+      //   return true ;
+      // } else {
+      //   print('errr');
+      // }
 
 
 
@@ -637,6 +647,16 @@ class InterventionFormStep1 extends StatelessWidget {
 
                     // Navigator.of(context).pushReplacement(
                     //     MaterialPageRoute(builder: (_) => const SuccessScreen()));
+
+                    CoolAlert.show(
+                      context: context,
+                      type: CoolAlertType.success,
+                      text: "Enregistré avec succès",
+                      autoCloseDuration: Duration(seconds: 2),
+                      title: "Succès"
+
+                    );
+
                   },
                   onFailure: (context, state) {
                     print(" FormBlocListener onFailure") ;
@@ -648,12 +668,12 @@ class InterventionFormStep1 extends StatelessWidget {
                 BlocListener<InternetCubit, InternetState>(
                   listener: (context, state) {
                     if(state is InternetConnected){
-                      showSimpleNotification(
-                        Text("status : en ligne"),
-                        // subtitle: Text("onlime"),
-                        background: Colors.green,
-                        duration: Duration(seconds: 5),
-                      );
+                      // showSimpleNotification(
+                      //   Text("status : en ligne"),
+                      //   // subtitle: Text("onlime"),
+                      //   background: Colors.green,
+                      //   duration: Duration(seconds: 5),
+                      // );
                     }
                     if(state is InternetDisconnected ){
                       showSimpleNotification(
@@ -692,6 +712,7 @@ class InterventionFormStep1 extends StatelessWidget {
                             return Container(
                               color: Colors.grey.shade400,
                               width: double.infinity,
+                              padding: const EdgeInsets.all(0.0),
                               child: Center(
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -732,6 +753,21 @@ class InterventionFormStep1 extends StatelessWidget {
                         //   height: 3,
                         //   color: Colors.black,
                         // ),
+                      ),
+                      InterventionHeaderInfoClientWidget(),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      Divider(
+                        color: Colors.black,
+                        height: 2,
+                      ),
+                      SizedBox(
+                        height: 20,
+                      ),
+                      InterventionHeaderInfoProjectWidget(),
+                      SizedBox(
+                        height: 20,
                       ),
                       DropdownFieldBlocBuilder<Etat>(
                         selectFieldBloc: formBloc.etatDropDown,
@@ -997,6 +1033,7 @@ class InterventionFormStep1 extends StatelessWidget {
                         onPressed: () {
                           print("cliick");
                           // formBloc.readJson();
+
                           formBloc.submit();
                         },
                         child: const Text('Enregistrer',
