@@ -23,7 +23,7 @@ class DemandeListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(0),
+      margin: const EdgeInsets.symmetric(horizontal: 15),
       decoration: BoxDecoration(
           border: Border.all(
             color: Colors.transparent,
@@ -46,7 +46,7 @@ class DemandeListItem extends StatelessWidget {
             children: [
               Container(
                 width: double.infinity,
-                height: 120,
+                height: 90,
                 decoration: BoxDecoration(
                     color: getColorByEtatId(int.parse(demande.etatId ?? "0")),
                     border: Border.all(
@@ -56,7 +56,7 @@ class DemandeListItem extends StatelessWidget {
                 ),
                 child: Column(
                     children: [
-                      SizedBox(height: 15.0,),
+                      SizedBox(height: 5.0,),
                       // CircleAvatar(
                       //   radius: 32.0,
                       //   backgroundImage: AssetImage('assets/user.png'),
@@ -70,9 +70,9 @@ class DemandeListItem extends StatelessWidget {
                           shape: CircleBorder(),
                           padding: EdgeInsets.all(10),
                         ),
-                        child: const Icon(Icons.person, size: 40,),
+                        child: const Icon(Icons.person, size: 25,),
                       ),
-                      SizedBox(height: 12,),
+                      SizedBox(height: 8,),
                       Text('Client : ${demande.client}',
                           style: TextStyle(
                             color:Colors.black,
@@ -117,7 +117,7 @@ class DemandeListItem extends StatelessWidget {
                           InfoItemWidget(
                             iconData: Icons.list_alt,
                             title: "PLaque :",
-                            description: demande.plaqueId ?? "",
+                            description: demande.plaqueName ?? "",
                           ),
                           SizedBox(height: 20.0,),
 
@@ -145,7 +145,7 @@ class DemandeListItem extends StatelessWidget {
                           InfoItemWidget(
                             iconData: Icons.edit_attributes_sharp,
                             title: "Etat :",
-                            description: demande.etatId ?? "",
+                            description: demande.etatName ?? "",
                           ),
 
 
@@ -202,23 +202,23 @@ class DemandeListItem extends StatelessWidget {
                       Text("Intervention")
                     ],
                   ),
-                  Column(
-                    children: [
-                      ElevatedButton(
-                          child: Icon(Icons.edit, size: 20),
-                          onPressed: () {
-                            Tools.selectedDemande = demande ;
-
-                          },
-                          style: ElevatedButton.styleFrom(
-                              fixedSize: const Size(10, 10),
-                              shape: const CircleBorder(),
-                        ),
-                      ),
-                      Text("Modifier")
-
-                    ],
-                  ),
+                  // Column(
+                  //   children: [
+                  //     ElevatedButton(
+                  //         child: Icon(Icons.edit, size: 20),
+                  //         onPressed: () {
+                  //           Tools.selectedDemande = demande ;
+                  //
+                  //         },
+                  //         style: ElevatedButton.styleFrom(
+                  //             fixedSize: const Size(10, 10),
+                  //             shape: const CircleBorder(),
+                  //       ),
+                  //     ),
+                  //     Text("Modifier")
+                  //
+                  //   ],
+                  // ),
                 ],
               ),
               SizedBox(height: 5.0,),
@@ -280,7 +280,7 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                       child: const Icon(Icons.person, size: 40,),
                     ),
                     SizedBox(height: 12,),
-                    Text('Client : Said hassani',
+                    Text('Client : ${Tools.selectedDemande?.client}',
                         style: TextStyle(
                           color:Colors.black,
                           fontSize: 16.0,
@@ -301,39 +301,39 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                           InfoItemWidget(
                             iconData: Icons.circle,
                             title: "Offre :",
-                            description: "20 Méga fibre",
+                            description: Tools.selectedDemande?.offre ?? "",
                           ),
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone,
                             title: "Téléphone :",
-                            description: "F0650558564",
+                            description: Tools.selectedDemande?.contactClient ?? "",
                           ),
 
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone_android,
                             title: "Numéro de la personne mandatée :",
-                            description: "F0650558564",
+                            description: Tools.selectedDemande?.numPersMandatee ?? "",
                           ),
 
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.person_pin_outlined  ,
                             title: "Nom de la personne mandatée :",
-                            description: "nada salhi",
+                            description: Tools.selectedDemande?.nomPerMandatee ?? "",
                           ),
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.person_pin_outlined  ,
                             title: "Type logement :",
-                            description: "Immeuble",
+                            description: Tools.selectedDemande?.typeLogement ?? "",
                           ),
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.location_on  ,
                             title: "Adresse :",
-                            description: "CASABLANCA MOSTAKBAL SIDIMAAROUF 190, Lotissement Mostakbal GH 23, 1er étage Apt 8, Casablanca.",
+                            description: Tools.selectedDemande?.adresseInstallation ?? "",
                           ),
                           SizedBox(height: 20.0,),
 
@@ -386,11 +386,15 @@ class InterventionHeaderInfoProjectWidget extends StatelessWidget {
                       child: const Icon(Icons.receipt, size: 40,),
                     ),
                     SizedBox(height: 12,),
-                    Text('Projet : 123test castle it 2022',
-                        style: TextStyle(
-                          color:Colors.black,
-                          fontSize: 16.0,
-                        )),
+                    Center(
+                      child: Text('Projet : ${Tools.selectedDemande?.projet}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color:Colors.black,
+                            fontSize: 16.0,
+
+                          )),
+                    ),
 
                   ]
               ),
@@ -407,46 +411,53 @@ class InterventionHeaderInfoProjectWidget extends StatelessWidget {
                           InfoItemWidget(
                             iconData: Icons.circle,
                             title: "Type demande :",
-                            description: "Type-test",
+                            description: Tools.selectedDemande?.typeDemande ?? "",
                           ),
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone,
+                            icon: FaIcon(FontAwesomeIcons.server, size: 18,),
                             title: "Equipements :",
-                            description: "Routeur wifi dual bande ZTE 45154",
+                            description: Tools.selectedDemande?.equipements ?? "",
                           ),
 
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone_android,
+                            icon: FaIcon(FontAwesomeIcons.handHolding, size: 18,),
                             title: "Equipements Livré :",
-                            description: "Non",
+                            description: Tools.selectedDemande?.equipementLivre ?? "",
                           ),
                           SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone_android,
+                            icon: FaIcon(FontAwesomeIcons.inbox, size: 18,),
                             title: "Plan :",
-                            description: "FTTH B2C",
+                            description: Tools.selectedDemande?.plan ?? "",
                           ), SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone_android,
+                            icon: FaIcon(FontAwesomeIcons.sitemap, size: 18,),
                             title: "Login internet :",
-                            description: "00006988454",
+                            description: Tools.selectedDemande?.loginInternet ?? "",
                           ), SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone_android,
+                            icon: FaIcon(FontAwesomeIcons.diagramProject, size: 18,),
                             title: "Login SIP :",
-                            description: "062515231564845",
+                            description: Tools.selectedDemande?.loginSip ?? "",
                           ), SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone_android,
+                            icon: FaIcon(FontAwesomeIcons.boxOpen, size: 18,),
                             title: " Portabilité :",
-                            description: "xxxxx",
+                            description: Tools.selectedDemande?.portabilite ?? "",
                           ), SizedBox(height: 20.0,),
                           InfoItemWidget(
                             iconData: Icons.phone_android,
-                            title: "  Sous type opportunite :",
-                            description: "Nouvelle offre"
+                            icon: FaIcon(FontAwesomeIcons.timeline, size: 18,),
+                            title: "Sous type opportunite :",
+                            description: Tools.selectedDemande?.sousTypeOpportunite ?? "",
                           ),
                         ],
                       ),
@@ -469,11 +480,13 @@ class InfoItemWidget extends StatelessWidget {
     required this.iconData,
     required this.title,
     required this.description,
+    this.icon,
   }) : super(key: key);
 
   final IconData iconData;
   final String title;
   final String description;
+  final Widget? icon;
 
 
   @override
@@ -483,15 +496,15 @@ class InfoItemWidget extends StatelessWidget {
         child: Row(
           children: [
             Container(      margin: const EdgeInsets.only(right: 10.0)
-                ,child: Icon(iconData)),
+                ,child: icon ?? Icon(iconData)),
             Flexible(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title,
                     style: TextStyle(
-                      fontSize: 13.0,
-                      color: Colors.grey[400],
+                      fontSize: 15.0,
+                      color: Tools.colorPrimary,
 
                     ),),
                   SizedBox(height: 2,),
@@ -499,7 +512,7 @@ class InfoItemWidget extends StatelessWidget {
                     // maxLines: 1,
                     // overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 15.0,
+                      fontSize: 16.0,
                     ),)
                 ],
               ),

@@ -21,7 +21,8 @@ class _LoginWidgetState extends State<LoginWidget> {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   TextEditingController _emailController = TextEditingController(
-    text: "agent.test@telcabo.com"
+    // text: "agent.test@telcabo.com"
+    text: "0619993849"
   );
   TextEditingController _passwordController = TextEditingController(
     text: "aa"
@@ -54,13 +55,18 @@ class _LoginWidgetState extends State<LoginWidget> {
         body: Stack(
           children: [
             Container(),
+            // Container(
+            //   padding: EdgeInsets.only(left: 35, top: 160),
+            //   child: Text(
+            //     'Telcabo',
+            //     style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold),
+            //   ),
+            // ),
             Container(
-              padding: EdgeInsets.only(left: 35, top: 160),
-              child: Text(
-                'Telcabo',
-                style: TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold),
-              ),
+                margin: EdgeInsets.only(top: 200),
+                child: Image(image: AssetImage('assets/logo.png'))
             ),
+
             SingleChildScrollView(
               child: Container(
                 padding: EdgeInsets.only(
@@ -76,9 +82,10 @@ class _LoginWidgetState extends State<LoginWidget> {
                             style: TextStyle(color: Colors.black),
                             controller: _emailController,
                             decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.person),
                                 fillColor: Colors.grey.shade100,
                                 filled: true,
-                                hintText: "Email",
+                                hintText: "Login",
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 )),
@@ -91,6 +98,7 @@ class _LoginWidgetState extends State<LoginWidget> {
                             controller: _passwordController,
                             obscureText: true,
                             decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.key),
                                 fillColor: Colors.grey.shade100,
                                 filled: true,
                                 hintText: "Password",
@@ -108,6 +116,8 @@ class _LoginWidgetState extends State<LoginWidget> {
                                 "username" : _emailController.value.text,
                                 "password" : _passwordController.value.text
                               };
+
+
 
                               if(await Tools.callWsLogin(loginMap)){
                                  Navigator.of(context).pushReplacement(MaterialPageRoute(

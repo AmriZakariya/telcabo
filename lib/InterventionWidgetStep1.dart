@@ -10,6 +10,8 @@ import 'package:im_stepper/stepper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:simple_fontellico_progress_dialog/simple_fontico_loading.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/custome/ConnectivityCheckBlocBuilder.dart';
 import 'package:telcabo/custome/ImageFieldBlocbuilder.dart';
@@ -21,7 +23,9 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
 import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
+import 'package:timelines/timelines.dart';
 
+import 'InterventionFormStep2.dart';
 import 'NotificationExample.dart';
 // import 'package:http/http.dart' as http;
 
@@ -227,13 +231,16 @@ class InterventionStep1FormBloc extends FormBloc<String, String> {
 
     try {
 
+      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:s');
+      final String dateNowFormatted = formatter.format(DateTime.now());
 
       Map<String, dynamic> formDateValues = await state.toJson();
 
       formDateValues.addAll({
         "etape" : "1",
         "demande_id" : Tools.selectedDemande?.id ?? "",
-        "user_id" : Tools.userId
+        "user_id" : Tools.userId,
+        "date" : dateNowFormatted
       });
 
       print(formDateValues);
@@ -549,16 +556,59 @@ class InterventionStep1FormBloc extends FormBloc<String, String> {
 
       try {
 
+        for(var mapKey in jsonMapContent.keys){
+          // print('${k}: ${v}');
+          // print(k);
+          if(mapKey == "p_pbi_avant"){
+            jsonMapContent[mapKey] = pPbiAvantTextField.value?.path ;
+          }else if(mapKey == "p_pbi_apres"){
+            jsonMapContent[mapKey] = pPbiApresTextField.value?.path ;
+          }else if(mapKey == "p_pbo_avant"){
+            jsonMapContent[mapKey] = pPboAvantTextField.value?.path ;
+          }else if(mapKey == "p_pbo_apres"){
+            jsonMapContent[mapKey] = pPboApresTextField.value?.path ;
+          }
+          /*if(mapKey == "p_pbi_avant"
+            || mapKey == "p_pbi_apres"
+            || mapKey == "p_pbo_avant"
+            || mapKey == "p_pbo_apres"
+          ){
+
+            jsonMapContent[mapKey] = (jsonMapContent[mapKey] as MultipartFile).filename ;
+            // print(v);
+          }*/
+        }
+
+
+
+        String fileContent =  fileTraitementList.readAsStringSync();
+        print("file content ==> ${fileContent}");
+
+        if(fileContent.isEmpty){
+          print("empty file");
+
+          Map emptyMap = {
+            "traitementList" : []
+          };
+
+          fileTraitementList.writeAsStringSync(json.encode(emptyMap));
+
+          fileContent =  fileTraitementList.readAsStringSync();
+
+        }
+
+
         Map traitementListMap =
-                      json.decode(fileTraitementList.readAsStringSync());
-        print(traitementListMap);
+                      json.decode(fileContent);
+
+        print("file content decode ==> ${traitementListMap}");
 
 
-        List traitementList = traitementListMap.values.elementAt(0);
+        List traitementList =  traitementListMap["traitementList"] ;
 
         traitementList.add(json.encode(jsonMapContent));
 
-        traitementListMap[0] = traitementList ;
+        traitementListMap["traitementList"] = traitementList ;
 
         fileTraitementList.writeAsStringSync(json.encode(traitementListMap));
 
@@ -568,8 +618,10 @@ class InterventionStep1FormBloc extends FormBloc<String, String> {
       }
 
   }
+
+
   void fethchFileTraitementList(Map jsonMapContent) {
-    print("Writing to writeToFileTraitementList!");
+    print("fethchFileTraitementList!");
 
       try {
 
@@ -596,8 +648,12 @@ class InterventionStep1FormBloc extends FormBloc<String, String> {
 class InterventionFormStep1 extends StatelessWidget {
   const InterventionFormStep1({Key? key}) : super(key: key);
 
+
   @override
   Widget build(BuildContext context) {
+    ProgressDialog pd = ProgressDialog(context: context);
+    // SimpleFontelicoProgressDialog _dialog = SimpleFontelicoProgressDialog(context: context, barrierDimisable:  false);
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<InterventionStep1FormBloc>(
@@ -612,88 +668,486 @@ class InterventionFormStep1 extends StatelessWidget {
         builder: (context) {
           final formBloc = BlocProvider.of<InterventionStep1FormBloc>(context);
 
-          return Scaffold(
-            appBar: AppBar(title: const Text('Intervention')),
-            floatingActionButton: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                // FloatingActionButton.extended(
-                //   heroTag: null,
-                //   onPressed: formBloc.addErrors,
-                //   icon: const Icon(Icons.error_outline),
-                //   label: const Text('ADD ERRORS'),
-                // ),
-                // const SizedBox(height: 12),
-                // FloatingActionButton.extended(
-                //   heroTag: null,
-                //   onPressed: formBloc.submit,
-                //   icon: const Icon(Icons.send),
-                //   label: const Text('SUBMIT'),
-                // ),
-              ],
+          return Theme(
+            data: Theme.of(context).copyWith(
+              primaryColor: Tools.colorPrimary,
+              inputDecorationTheme: InputDecorationTheme(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
             ),
-            body:
-            MultiBlocListener(
-              listeners: [
-                FormBlocListener<InterventionStep1FormBloc, String, String>(
-                  onSubmitting: (context, state) {
-                    print(" FormBlocListener onSubmitting") ;
-                    // LoadingDialog.show(context);
-                  },
-                  onSuccess: (context, state) {
-                    print(" FormBlocListener onSuccess") ;
-
-                    // LoadingDialog.hide(context);
-
-                    // Navigator.of(context).pushReplacement(
-                    //     MaterialPageRoute(builder: (_) => const SuccessScreen()));
-
-                    CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.success,
-                      text: "Enregistré avec succès",
-                      autoCloseDuration: Duration(seconds: 2),
-                      title: "Succès"
-
-                    );
-
-                  },
-                  onFailure: (context, state) {
-                    print(" FormBlocListener onFailure") ;
-                    // LoadingDialog.hide(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(state.failureResponse ?? "")));
-                  },
+            child: Scaffold(
+              appBar: AppBar(title: const Text('Intervention')),
+              floatingActionButton: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  // FloatingActionButton.extended(
+                  //   heroTag: null,
+                  //   onPressed: formBloc.addErrors,
+                  //   icon: const Icon(Icons.error_outline),
+                  //   label: const Text('ADD ERRORS'),
+                  // ),
+                  // const SizedBox(height: 12),
+                  // FloatingActionButton.extended(
+                  //   heroTag: null,
+                  //   onPressed: formBloc.submit,
+                  //   icon: const Icon(Icons.send),
+                  //   label: const Text('SUBMIT'),
+                  // ),
+                ],
+              ),
+              body:
+              Container(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage("assets/bg_home.jpg"),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                BlocListener<InternetCubit, InternetState>(
-                  listener: (context, state) {
-                    if(state is InternetConnected){
-                      // showSimpleNotification(
-                      //   Text("status : en ligne"),
-                      //   // subtitle: Text("onlime"),
-                      //   background: Colors.green,
-                      //   duration: Duration(seconds: 5),
-                      // );
-                    }
-                    if(state is InternetDisconnected ){
-                      showSimpleNotification(
-                        Text("Offline"),
-                        // subtitle: Text("onlime"),
-                        background: Colors.red,
-                        duration: Duration(seconds: 5),
-                      );
-                    }
-                  },
-                ),
+                child: MultiBlocListener(
+                  listeners: [
+                    FormBlocListener<InterventionStep1FormBloc, String, String>(
+                      onSubmissionFailed: (context, state) {
+                        pd.close();
+                      },
+                      onSubmissionCancelled: (context, state) {
+                        pd.close();
+                      },
+                      onSubmitting: (context, state) {
+                        print(" FormBlocListener onSubmitting") ;
+                        pd.show(max: 100, msg: '');
+                        // _dialog.show(message: 'Loading...', type: SimpleFontelicoProgressDialogType.spinner);
 
-              ],
-              child: ScrollableFormBlocManager(
-                formBloc: formBloc,
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: <Widget>[
+                        // LoadingDialog.show(context);
+                      },
+                      onSuccess: (context, state) {
+                        print(" FormBlocListener onSuccess") ;
+                        formBloc.commentaireTextField.updateValue("");
+                        pd.close();
+                        // _dialog.hide();
+
+                        // LoadingDialog.hide(context);
+
+                        // Navigator.of(context).pushReplacement(
+                        //     MaterialPageRoute(builder: (_) => const SuccessScreen()));
+
+                        if(formBloc.etatDropDown.value?.id == "3"){
+                          CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.success,
+                              text: "Enregistré avec succès",
+                              // autoCloseDuration: Duration(seconds: 2),
+                              title: "Succès",
+                              onConfirmBtnTap: (){
+                                if(formBloc.etatDropDown.value?.id == "3"){
+                                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                    builder: (_) => InterventionFormStep2(),
+                                  ));
+                                }
+                              }
+
+
+                          );
+                        }else{
+                          CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.success,
+                              text: "Enregistré avec succès",
+                              // autoCloseDuration: Duration(seconds: 2),
+                              title: "Succès",
+
+
+
+                          );
+                        }
+
+
+
+                        //TODO refresh current demande info
+
+
+                      },
+                      onFailure: (context, state) {
+                        print(" FormBlocListener onFailure") ;
+                        pd.close();
+                        // _dialog.hide();
+
+                        // LoadingDialog.hide(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(state.failureResponse ?? "")));
+                      },
+                    ),
+                    BlocListener<InternetCubit, InternetState>(
+                      listener: (context, state) {
+                        if(state is InternetConnected){
+                          // showSimpleNotification(
+                          //   Text("status : en ligne"),
+                          //   // subtitle: Text("onlime"),
+                          //   background: Colors.green,
+                          //   duration: Duration(seconds: 5),
+                          // );
+                        }
+                        if(state is InternetDisconnected ){
+                          showSimpleNotification(
+                            Text("Offline"),
+                            // subtitle: Text("onlime"),
+                            background: Colors.red,
+                            duration: Duration(seconds: 5),
+                          );
+                        }
+                      },
+                    ),
+
+                  ],
+                  child: Stack(
+                    children: [
+
+                      ScrollableFormBlocManager(
+                        formBloc: formBloc,
+                        child: SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            children: <Widget>[
+                              NumberStepper(
+                                numbers:[
+                                  1,
+                                  2,
+                                  3,
+                                ],
+                                activeStep: 0,
+                                activeStepColor: Tools.colorPrimary,
+                                // stepColor: Colors.white,
+                                // lineColor: Colors.white,
+                                enableNextPreviousButtons: false,
+                                enableStepTapping: false,
+                                activeStepBorderColor: Tools.colorSecondary,
+
+                              ),
+                              SizedBox(
+                                height: 20,
+                                // child: Divider(
+                                //   height: 3,
+                                //   color: Colors.black,
+                                // ),
+                              ),
+                              InterventionHeaderInfoClientWidget(),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              Divider(
+                                color: Colors.black,
+                                height: 2,
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              InterventionHeaderInfoProjectWidget(),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              DropdownFieldBlocBuilder<Etat>(
+                                selectFieldBloc: formBloc.etatDropDown,
+                                decoration: const InputDecoration(
+                                  labelText: 'Etat',
+                                  prefixIcon: Icon(Icons.list),
+                                ),
+                                itemBuilder: (context, value) => FieldItem(
+                                  child: Text(value.name ?? ""),
+                                ),
+                              ),
+                              DateTimeFieldBlocBuilder(
+                                dateTimeFieldBloc: formBloc.rdvDate,
+                                format: DateFormat('yyyy-MM-dd HH:mm'),
+                                //  Y-m-d H:i:s
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime(2100),
+                                canSelectTime: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Rendez-vous',
+                                  prefixIcon: Icon(Icons.date_range),
+                                ),
+                              ),
+                              DropdownFieldBlocBuilder<SousEtat>(
+                                selectFieldBloc: formBloc.sousEtatDropDown,
+                                decoration: const InputDecoration(
+                                  labelText: 'Sous Etat',
+                                ),
+                                itemBuilder: (context, value) => FieldItem(
+                                  child: Text(value.name ?? ""),
+                                ),
+                              ),
+                              DropdownFieldBlocBuilder<MotifList>(
+                                selectFieldBloc: formBloc.motifDropDown,
+                                decoration: const InputDecoration(
+                                  labelText: 'Morif',
+                                ),
+                                itemBuilder: (context, value) => FieldItem(
+                                  child: Text(value.name ?? ""),
+                                ),
+                              ),
+
+                              // Container(
+                              //   child: Expanded(
+                              //     child: GridView.count(
+                              //       crossAxisCount: 2,
+                              //       // crossAxisSpacing: 4.0,
+                              //       // mainAxisSpacing: 8.0,
+                              //       children: [
+                              //
+                              //         ]
+                              //       ),
+                              //   ),
+                              // ),
+                              Container(
+                                  // margin: const EdgeInsets.only(top: 20),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    //Center Row contents horizontally,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    //Center Row contents vertically,
+                                    children: [
+                                      Flexible(
+                                        child: ImageFieldBlocBuilder(
+                                          formBloc: formBloc,
+                                          fileFieldBloc: formBloc.pPbiAvantTextField,
+                                          labelText: "PBI avant ",
+                                          iconField: Icon(Icons.image_not_supported),
+                                        ),
+                                      ),
+                                      Flexible(
+                                        // flex: 2,
+                                        child: ImageFieldBlocBuilder(
+                                          formBloc: formBloc,
+                                          fileFieldBloc: formBloc.pPbiApresTextField,
+                                          labelText: "PBI apres ",
+                                          iconField: Icon(Icons.image_not_supported),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+                              Container(
+                                  // margin: const EdgeInsets.only(top: 20),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    //Center Row contents horizontally,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    //Center Row contents vertically,
+                                    children: [
+                                      Flexible(
+                                        child: ImageFieldBlocBuilder(
+                                          formBloc: formBloc,
+                                          fileFieldBloc: formBloc.pPboAvantTextField,
+                                          labelText: "PBO avant ",
+                                          iconField: Icon(Icons.image_not_supported),
+                                        ),
+                                      ),
+                                      Flexible(
+                                        // flex: 2,
+                                        child: ImageFieldBlocBuilder(
+                                          formBloc: formBloc,
+                                          fileFieldBloc: formBloc.pPboApresTextField,
+                                          labelText: "PBO apres ",
+                                          iconField: Icon(Icons.image_not_supported),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
+
+                              TextFieldBlocBuilder(
+                                textFieldBloc: formBloc.commentaireTextField,
+                                keyboardType: TextInputType.text,
+                                minLines: 6,
+                                maxLines: 20,
+                                decoration: InputDecoration(
+                                  labelText: "Commentaire",
+                                  prefixIcon: Icon(Icons.comment),
+
+                                ),
+                              ),
+
+                              // TextFieldBlocBuilder(
+                              //   textFieldBloc: formBloc.text1,
+                              //   suffixButton: SuffixButton.obscureText,
+                              //   decoration: const InputDecoration(
+                              //     labelText: 'TextFieldBlocBuilder',
+                              //     prefixIcon: Icon(Icons.text_fields),
+                              //   ),
+                              // ),
+                              // RadioButtonGroupFieldBlocBuilder<String>(
+                              //   selectFieldBloc: formBloc.select2,
+                              //   decoration: const InputDecoration(
+                              //     labelText: 'RadioButtonGroupFieldBlocBuilder',
+                              //   ),
+                              //   groupStyle: const FlexGroupStyle(),
+                              //   itemBuilder: (context, item) => FieldItem(
+                              //     child: Text(item),
+                              //   ),
+                              // ),
+                              // CheckboxGroupFieldBlocBuilder<String>(
+                              //   multiSelectFieldBloc: formBloc.multiSelect1,
+                              //   decoration: const InputDecoration(
+                              //     labelText: 'CheckboxGroupFieldBlocBuilder',
+                              //   ),
+                              //   groupStyle: const ListGroupStyle(
+                              //     scrollDirection: Axis.horizontal,
+                              //     height: 64,
+                              //   ),
+                              //   itemBuilder: (context, item) => FieldItem(
+                              //     child: Text(item),
+                              //   ),
+                              // ),
+                              // DateTimeFieldBlocBuilder(
+                              //   dateTimeFieldBloc: formBloc.date1,
+                              //   format: DateFormat('dd-MM-yyyy'),
+                              //   initialDate: DateTime.now(),
+                              //   firstDate: DateTime(1900),
+                              //   lastDate: DateTime(2100),
+                              //   decoration: const InputDecoration(
+                              //     labelText: 'DateTimeFieldBlocBuilder',
+                              //     prefixIcon: Icon(Icons.calendar_today),
+                              //     helperText: 'Date',
+                              //   ),
+                              // ),
+                              // DateTimeFieldBlocBuilder(
+                              //   dateTimeFieldBloc: formBloc.dateAndTime1,
+                              //   canSelectTime: true,
+                              //   format: DateFormat('dd-MM-yyyy  hh:mm'),
+                              //   initialDate: DateTime.now(),
+                              //   firstDate: DateTime(1900),
+                              //   lastDate: DateTime(2100),
+                              //   decoration: const InputDecoration(
+                              //     labelText: 'DateTimeFieldBlocBuilder',
+                              //     prefixIcon: Icon(Icons.date_range),
+                              //     helperText: 'Date and Time',
+                              //   ),
+                              // ),
+                              // TimeFieldBlocBuilder(
+                              //   timeFieldBloc: formBloc.time1,
+                              //   format: DateFormat('hh:mm a'),
+                              //   initialTime: TimeOfDay.now(),
+                              //   decoration: const InputDecoration(
+                              //     labelText: 'TimeFieldBlocBuilder',
+                              //     prefixIcon: Icon(Icons.access_time),
+                              //   ),
+                              // ),
+                              // SwitchFieldBlocBuilder(
+                              //   booleanFieldBloc: formBloc.boolean2,
+                              //   body: const Text('SwitchFieldBlocBuilder'),
+                              // ),
+                              // DropdownFieldBlocBuilder<String>(
+                              //   selectFieldBloc: formBloc.select1,
+                              //   decoration: const InputDecoration(
+                              //     labelText: 'DropdownFieldBlocBuilder',
+                              //   ),
+                              //   itemBuilder: (context, value) => FieldItem(
+                              //     isEnabled: value != 'Option 1',
+                              //     child: Text(value),
+                              //   ),
+                              // ),
+                              // Row(
+                              //   children: [
+                              //     IconButton(
+                              //       onPressed: () => formBloc.addFieldBloc(
+                              //           fieldBloc: formBloc.select1),
+                              //       icon: const Icon(Icons.add),
+                              //     ),
+                              //     IconButton(
+                              //       onPressed: () => formBloc.removeFieldBloc(
+                              //           fieldBloc: formBloc.select1),
+                              //       icon: const Icon(Icons.delete),
+                              //     ),
+                              //   ],
+                              // ),
+                              // CheckboxFieldBlocBuilder(
+                              //   booleanFieldBloc: formBloc.boolean1,
+                              //   body: const Text('CheckboxFieldBlocBuilder'),
+                              // ),
+                              // CheckboxFieldBlocBuilder(
+                              //   booleanFieldBloc: formBloc.boolean1,
+                              //   body: const Text('CheckboxFieldBlocBuilder trailing'),
+                              //   controlAffinity:
+                              //   FieldBlocBuilderControlAffinity.trailing,
+                              // ),
+                              // SliderFieldBlocBuilder(
+                              //   inputFieldBloc: formBloc.double1,
+                              //   divisions: 10,
+                              //   labelBuilder: (context, value) =>
+                              //       value.toStringAsFixed(2),
+                              // ),
+                              // SliderFieldBlocBuilder(
+                              //   inputFieldBloc: formBloc.double1,
+                              //   divisions: 10,
+                              //   labelBuilder: (context, value) =>
+                              //       value.toStringAsFixed(2),
+                              //   activeColor: Colors.red,
+                              //   inactiveColor: Colors.green,
+                              // ),
+                              // SliderFieldBlocBuilder(
+                              //   inputFieldBloc: formBloc.double1,
+                              //   divisions: 10,
+                              //   labelBuilder: (context, value) =>
+                              //       value.toStringAsFixed(2),
+                              // ),
+                              // ChoiceChipFieldBlocBuilder<String>(
+                              //   selectFieldBloc: formBloc.select2,
+                              //   itemBuilder: (context, value) => ChipFieldItem(
+                              //     label: Text(value),
+                              //   ),
+                              // ),
+                              // FilterChipFieldBlocBuilder<String>(
+                              //   multiSelectFieldBloc: formBloc.multiSelect1,
+                              //   itemBuilder: (context, value) => ChipFieldItem(
+                              //     label: Text(value),
+                              //   ),
+                              // ),
+
+                              SizedBox(
+                                height: 20,
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  print("cliick");
+                                  // formBloc.readJson();
+                                  // formBloc.fileTraitementList.writeAsStringSync("");
+
+                                  formBloc.submit();
+                                },
+                                child: const Text('Enregistrer',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 18.0,
+                                    wordSpacing: 12,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  // shape: CircleBorder(),
+                                  minimumSize: Size(280, 50),
+                                  // primary: Tools.colorPrimary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: new BorderRadius.circular(30.0),
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                height: MediaQuery.of(context).size.height,
+                                child: Timeline.tileBuilder(
+                                  builder: TimelineTileBuilder.fromStyle(
+                                    contentsAlign: ContentsAlign.alternating,
+                                    contentsBuilder: (context, index) => Padding(
+                                      padding: const EdgeInsets.all(24.0),
+                                      child: Text('Timeline Event $index'),
+                                    ),
+                                    itemCount: Tools.selectedDemande?.commentaires?.length ?? 0,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
                       BlocBuilder<InternetCubit, InternetState>(
                         builder: (context, state) {
                           if (state is InternetConnected &&
@@ -709,21 +1163,27 @@ class InterventionFormStep1 extends StatelessWidget {
                             //   style: TextStyle(color: Colors.yellow, fontSize: 30),
                             // );
                           } else if (state is InternetDisconnected) {
-                            return Container(
-                              color: Colors.grey.shade400,
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(0.0),
+                            return Positioned(
+                              bottom: 0,
                               child: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "Pas d'accès internet",
-                                    style: TextStyle(color: Colors.red, fontSize: 20),
+                                child: Container(
+                                  color: Colors.grey.shade400,
+                                  width: MediaQuery.of(context).size.width,
+                                  padding: const EdgeInsets.all(0.0),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "Pas d'accès internet",
+                                        style: TextStyle(color: Colors.red, fontSize: 20),
 
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
                             );
+
 
                           }
                           // return CircularProgressIndicator();
@@ -732,332 +1192,13 @@ class InterventionFormStep1 extends StatelessWidget {
                           );
                         },
                       ),
-                      NumberStepper(
-                        numbers:[
-                          1,
-                          2,
-                          3,
-                        ],
-                        activeStep: 0,
-                        activeStepColor: Tools.colorPrimary,
-                        // stepColor: Colors.white,
-                        // lineColor: Colors.white,
-                        enableNextPreviousButtons: false,
-                        enableStepTapping: false,
-                        activeStepBorderColor: Tools.colorSecondary,
 
-                      ),
-                      SizedBox(
-                        height: 20,
-                        // child: Divider(
-                        //   height: 3,
-                        //   color: Colors.black,
-                        // ),
-                      ),
-                      InterventionHeaderInfoClientWidget(),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      Divider(
-                        color: Colors.black,
-                        height: 2,
-                      ),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      InterventionHeaderInfoProjectWidget(),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      DropdownFieldBlocBuilder<Etat>(
-                        selectFieldBloc: formBloc.etatDropDown,
-                        decoration: const InputDecoration(
-                          labelText: 'Etat',
-                          prefixIcon: Icon(Icons.list),
-                        ),
-                        itemBuilder: (context, value) => FieldItem(
-                          child: Text(value.name ?? ""),
-                        ),
-                      ),
-                      DateTimeFieldBlocBuilder(
-                        dateTimeFieldBloc: formBloc.rdvDate,
-                        format: DateFormat('yyyy-MM-dd HH:mm'),
-                        //  Y-m-d H:i:s
-                        initialDate: DateTime.now(),
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime(2100),
-                        canSelectTime: true,
-                        decoration: const InputDecoration(
-                          labelText: 'Rendez-vous',
-                          prefixIcon: Icon(Icons.date_range),
-                        ),
-                      ),
-                      DropdownFieldBlocBuilder<SousEtat>(
-                        selectFieldBloc: formBloc.sousEtatDropDown,
-                        decoration: const InputDecoration(
-                          labelText: 'Sous Etat',
-                        ),
-                        itemBuilder: (context, value) => FieldItem(
-                          child: Text(value.name ?? ""),
-                        ),
-                      ),
-                      DropdownFieldBlocBuilder<MotifList>(
-                        selectFieldBloc: formBloc.motifDropDown,
-                        decoration: const InputDecoration(
-                          labelText: 'Morif',
-                        ),
-                        itemBuilder: (context, value) => FieldItem(
-                          child: Text(value.name ?? ""),
-                        ),
-                      ),
-
-                      // Container(
-                      //   child: Expanded(
-                      //     child: GridView.count(
-                      //       crossAxisCount: 2,
-                      //       // crossAxisSpacing: 4.0,
-                      //       // mainAxisSpacing: 8.0,
-                      //       children: [
-                      //
-                      //         ]
-                      //       ),
-                      //   ),
-                      // ),
-                      Container(
-                          margin: const EdgeInsets.only(top: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            //Center Row contents horizontally,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            //Center Row contents vertically,
-                            children: [
-                              Flexible(
-                                child: ImageFieldBlocBuilder(
-                                  formBloc: formBloc,
-                                  fileFieldBloc: formBloc.pPbiAvantTextField,
-                                  labelText: "PBI avant ",
-                                  iconField: Icon(Icons.image_not_supported),
-                                ),
-                              ),
-                              Flexible(
-                                // flex: 2,
-                                child: ImageFieldBlocBuilder(
-                                  formBloc: formBloc,
-                                  fileFieldBloc: formBloc.pPbiApresTextField,
-                                  labelText: "PBI apres ",
-                                  iconField: Icon(Icons.image_not_supported),
-                                ),
-                              ),
-                            ],
-                          )),
-                      Container(
-                          margin: const EdgeInsets.only(top: 20),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            //Center Row contents horizontally,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            //Center Row contents vertically,
-                            children: [
-                              Flexible(
-                                child: ImageFieldBlocBuilder(
-                                  formBloc: formBloc,
-                                  fileFieldBloc: formBloc.pPboAvantTextField,
-                                  labelText: "PBO avant ",
-                                  iconField: Icon(Icons.image_not_supported),
-                                ),
-                              ),
-                              Flexible(
-                                // flex: 2,
-                                child: ImageFieldBlocBuilder(
-                                  formBloc: formBloc,
-                                  fileFieldBloc: formBloc.pPboApresTextField,
-                                  labelText: "PBO apres ",
-                                  iconField: Icon(Icons.image_not_supported),
-                                ),
-                              ),
-                            ],
-                          )),
-
-                      TextFieldBlocBuilder(
-                        textFieldBloc: formBloc.commentaireTextField,
-                        keyboardType: TextInputType.text,
-                        minLines: 6,
-                        maxLines: 20,
-                        decoration: InputDecoration(
-                          labelText: "Commentaire",
-                          prefixIcon: Icon(Icons.comment),
-
-                        ),
-                      ),
-
-                      // TextFieldBlocBuilder(
-                      //   textFieldBloc: formBloc.text1,
-                      //   suffixButton: SuffixButton.obscureText,
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'TextFieldBlocBuilder',
-                      //     prefixIcon: Icon(Icons.text_fields),
-                      //   ),
-                      // ),
-                      // RadioButtonGroupFieldBlocBuilder<String>(
-                      //   selectFieldBloc: formBloc.select2,
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'RadioButtonGroupFieldBlocBuilder',
-                      //   ),
-                      //   groupStyle: const FlexGroupStyle(),
-                      //   itemBuilder: (context, item) => FieldItem(
-                      //     child: Text(item),
-                      //   ),
-                      // ),
-                      // CheckboxGroupFieldBlocBuilder<String>(
-                      //   multiSelectFieldBloc: formBloc.multiSelect1,
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'CheckboxGroupFieldBlocBuilder',
-                      //   ),
-                      //   groupStyle: const ListGroupStyle(
-                      //     scrollDirection: Axis.horizontal,
-                      //     height: 64,
-                      //   ),
-                      //   itemBuilder: (context, item) => FieldItem(
-                      //     child: Text(item),
-                      //   ),
-                      // ),
-                      // DateTimeFieldBlocBuilder(
-                      //   dateTimeFieldBloc: formBloc.date1,
-                      //   format: DateFormat('dd-MM-yyyy'),
-                      //   initialDate: DateTime.now(),
-                      //   firstDate: DateTime(1900),
-                      //   lastDate: DateTime(2100),
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'DateTimeFieldBlocBuilder',
-                      //     prefixIcon: Icon(Icons.calendar_today),
-                      //     helperText: 'Date',
-                      //   ),
-                      // ),
-                      // DateTimeFieldBlocBuilder(
-                      //   dateTimeFieldBloc: formBloc.dateAndTime1,
-                      //   canSelectTime: true,
-                      //   format: DateFormat('dd-MM-yyyy  hh:mm'),
-                      //   initialDate: DateTime.now(),
-                      //   firstDate: DateTime(1900),
-                      //   lastDate: DateTime(2100),
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'DateTimeFieldBlocBuilder',
-                      //     prefixIcon: Icon(Icons.date_range),
-                      //     helperText: 'Date and Time',
-                      //   ),
-                      // ),
-                      // TimeFieldBlocBuilder(
-                      //   timeFieldBloc: formBloc.time1,
-                      //   format: DateFormat('hh:mm a'),
-                      //   initialTime: TimeOfDay.now(),
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'TimeFieldBlocBuilder',
-                      //     prefixIcon: Icon(Icons.access_time),
-                      //   ),
-                      // ),
-                      // SwitchFieldBlocBuilder(
-                      //   booleanFieldBloc: formBloc.boolean2,
-                      //   body: const Text('SwitchFieldBlocBuilder'),
-                      // ),
-                      // DropdownFieldBlocBuilder<String>(
-                      //   selectFieldBloc: formBloc.select1,
-                      //   decoration: const InputDecoration(
-                      //     labelText: 'DropdownFieldBlocBuilder',
-                      //   ),
-                      //   itemBuilder: (context, value) => FieldItem(
-                      //     isEnabled: value != 'Option 1',
-                      //     child: Text(value),
-                      //   ),
-                      // ),
-                      // Row(
-                      //   children: [
-                      //     IconButton(
-                      //       onPressed: () => formBloc.addFieldBloc(
-                      //           fieldBloc: formBloc.select1),
-                      //       icon: const Icon(Icons.add),
-                      //     ),
-                      //     IconButton(
-                      //       onPressed: () => formBloc.removeFieldBloc(
-                      //           fieldBloc: formBloc.select1),
-                      //       icon: const Icon(Icons.delete),
-                      //     ),
-                      //   ],
-                      // ),
-                      // CheckboxFieldBlocBuilder(
-                      //   booleanFieldBloc: formBloc.boolean1,
-                      //   body: const Text('CheckboxFieldBlocBuilder'),
-                      // ),
-                      // CheckboxFieldBlocBuilder(
-                      //   booleanFieldBloc: formBloc.boolean1,
-                      //   body: const Text('CheckboxFieldBlocBuilder trailing'),
-                      //   controlAffinity:
-                      //   FieldBlocBuilderControlAffinity.trailing,
-                      // ),
-                      // SliderFieldBlocBuilder(
-                      //   inputFieldBloc: formBloc.double1,
-                      //   divisions: 10,
-                      //   labelBuilder: (context, value) =>
-                      //       value.toStringAsFixed(2),
-                      // ),
-                      // SliderFieldBlocBuilder(
-                      //   inputFieldBloc: formBloc.double1,
-                      //   divisions: 10,
-                      //   labelBuilder: (context, value) =>
-                      //       value.toStringAsFixed(2),
-                      //   activeColor: Colors.red,
-                      //   inactiveColor: Colors.green,
-                      // ),
-                      // SliderFieldBlocBuilder(
-                      //   inputFieldBloc: formBloc.double1,
-                      //   divisions: 10,
-                      //   labelBuilder: (context, value) =>
-                      //       value.toStringAsFixed(2),
-                      // ),
-                      // ChoiceChipFieldBlocBuilder<String>(
-                      //   selectFieldBloc: formBloc.select2,
-                      //   itemBuilder: (context, value) => ChipFieldItem(
-                      //     label: Text(value),
-                      //   ),
-                      // ),
-                      // FilterChipFieldBlocBuilder<String>(
-                      //   multiSelectFieldBloc: formBloc.multiSelect1,
-                      //   itemBuilder: (context, value) => ChipFieldItem(
-                      //     label: Text(value),
-                      //   ),
-                      // ),
-
-                      SizedBox(
-                        height: 20,
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          print("cliick");
-                          // formBloc.readJson();
-
-                          formBloc.submit();
-                        },
-                        child: const Text('Enregistrer',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18.0,
-                            wordSpacing: 12,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          // shape: CircleBorder(),
-                          minimumSize: Size(280, 50),
-                          // primary: Tools.colorPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: new BorderRadius.circular(30.0),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
-            ),
 
+            ),
           );
         },
       ),

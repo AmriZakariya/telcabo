@@ -30,6 +30,7 @@ class Tools{
   static String deviceToken = "" ;
   static String userId = "" ;
   static String userName = "" ;
+  static String userEmail = "" ;
 
   static List arr_d = [2,7,8];
   static List arr_w = [1,3,4,5];
@@ -37,7 +38,7 @@ class Tools{
 
 
   static String languageCode = "ar" ;
-  static final Color colorPrimary = Color(0xff5b707b);
+  static final Color colorPrimary = Color(0xff3f4d67);
   static final Color colorSecondary = Color(0xfff99e25);
 
   static String getLanguageName(){
@@ -56,6 +57,11 @@ class Tools{
 
   static File fileEtatsList = File("");
   static File fileDemandesList = File("");
+
+  File fileTraitementList = File("");
+
+
+
 
   static void initFiles(){
 
@@ -137,6 +143,8 @@ class Tools{
       "user_id" : userId
     });
 
+    print(formData);
+
     Response apiRespon ;
     try {
       print("************** getDemandes ***********");
@@ -163,7 +171,7 @@ class Tools{
 
       if (apiRespon.statusCode == 200) {
         var responseApiHome = jsonDecode(apiRespon.data);
-        writeToFileEtatsList(responseApiHome);
+        writeToFileDemandeList(responseApiHome);
 
         ResponseGetDemandesList demandesList = ResponseGetDemandesList.fromJson(responseApiHome);
         print(demandesList);
@@ -314,15 +322,22 @@ class Tools{
 
     print("Read to readfileDemandesList!");
     try {
-      Map<String, dynamic> demandeListMap =
-      json.decode(fileEtatsList.readAsStringSync());
-      print(demandeListMap);
 
-      responseGetDemandesList = ResponseGetDemandesList.fromJson(demandeListMap);
+      String fileContent =  fileDemandesList.readAsStringSync();
+      print("file content ==> ${fileContent}");
 
-      print("OK");
+      if(!fileContent.isEmpty){
+        Map<String, dynamic> demandeListMap = json.decode(fileContent);
+        print(demandeListMap);
 
-      return responseGetDemandesList ;
+        responseGetDemandesList = ResponseGetDemandesList.fromJson(demandeListMap);
+
+        print("OK");
+
+        return responseGetDemandesList ;
+      }
+
+
 
     } catch (e) {
       print("exeption -- " + e.toString());
@@ -350,6 +365,7 @@ class Tools{
 
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+      print("read from ws");
       responseGetDemandesList = await Tools.getDemandes();
 
     }else{
@@ -400,13 +416,20 @@ class Tools{
       Map result = json.decode(apiRespon.data) as Map ;
 
       String userId = result["id"];
-      String username = result["name"];
+      String userName = result["name"];
 
       if(userId.isNotEmpty && userId != "0"){
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isOnline', true);
         await prefs.setString('userId', userId);
-        await prefs.setString('username', username);
+        await prefs.setString('userName', userName);
+        await prefs.setString('userEmail', formDateValues["username"]);
+
+
+        Tools.userId =  userId ;
+        Tools.userName =  userName ;
+        Tools.userEmail = formDateValues["username"] ;
+
         return true ;
 
       }

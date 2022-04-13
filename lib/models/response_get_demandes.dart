@@ -20,7 +20,6 @@ class ResponseGetDemandesList {
     return data;
   }
 }
-
 class Demandes {
   String? id;
   String? code;
@@ -64,12 +63,21 @@ class Demandes {
   String? pPassageCable;
   String? pFicheInstalation;
   String? pSpeedTest;
+  String? newAdresse;
+  String? etatImmo;
+  String? newLatitude;
+  String? newLongitude;
   String? etatId;
   String? motifEtatId;
   String? subStatutId;
   String? motifSubstatutId;
   String? dateRdv;
+  String? dateIntervention;
+  String? archiveId;
   String? created;
+  String? etatName;
+  String? plaqueName;
+  List<Commentaires>? commentaires;
 
   Demandes(
       {this.id,
@@ -114,12 +122,21 @@ class Demandes {
         this.pPassageCable,
         this.pFicheInstalation,
         this.pSpeedTest,
+        this.newAdresse,
+        this.etatImmo,
+        this.newLatitude,
+        this.newLongitude,
         this.etatId,
         this.motifEtatId,
         this.subStatutId,
         this.motifSubstatutId,
         this.dateRdv,
-        this.created});
+        this.dateIntervention,
+        this.archiveId,
+        this.created,
+        this.etatName,
+        this.plaqueName,
+        this.commentaires});
 
   Demandes.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -164,12 +181,26 @@ class Demandes {
     pPassageCable = json['p_passage_cable'];
     pFicheInstalation = json['p_fiche_instalation'];
     pSpeedTest = json['p_speed_test'];
+    newAdresse = json['new_adresse'];
+    etatImmo = json['etat_immo'];
+    newLatitude = json['new_latitude'];
+    newLongitude = json['new_longitude'];
     etatId = json['etat_id'];
     motifEtatId = json['motif_etat_id'];
     subStatutId = json['sub_statut_id'];
     motifSubstatutId = json['motif_substatut_id'];
     dateRdv = json['date_rdv'];
+    dateIntervention = json['date_intervention'];
+    archiveId = json['archive_id'];
     created = json['created'];
+    etatName = json['etat_name'];
+    plaqueName = json['plaque_name'];
+    if (json['commentaires'] != null) {
+      commentaires = <Commentaires>[];
+      json['commentaires'].forEach((v) {
+        commentaires!.add(new Commentaires.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -216,11 +247,51 @@ class Demandes {
     data['p_passage_cable'] = this.pPassageCable;
     data['p_fiche_instalation'] = this.pFicheInstalation;
     data['p_speed_test'] = this.pSpeedTest;
+    data['new_adresse'] = this.newAdresse;
+    data['etat_immo'] = this.etatImmo;
+    data['new_latitude'] = this.newLatitude;
+    data['new_longitude'] = this.newLongitude;
     data['etat_id'] = this.etatId;
     data['motif_etat_id'] = this.motifEtatId;
     data['sub_statut_id'] = this.subStatutId;
     data['motif_substatut_id'] = this.motifSubstatutId;
     data['date_rdv'] = this.dateRdv;
+    data['date_intervention'] = this.dateIntervention;
+    data['archive_id'] = this.archiveId;
+    data['created'] = this.created;
+    data['etat_name'] = this.etatName;
+    data['plaque_name'] = this.plaqueName;
+    if (this.commentaires != null) {
+      data['commentaires'] = this.commentaires!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class Commentaires {
+  String? id;
+  String? userId;
+  String? demandeId;
+  String? commentaire;
+  String? created;
+
+  Commentaires(
+      {this.id, this.userId, this.demandeId, this.commentaire, this.created});
+
+  Commentaires.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    userId = json['user_id'];
+    demandeId = json['demande_id'];
+    commentaire = json['commentaire'];
+    created = json['created'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['user_id'] = this.userId;
+    data['demande_id'] = this.demandeId;
+    data['commentaire'] = this.commentaire;
     data['created'] = this.created;
     return data;
   }

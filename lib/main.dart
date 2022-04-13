@@ -239,7 +239,8 @@ class _MyAppState extends State<MyApp> {
     final prefs = await SharedPreferences.getInstance();
 
     Tools.userId =  prefs.getString('userId') ?? "" ;
-    Tools.userName =  prefs.getString('username') ?? "" ;
+    Tools.userName =  prefs.getString('userName') ?? "" ;
+    Tools.userEmail =  prefs.getString('userEmail') ?? "" ;
 
     return prefs.getBool('isOnline') ?? false  ;
   }

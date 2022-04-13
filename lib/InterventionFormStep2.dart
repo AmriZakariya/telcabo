@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:im_stepper/stepper.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/custome/QrScannerTextFieldBlocBuilder.dart';
 import 'package:telcabo/models/response_get_demandes.dart';
@@ -130,6 +132,33 @@ class AllFieldsFormBloc extends FormBloc<String, String> {
     ],
   );
 
+
+  final etatImmo = TextFieldBloc(
+    name: 'etat_immo',
+    validators: [
+      FieldBlocValidators.required,
+    ],
+  );
+  final newLatitude = TextFieldBloc(
+    name: 'new_latitude',
+    validators: [
+      FieldBlocValidators.required,
+    ],
+  );
+
+  final newLongitude = TextFieldBloc(
+    name: 'new_longitude',
+    validators: [
+      FieldBlocValidators.required,
+    ],
+  );
+  final newAdresse = TextFieldBloc(
+    name: 'new_adresse',
+    validators: [
+      FieldBlocValidators.required,
+    ],
+  );
+
   AllFieldsFormBloc() : super(isLoading: true) {
     addFieldBlocs(fieldBlocs: [
       etatDropDown,
@@ -216,9 +245,14 @@ class AllFieldsFormBloc extends FormBloc<String, String> {
 
   @override
   void onLoading() async {
+
+
     try {
-      responseListEtat = await getEtats();
-      responseGetDemandesList = await getListDemandes();
+
+
+      responseListEtat = await Tools.getListEtatFromLocalAndINternet();
+
+      responseListEtat.etat?.removeRange(0, 3);
 
       etatDropDown.updateItems(responseListEtat.etat ?? []);
 
@@ -295,6 +329,10 @@ class _InterventionFormStep2State extends State<InterventionFormStep2>
 
   @override
   Widget build(BuildContext context) {
+
+    ProgressDialog pd = ProgressDialog(context: context);
+
+
     return BlocProvider(
       create: (context) => AllFieldsFormBloc(),
       child: Builder(
@@ -422,19 +460,59 @@ class _InterventionFormStep2State extends State<InterventionFormStep2>
                   ),
                 ),
                 child: FormBlocListener<AllFieldsFormBloc, String, String>(
+                  onSubmissionFailed: (context, state) {
+                    pd.close();
+                  },
+                  onSubmissionCancelled: (context, state) {
+                    pd.close();
+                  },
                   onSubmitting: (context, state) {
+                    print(" FormBlocListener onSubmitting") ;
+                    pd.show(max: 100, msg: '');
+                    // _dialog.show(message: 'Loading...', type: SimpleFontelicoProgressDialogType.spinner);
+
                     // LoadingDialog.show(context);
                   },
                   onSuccess: (context, state) {
-                    LoadingDialog.hide(context);
+                    print(" FormBlocListener onSuccess") ;
+                    pd.close();
+                    // _dialog.hide();
 
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        builder: (_) => const SuccessScreen()));
+                    // LoadingDialog.hide(context);
+
+                    // Navigator.of(context).pushReplacement(
+                    //     MaterialPageRoute(builder: (_) => const SuccessScreen()));
+
+                    CoolAlert.show(
+                        context: context,
+                        type: CoolAlertType.success,
+                        text: "Enregistré avec succès",
+                        // autoCloseDuration: Duration(seconds: 2),
+                        title: "Succès",
+                        onConfirmBtnTap: (){
+                          if(formBloc.etatDropDown.value?.id == "3"){
+                            print("navigation ");
+                            Navigator.of(context).pushReplacement(MaterialPageRoute(
+                              builder: (_) => InterventionFormStep2(),
+                            ));
+                          }
+                        }
+
+
+                    );
+
+                    //TODO refresh current demande info
+
+
                   },
                   onFailure: (context, state) {
-                    LoadingDialog.hide(context);
+                    print(" FormBlocListener onFailure") ;
+                    pd.close();
+                    // _dialog.hide();
+
+                    // LoadingDialog.hide(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(state.failureResponse!)));
+                        SnackBar(content: Text(state.failureResponse ?? "")));
                   },
                   child: ScrollableFormBlocManager(
                     formBloc: formBloc,
@@ -826,6 +904,7 @@ class _InterventionFormStep2State extends State<InterventionFormStep2>
                             ),
                             ElevatedButton(
                               onPressed: () {
+                                print("submit");
                                 formBloc.submit();
                               },
                               child: const Text(
