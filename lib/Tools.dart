@@ -6,6 +6,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:im_stepper/stepper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
@@ -25,6 +26,7 @@ import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
 class Tools{
 
   static Demandes? selectedDemande;
+  static int currentStep = 1 ;
 
 
   static String deviceToken = "" ;
@@ -57,8 +59,7 @@ class Tools{
 
   static File fileEtatsList = File("");
   static File fileDemandesList = File("");
-
-  File fileTraitementList = File("");
+  static File fileTraitementList = File("");
 
 
 
@@ -70,6 +71,7 @@ class Tools{
       getApplicationDocumentsDirectory().then((Directory directory) {
         fileEtatsList = new File(directory.path + "/fileEtatsList.json");
         fileDemandesList = new File(directory.path + "/fileDemandesList.json");
+        // fileTraitementList = new File(directory.path + "/fileDemandesList.json");
 
         if(!fileEtatsList.existsSync()){
           fileEtatsList.createSync();
@@ -85,8 +87,8 @@ class Tools{
     }
   }
 
-  static  Future<ResponseGetListEtat> getEtats() async {
-
+  static  Future<ResponseGetListEtat> callWSGetEtats() async {
+    print("****** callWSGetEtats ***");
 
     Response response ;
     try {
@@ -208,6 +210,8 @@ class Tools{
 
     return readfileDemandesList();
   }
+
+
   static  Future<bool> callWSSendMail() async {
 
     FormData formData = FormData.fromMap({
@@ -347,11 +351,12 @@ class Tools{
   }
 
   static Future<ResponseGetListEtat> getListEtatFromLocalAndINternet() async{
+    print("****** getListEtatFromLocalAndINternet ***");
     ResponseGetListEtat responseListEtat;
 
     var connectivityResult = await (Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
-      responseListEtat = await Tools.getEtats();
+      responseListEtat = await Tools.callWSGetEtats();
 
     }else{
       responseListEtat =  Tools.readfileEtatsList() ;
@@ -461,4 +466,44 @@ class Tools{
     return false ;
 
   }
+
+
+
+  static Future<Position> determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
+  }
+
 }

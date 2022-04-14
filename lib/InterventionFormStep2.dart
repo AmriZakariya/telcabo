@@ -9,6 +9,7 @@ import 'package:im_stepper/stepper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:sn_progress_dialog/progress_dialog.dart';
+import 'package:telcabo/InterventionWidgetStep1.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/custome/QrScannerTextFieldBlocBuilder.dart';
 import 'package:telcabo/models/response_get_demandes.dart';
@@ -537,8 +538,17 @@ class _InterventionFormStep2State extends State<InterventionFormStep2>
                               // stepColor: Colors.white,
                               // lineColor: Colors.white,
                               enableNextPreviousButtons: false,
-                              enableStepTapping: false,
+                              // enableStepTapping: false,
                               activeStepBorderColor: Tools.colorSecondary,
+                              onStepReached: (activeStep){
+                                if(activeStep == 0){
+                                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                    builder: (_) => InterventionFormStep1(),
+                                  ));
+                                }
+
+                              },
+
 
                             ),
                             SizedBox(

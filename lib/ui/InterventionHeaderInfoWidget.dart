@@ -7,6 +7,7 @@ import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:telcabo/FormStepper.dart';
 import 'package:telcabo/InterventionFormStep2.dart';
 import 'package:telcabo/InterventionWidgetStep1.dart';
 import 'package:telcabo/Tools.dart';
@@ -184,14 +185,23 @@ class DemandeListItem extends StatelessWidget {
                             if(demande.etatId == "3"
                             && demande.pPbiAvant != ""
                             && demande.pPbiApres != ""){
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => InterventionFormStep2(),
-                              ));
+                              // Navigator.of(context).push(MaterialPageRoute(
+                              //   builder: (_) => InterventionFormStep2(),
+                              // ));
+                              Tools.currentStep = 1 ;
                             }else{
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (_) => InterventionFormStep1(),
-                              ));
+                              // Navigator.of(context).push(MaterialPageRoute(
+                              //   builder: (_) => InterventionFormStep1(),
+                              // ));
+                              Tools.currentStep = 0 ;
+
                             }
+
+                            // FormBlocState.currentStep = Tools.currentStep ;
+
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (_) => WizardForm(),
+                            ));
 
                           },
                           style: ElevatedButton.styleFrom(

@@ -29,6 +29,8 @@ import 'InterventionFormStep2.dart';
 import 'NotificationExample.dart';
 // import 'package:http/http.dart' as http;
 
+
+
 class InterventionStep1FormBloc extends FormBloc<String, String> {
   late final ResponseGetListEtat responseListEtat;
 
@@ -1138,7 +1140,7 @@ class InterventionFormStep1 extends StatelessWidget {
                                     contentsAlign: ContentsAlign.alternating,
                                     contentsBuilder: (context, index) => Padding(
                                       padding: const EdgeInsets.all(24.0),
-                                      child: Text('Timeline Event $index'),
+                                      child: Text(Tools.selectedDemande?.commentaires?[index].commentaire ?? ""),
                                     ),
                                     itemCount: Tools.selectedDemande?.commentaires?.length ?? 0,
                                   ),
