@@ -166,11 +166,13 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                                       final File fileResult = File(imageResult?.path ?? "");
                                       if (await fileResult.exists()) {
 
-                                        String currentAddress =  await _getAddressFromLatLng();
-                                        String currentDate =  DateTime.now().toString();
-                                        String fileName =  DateTime.now().millisecondsSinceEpoch.toString();
+                                        widget.fileFieldBloc.updateValue(imageResult);
 
-                                        print(currentDate);
+                                        // String currentAddress =  await _getAddressFromLatLng();
+                                        // String currentDate =  DateTime.now().toString();
+                                        // String fileName =  DateTime.now().millisecondsSinceEpoch.toString();
+                                        //
+                                        // print(currentDate);
 
                                         // var t = await fileResult.readAsBytes();
                                         // var imgBytes = Uint8List.fromList(t);
@@ -190,26 +192,26 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                                         //   color: Colors.black, //default : Colors.white
                                         // );
 
-                                        getApplicationDocumentsDirectory().then((Directory directory) async {
-
-
-                                          final image = imagePLugin.decodeImage(fileResult.readAsBytesSync())!;
-                                          imagePLugin.drawString(image, imagePLugin.arial_24, 0, 0, currentDate);
-                                          imagePLugin.drawString(image, imagePLugin.arial_24, 0, 32, currentAddress);
-
-                                          File fileResultWithWatermark = File(directory.path +"/"+ fileName+'.png') ;
-                                          fileResultWithWatermark.writeAsBytesSync(imagePLugin.encodePng(image));
-
-                                          // final buffer = imgBytes.buffer;
-                                          // File fileResultWithWatermark = await File(directory.path +"/"+ currentDate+'.png').writeAsBytes(
-                                          //     buffer.asUint8List(imgBytes.offsetInBytes, imgBytes.lengthInBytes));
-
-
-                                          XFile xfileResult = XFile(fileResultWithWatermark.path);
-                                          widget.fileFieldBloc.updateValue(xfileResult);
-
-
-                                        });
+                                        // getApplicationDocumentsDirectory().then((Directory directory) async {
+                                        //
+                                        //
+                                        //   final image = imagePLugin.decodeImage(fileResult.readAsBytesSync())!;
+                                        //   imagePLugin.drawString(image, imagePLugin.arial_24, 0, 0, currentDate);
+                                        //   imagePLugin.drawString(image, imagePLugin.arial_24, 0, 32, currentAddress);
+                                        //
+                                        //   File fileResultWithWatermark = File(directory.path +"/"+ fileName+'.png') ;
+                                        //   fileResultWithWatermark.writeAsBytesSync(imagePLugin.encodePng(image));
+                                        //
+                                        //   // final buffer = imgBytes.buffer;
+                                        //   // File fileResultWithWatermark = await File(directory.path +"/"+ currentDate+'.png').writeAsBytes(
+                                        //   //     buffer.asUint8List(imgBytes.offsetInBytes, imgBytes.lengthInBytes));
+                                        //
+                                        //
+                                        //   XFile xfileResult = XFile(fileResultWithWatermark.path);
+                                        //   widget.fileFieldBloc.updateValue(xfileResult);
+                                        //
+                                        //
+                                        // });
 
 
 

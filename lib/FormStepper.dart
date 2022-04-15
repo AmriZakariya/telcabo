@@ -30,6 +30,11 @@ import 'package:timelines/timelines.dart';
 import 'InterventionFormStep2.dart';
 import 'NotificationExample.dart';
 // import 'package:http/http.dart' as http;
+
+
+final GlobalKey<ScaffoldState> formStepperScaffoldKey = new GlobalKey<ScaffoldState>();
+
+
 class WizardFormBloc extends FormBloc<String, String> {
 
   late final ResponseGetListEtat responseListEtat;
@@ -221,6 +226,99 @@ class WizardFormBloc extends FormBloc<String, String> {
   );
 
 
+  /* Step 3 */
+
+
+  final InputFieldBloc<XFile?, Object> pEquipementInstalle = InputFieldBloc(
+    initialValue: null,
+    name: "p_equipement_installe",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
+
+  final InputFieldBloc<XFile?, Object> pTestSignal = InputFieldBloc(
+    initialValue: null,
+    name: "p_test_signal",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
+
+  final InputFieldBloc<XFile?, Object> pEtiquetageIndoor = InputFieldBloc(
+    initialValue: null,
+    name: "p_etiquetage_indoor",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
+
+  final InputFieldBloc<XFile?, Object> pEtiquetageOutdoor = InputFieldBloc(
+    initialValue: null,
+    name: "p_etiquetage_outdoor",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
+
+  final InputFieldBloc<XFile?, Object> pPassageCable = InputFieldBloc(
+    initialValue: null,
+    name: "p_passage_cable",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
+
+  final InputFieldBloc<XFile?, Object> pFicheInstalation = InputFieldBloc(
+    initialValue: null,
+    name: "p_fiche_instalation",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
+
+  final InputFieldBloc<XFile?, Object> pSpeedTest = InputFieldBloc(
+    initialValue: null,
+    name: "p_speed_test",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
 
   WizardFormBloc()  : super(isLoading: true) {
 
@@ -250,6 +348,21 @@ class WizardFormBloc extends FormBloc<String, String> {
     );
     addFieldBlocs(
       step: 2,
+      fieldBlocs: [
+        pEquipementInstalle,
+        pTestSignal,
+        pEtiquetageIndoor,
+        pEtiquetageOutdoor,
+        pPassageCable,
+        pFicheInstalation,
+        pSpeedTest,
+        commentaireTextField
+
+      ],
+    );
+
+    addFieldBlocs(
+      step: 3,
       fieldBlocs: [commentaireTextField],
     );
 
@@ -268,6 +381,14 @@ class WizardFormBloc extends FormBloc<String, String> {
 
         removeFieldBlocs(
             fieldBlocs: [motifDropDown]);
+
+        removeFieldBlocs(
+            fieldBlocs: [
+              etatImmo,
+              newLatitude,
+              newLongitude,
+              newAdresse,
+            ]);
 
         if (current.value?.id == "1") {
           addFieldBloc(
@@ -325,10 +446,18 @@ class WizardFormBloc extends FormBloc<String, String> {
         if(current.value?.id == null){
           return ;
         }
-        
+
         print("sousEtatDropDown onValueChanges");
         print(current.value?.id ?? "...");
         print(current.value?.motifList ?? "...");
+
+        removeFieldBlocs(
+            fieldBlocs: [
+              etatImmo,
+              newLatitude,
+              newLongitude,
+              newAdresse,
+            ]);
 
         if (current.value?.motifList?.isEmpty == true) {
           removeFieldBlocs(
@@ -337,6 +466,38 @@ class WizardFormBloc extends FormBloc<String, String> {
           motifDropDown.updateItems(current.value?.motifList ?? []);
           addFieldBloc(
               fieldBloc: motifDropDown);
+        }
+      },
+    );
+
+    motifDropDown.onValueChanges(
+      onData: (previous, current) async* {
+        // String currentId = current.value?.id ?? "" ;
+        // List<SousEtat>? sousEtat = responseListEtat.etat?.firstWhere((element) => element.id == currentId).sousEtat! ?? []
+
+        if(current.value?.id == null){
+          return ;
+        }
+
+        print("motifDropDown onValueChanges");
+        print(current.value?.id ?? "...");
+
+        if (etatDropDown.value?.id == "7" && sousEtatDropDown.value?.id == "8") {
+          addFieldBlocs(
+              fieldBlocs: [
+                etatImmo,
+                newLatitude,
+                newLongitude,
+                newAdresse,
+              ]);
+        } else {
+          removeFieldBlocs(
+              fieldBlocs: [
+                etatImmo,
+                newLatitude,
+                newLongitude,
+                newAdresse,
+              ]);
         }
       },
     );
@@ -355,6 +516,7 @@ class WizardFormBloc extends FormBloc<String, String> {
       for(var mapKey in jsonMapContent.keys){
         // print('${k}: ${v}');
         // print(k);
+
         if(mapKey == "p_pbi_avant"){
           jsonMapContent[mapKey] = pPbiAvantTextField.value?.path ;
         }else if(mapKey == "p_pbi_apres"){
@@ -498,30 +660,7 @@ class WizardFormBloc extends FormBloc<String, String> {
     print("override updateCurrentStep");
     print("Tools.currentStep ==> ${Tools.currentStep }");
 
-    clear();
-
-
-    if(Tools.currentStep == 0){
-      // responseListEtat.etat = responseListEtat.etat?.take(3).toList();
-      etatDropDown.updateItems(responseListEtat.etat?.take(3).toList() ?? []);
-
-
-    }else{
-      // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
-      etatDropDown.updateItems(responseListEtat.etat?.skip(3).toList() ?? []);
-
-    }
-
-    removeFieldBlocs(
-          fieldBlocs: [
-            sousEtatDropDown,
-            motifDropDown,
-            rdvDate,
-            pPbiAvantTextField,
-            pPbiApresTextField,
-            pPboAvantTextField,
-            pPboApresTextField
-          ]);
+    clearInputs();
 
 
     super.updateCurrentStep(step);
@@ -533,9 +672,99 @@ class WizardFormBloc extends FormBloc<String, String> {
     print("override previousStep");
     print("Tools.currentStep ==> ${Tools.currentStep }");
 
+    clearInputs();
+
+
+
+
+    super.previousStep();
+
+  }
+
+
+
+  @override
+  void onSubmitting() async {
+    if (state.currentStep == 0) {
+
+      print("InterventionStep1FormBloc onSubmitting() ");
+      print('onSubmittinga ${state.toJson()}');
+
+
+      try {
+
+        final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:s');
+        final String dateNowFormatted = formatter.format(DateTime.now());
+
+
+
+        Map<String, dynamic> formDateValues = await state.toJson();
+
+        formDateValues.addAll({
+          "etape" : "1",
+          "demande_id" : Tools.selectedDemande?.id ?? "",
+          "user_id" : Tools.userId,
+          "date" : dateNowFormatted
+        });
+
+
+        print(formDateValues);
+
+        print("dio start");
+
+
+        var connectivityResult = await (Connectivity().checkConnectivity());
+        if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+          print('YAY! Free cute dog pics!');
+
+          bool checkCallWs = await Tools.callWsAddMobile(formDateValues);
+
+          if(checkCallWs){
+            emitSuccess(canSubmitAgain: true);
+
+          }else{
+            emitFailure(failureResponse: "WS");
+
+          }
+
+        } else if (connectivityResult == ConnectivityResult.none) {
+          print('No internet :( Reason:');
+          writeToFileTraitementList(formDateValues);
+          emitSuccess();
+
+        }
+
+
+
+
+
+
+        // readJson();
+      } catch (e) {
+        emitFailure();
+      }
+
+
+    } else if (state.currentStep == 1) {
+      await Future.delayed(Duration(milliseconds: 500));
+      emitSuccess(canSubmitAgain: true, );
+
+    } else if (state.currentStep == 2) {
+      await Future.delayed(Duration(milliseconds: 500));
+      emitSuccess(canSubmitAgain: true);
+
+    }
+  }
+
+
+
+
+  void clearInputs() {
+    print("clearInputs()");
+    print("Tools.currentStep ==> ${Tools.currentStep }");
+
     clear();
 
-    ResponseGetListEtat responseListEtatCopy = responseListEtat ;
 
     if(Tools.currentStep == 0){
       // responseListEtat.etat = responseListEtat.etat?.take(3).toList();
@@ -548,36 +777,30 @@ class WizardFormBloc extends FormBloc<String, String> {
 
     }
 
-    etatDropDown.updateItems(responseListEtatCopy.etat ?? []);
+    removeFieldBlocs(
+        fieldBlocs: [
+          sousEtatDropDown,
+          motifDropDown,
+          rdvDate,
+          pPbiAvantTextField,
+          pPbiApresTextField,
+          pPboAvantTextField,
+          pPboApresTextField
+        ]);
 
     removeFieldBlocs(
         fieldBlocs: [
-        sousEtatDropDown,
-        motifDropDown,
-        rdvDate,
-        pPbiAvantTextField,
-        pPbiApresTextField,
-        pPboAvantTextField,
-        pPboApresTextField
+          etatImmo,
+          newLatitude,
+          newLongitude,
+          newAdresse,
         ]);
 
-    super.previousStep();
 
-  }
-
-  @override
-  void onSubmitting() async {
-    if (state.currentStep == 0) {
-      await Future.delayed(Duration(milliseconds: 500));
-      emitSuccess(canSubmitAgain: true);
-
-    } else if (state.currentStep == 1) {
-      await Future.delayed(Duration(milliseconds: 500));
-      emitSuccess(canSubmitAgain: true);
-
-    } else if (state.currentStep == 2) {
-      await Future.delayed(Duration(milliseconds: 500));
-      emitSuccess(canSubmitAgain: true);
+    if(Tools.selectedDemande?.etatId == "5"){
+      pSpeedTest.removeValidators([FieldBlocValidators.required,]);
+    }else{
+      pSpeedTest.addValidators([FieldBlocValidators.required,]);
 
     }
   }
@@ -616,17 +839,47 @@ class _WizardFormState extends State<WizardForm> {
               ),
             ),
             child: Scaffold(
-              resizeToAvoidBottomInset: false,
+              key: formStepperScaffoldKey,
+              resizeToAvoidBottomInset: true,
               appBar: AppBar(
+                leading: Builder(
+                  builder: (BuildContext context) {
+                    final ScaffoldState? scaffold = Scaffold.maybeOf(context);
+                    final ModalRoute<Object?>? parentRoute = ModalRoute.of(context);
+                    final bool hasEndDrawer = scaffold?.hasEndDrawer ?? false;
+                    final bool canPop = parentRoute?.canPop ?? false;
+
+                    if (hasEndDrawer && canPop) {
+                      return BackButton();
+                    } else {
+                      return SizedBox.shrink();
+                    }
+                  },
+                ),
+
                 title: Text('Intervention'),
                 actions: <Widget>[
-                  IconButton(
-                      icon: Icon(_type == StepperType.horizontal
-                          ? Icons.swap_vert
-                          : Icons.swap_horiz),
-                      onPressed: _toggleType)
+
+                  NamedIcon(
+                    text: '',
+                    iconData: _type == StepperType.horizontal
+                        ? Icons.swap_vert
+                        : Icons.swap_horiz,
+                    onTap: _toggleType
+                  ),
+                  NamedIcon(
+                    text: '',
+                    iconData: Icons.comment,
+                    notificationCount: Tools.selectedDemande?.commentaires?.length ?? 0,
+                    onTap: () {
+                      formStepperScaffoldKey.currentState?.openEndDrawer();
+                    },
+                  ),
+
                 ],
               ),
+              endDrawer: EndDrawerWidget(),
+
               body: SafeArea(
                 child: FormBlocListener<WizardFormBloc, String, String>(
                   onSubmitting: (context, state) {
@@ -634,6 +887,11 @@ class _WizardFormState extends State<WizardForm> {
                   },
                   onSuccess: (context, state) {
                     LoadingDialog.hide(context);
+
+
+                    Tools.currentStep = state.currentStep ;
+                    context.read<WizardFormBloc>().clearInputs();
+
 
                     if (state.stepCompleted == state.lastStep) {
                       Navigator.of(context).pushReplacement(
@@ -679,6 +937,7 @@ class _WizardFormState extends State<WizardForm> {
                                       // formBloc.readJson();
                                       // formBloc.fileTraitementList.writeAsStringSync("");
 
+
                                       formBloc.submit();
                                     },
                                     child: const Text('Enregistrer',
@@ -702,38 +961,38 @@ class _WizardFormState extends State<WizardForm> {
                               if (!formBloc.state.isFirstStep
                                   &&  !formBloc.state.isLastStep
                               )
-                                Expanded(
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      print("cliick");
-                                      // formBloc.readJson();
-                                      // formBloc.fileTraitementList.writeAsStringSync("");
-
-                                      // context.read<WizardFormBloc>().clear();
-
-
-
-                                      onStepCancel!() ;
-                                    },
-                                    child: const Text('Annuler',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 18.0,
-                                        wordSpacing: 12,
-                                      ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      primary: Colors.grey,
-                                      // shape: CircleBorder(),
-                                      minimumSize: Size(200, 50),
-                                      // primary: Tools.colorPrimary,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: new BorderRadius.circular(30.0),
-                                      ),
-
-                                    ),
-                                  ),
-                                ),
+                                // Expanded(
+                                //   child: ElevatedButton(
+                                //     onPressed: () {
+                                //       print("cliick");
+                                //       // formBloc.readJson();
+                                //       // formBloc.fileTraitementList.writeAsStringSync("");
+                                //
+                                //       // context.read<WizardFormBloc>().clear();
+                                //
+                                //
+                                //
+                                //       onStepCancel!() ;
+                                //     },
+                                //     child: const Text('Annuler',
+                                //       textAlign: TextAlign.center,
+                                //       style: TextStyle(
+                                //         fontSize: 18.0,
+                                //         wordSpacing: 12,
+                                //       ),
+                                //     ),
+                                //     style: ElevatedButton.styleFrom(
+                                //       primary: Colors.grey,
+                                //       // shape: CircleBorder(),
+                                //       minimumSize: Size(200, 50),
+                                //       // primary: Tools.colorPrimary,
+                                //       shape: RoundedRectangleBorder(
+                                //         borderRadius: new BorderRadius.circular(30.0),
+                                //       ),
+                                //
+                                //     ),
+                                //   ),
+                                // ),
                               SizedBox(
                                 height: 50,
                               ),
@@ -748,17 +1007,31 @@ class _WizardFormState extends State<WizardForm> {
                       return [
                         _step1(formBloc!),
                         _step2(formBloc),
-                        _socialStep(formBloc),
+                        _step3(formBloc),
                       ];
                     },
                     onStepTapped: (FormBloc? formBloc, int step){
                       print("onStepTapped");
+                      if(step > 0){
+                        if(
+                        !(Tools.selectedDemande?.etatId == "3"
+                            && Tools.selectedDemande?.pPbiAvant != ""
+                            && Tools.selectedDemande?.pPbiApres != "")
+
+                        ){
+                          // Navigator.of(context).push(MaterialPageRoute(
+                          //   builder: (_) => InterventionFormStep2(),
+                          // ));
+                          return ;
+                        }
+                      }
                       Tools.currentStep = step ;
                       print(formBloc);
                       formBloc?.updateCurrentStep(step);
                       // formBloc?.emit(FormBlocLoaded(currentStep: Tools.currentStep));
                     },
                   ),
+
                 ),
               ),
             ),
@@ -771,7 +1044,7 @@ class _WizardFormState extends State<WizardForm> {
   FormBlocStep _step1(WizardFormBloc wizardFormBloc) {
     return FormBlocStep(
       title: Text('Etape 1'),
-      content: Column(
+      content:  Column(
         children: <Widget>[
           InterventionHeaderInfoClientWidget(),
           SizedBox(
@@ -963,9 +1236,112 @@ class _WizardFormState extends State<WizardForm> {
               child: Text(value.name ?? ""),
             ),
           ),
-          Divider(
-            color: Colors.black,
+
+          // Divider(
+          //   color: Colors.black,
+          // ),
+          TextFieldBlocBuilder(
+            textFieldBloc:
+            formBloc.etatImmo,
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(
+              labelText: "Etat immeble ",
+              prefixIcon: Icon(Icons.gps_fixed),
+            ),
           ),
+          CanShowFieldBlocBuilder(
+            fieldBloc: formBloc.newLongitude,
+            builder: (BuildContext context, bool canShow) {
+              return Container(
+                  child: Row(
+                    children: [
+                      Flexible(
+                        flex: 5,
+                        child: Container(
+                          child: Column(
+                            children: [
+                              TextFieldBlocBuilder(
+                                readOnly: true,
+                                textFieldBloc:
+                                formBloc.newLatitude,
+                                clearTextIcon: Icon(Icons.cancel),
+                                suffixButton: SuffixButton.clearText,
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  labelText: "Nouvelle latitude ",
+                                  prefixIcon: Icon(Icons.location_on),
+                                  disabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        width: 1,
+                                        // color: Tools.colorPrimary
+                                      ),
+                                      borderRadius:
+                                      BorderRadius.circular(20)),
+                                ),
+                              ),
+                              TextFieldBlocBuilder(
+                                readOnly: true,
+                                textFieldBloc:
+                                formBloc.newLongitude,
+                                keyboardType: TextInputType.text,
+                                clearTextIcon: Icon(Icons.cancel),
+                                suffixButton: SuffixButton.clearText,
+                                decoration: InputDecoration(
+                                  labelText: "Nouvelle Longitude ",
+                                  prefixIcon: Icon(Icons.location_on),
+                                  disabledBorder: OutlineInputBorder(
+                                      borderSide: BorderSide(
+                                        width: 1,
+                                        // color: Tools.colorPrimary
+                                      ),
+                                      borderRadius:
+                                      BorderRadius.circular(20)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Flexible(
+                        // flex: 2,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            Position? position =
+                            await Tools.determinePosition();
+                            if (position != null) {
+                              formBloc.newLatitude.updateValue(
+                                  position.latitude
+                                      .toStringAsFixed(4));
+                              formBloc.newLongitude
+                                  .updateValue(position.longitude
+                                  .toStringAsFixed(4));
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            // primary: Tools.colorPrimary,
+                            shape: CircleBorder(),
+                            padding: EdgeInsets.all(10),
+                          ),
+                          child: const Icon(Icons.my_location),
+                        ),
+                      ),
+                    ],
+                  ));
+            },
+          ),
+          TextFieldBlocBuilder(
+            textFieldBloc:
+            formBloc.newAdresse,
+            keyboardType: TextInputType.text,
+            decoration: InputDecoration(
+              labelText: "Nouvelle adresse ",
+              prefixIcon: Icon(Icons.gps_fixed),
+            ),
+          ),
+
+          // Divider(
+          //   color: Colors.black,
+          // ),
 
           TextFieldBlocBuilder(
             textFieldBloc:
@@ -1011,7 +1387,7 @@ class _WizardFormState extends State<WizardForm> {
                             suffixButton: SuffixButton.clearText,
                             keyboardType: TextInputType.text,
                             decoration: InputDecoration(
-                              labelText: "Latitude :",
+                              labelText: "Latitude ",
                               prefixIcon: Icon(Icons.location_on),
                               disabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
@@ -1030,7 +1406,7 @@ class _WizardFormState extends State<WizardForm> {
                             clearTextIcon: Icon(Icons.cancel),
                             suffixButton: SuffixButton.clearText,
                             decoration: InputDecoration(
-                              labelText: "Longitude :",
+                              labelText: "Longitude ",
                               prefixIcon: Icon(Icons.location_on),
                               disabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
@@ -1117,22 +1493,161 @@ class _WizardFormState extends State<WizardForm> {
             ),
           ),
 
+
         ],
       ),
     );
   }
 
-  FormBlocStep _socialStep(WizardFormBloc wizardFormBloc) {
+  FormBlocStep _step3(WizardFormBloc wizardFormBloc) {
     return FormBlocStep(
       title: Text('Etape 3'),
       content: Column(
         children: <Widget>[
-
+          Container(
+            // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                //Center Row contents horizontally,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                //Center Row contents vertically,
+                children: [
+                  Flexible(
+                    child: ImageFieldBlocBuilder(
+                      formBloc: wizardFormBloc,
+                      fileFieldBloc: wizardFormBloc.pEquipementInstalle,
+                      labelText: "Equipement installé ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                  Flexible(
+                    // flex: 2,
+                    child: ImageFieldBlocBuilder(
+                      formBloc: wizardFormBloc,
+                      fileFieldBloc: wizardFormBloc.pTestSignal,
+                      labelText: "Test signal ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                ],
+              )),
+          Container(
+            // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                //Center Row contents horizontally,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                //Center Row contents vertically,
+                children: [
+                  Flexible(
+                    child: ImageFieldBlocBuilder(
+                      formBloc: wizardFormBloc,
+                      fileFieldBloc: wizardFormBloc.pEtiquetageIndoor,
+                      labelText: "Etiquetage indoor ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                  Flexible(
+                    // flex: 2,
+                    child: ImageFieldBlocBuilder(
+                      formBloc: wizardFormBloc,
+                      fileFieldBloc: wizardFormBloc.pEtiquetageOutdoor,
+                      labelText: "Etiquetage outdoor ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                ],
+              )),
+          Container(
+            // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                //Center Row contents horizontally,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                //Center Row contents vertically,
+                children: [
+                  Flexible(
+                    child: ImageFieldBlocBuilder(
+                      formBloc: wizardFormBloc,
+                      fileFieldBloc: wizardFormBloc.pPassageCable,
+                      labelText: "Passage cable ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                  Flexible(
+                    // flex: 2,
+                    child: ImageFieldBlocBuilder(
+                      formBloc: wizardFormBloc,
+                      fileFieldBloc: wizardFormBloc.pFicheInstalation,
+                      labelText: "Fiche instalation ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                ],
+              )),
+              Center(
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pSpeedTest,
+                  labelText: "Speed test ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
         ],
       ),
     );
   }
 }
+
+
+
+class EndDrawerWidget extends StatelessWidget {
+  const EndDrawerWidget({Key? key}) : super(key: key);
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/bg_home.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Column(
+            children: [
+              Text("Commentaires"),
+              Expanded(
+                child: Timeline.tileBuilder(
+                  builder: TimelineTileBuilder.fromStyle(
+                    contentsBuilder: (context, index) => Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(Tools.selectedDemande?.commentaires?[0].commentaire ?? ""),
+                      ),
+                    ),
+                    // oppositeContentsBuilder: (context, index) => Padding(
+                    //   padding: const EdgeInsets.all(8.0),
+                    //   child: Text('opposite\ncontents'),
+                    // ),
+                    contentsAlign: ContentsAlign.alternating,
+                    indicatorStyle: IndicatorStyle.outlined,
+                    connectorStyle: ConnectorStyle.dashedLine,
+                    itemCount: Tools.selectedDemande?.commentaires?.length ?? 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+        ),
+      ),
+    );
+  }
+}
+
 
 class LoadingDialog extends StatelessWidget {
   static void show(BuildContext context, {Key? key}) => showDialog<void>(
@@ -1170,6 +1685,7 @@ class SuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1188,6 +1704,56 @@ class SuccessScreen extends StatelessWidget {
               icon: Icon(Icons.replay),
               label: Text('AGAIN'),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NamedIcon extends StatelessWidget {
+  final IconData iconData;
+  final String text;
+  final VoidCallback? onTap;
+  final int notificationCount;
+
+  const NamedIcon({
+    Key? key,
+    this.onTap,
+    required this.text,
+    required this.iconData,
+    this.notificationCount = 0,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 50,
+        padding: const EdgeInsets.only(top: 15),
+
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Icon(iconData),
+                Text(text, overflow: TextOverflow.ellipsis),
+              ],
+            ),
+            if(notificationCount > 0)
+            Positioned(
+              top: 10,
+              right: 30,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                alignment: Alignment.center,
+                child: Text('$notificationCount'),
+              ),
+            )
           ],
         ),
       ),

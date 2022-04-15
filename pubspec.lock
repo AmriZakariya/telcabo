@@ -162,6 +162,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.4"
+  dio_http_formatter:
+    dependency: "direct main"
+    description:
+      name: dio_http_formatter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   dropdown_search:
     dependency: transitive
     description:
@@ -623,6 +630,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.0+3"
+  logger:
+    dependency: transitive
+    description:
+      name: logger
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.0"
   lottie:
     dependency: transitive
     description:

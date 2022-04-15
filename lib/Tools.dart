@@ -1,3 +1,4 @@
+import 'package:dio_http_formatter/dio_http_formatter.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
@@ -6,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:im_stepper/stepper.dart';
 import 'package:image_picker/image_picker.dart';
@@ -93,6 +95,7 @@ class Tools{
     Response response ;
     try {
       Dio dio = new Dio();
+      dio.interceptors.add(HttpFormatter());
 
       response =
       await dio.get("http://telcabo.castlit.com/etats/liste_etats");
@@ -133,9 +136,8 @@ class Tools{
       throw ('API ERROR');
     }
 
-    return ResponseGetListEtat(etat: []);
-
-
+    return Tools.readfileEtatsList();
+    // return ResponseGetListEtat(etat: []);
 
   }
 
@@ -151,6 +153,7 @@ class Tools{
     try {
       print("************** getDemandes ***********");
       Dio dio = new Dio();
+      dio.interceptors.add(HttpFormatter());
 
 
       apiRespon =
@@ -504,6 +507,85 @@ class Tools{
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
+  }
+
+
+  static  Future<bool> callWsAddMobile(Map<String, dynamic> formDateValues) async {
+    print("****** callWsAddMobile ***");
+
+    FormData formData = FormData.fromMap(formDateValues);
+    print(formData);
+
+
+    Response apiRespon ;
+    try {
+      print("**************doPOST***********");
+      Dio dio = new Dio();
+      dio.interceptors.add(HttpFormatter());
+
+
+      apiRespon =
+      await dio.post("https://telcabo.castlit.com/traitements/add_mobile",
+          data: formData,
+          options: Options(
+            method: "POST",
+            headers: {
+              'Content-Type': 'multipart/form-data;charset=UTF-8',
+              'Charset': 'utf-8'
+            },
+          ));
+
+      print("Image Upload ${apiRespon}");
+
+      print(apiRespon);
+
+      if(apiRespon.data == "000"){
+        return true ;
+      }
+
+      // if (apiRespon.statusCode == 201) {
+      //   apiRespon.statusCode == 201;
+      //
+      //   return true ;
+      // } else {
+      //   print('errr');
+      // }
+
+
+
+    } on DioError catch (e) {
+      print("**************DioError***********");
+      print(e);
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx and is also not 304.
+      if (e.response != null) {
+        //        print(e.response.data);
+        //        print(e.response.headers);
+        //        print(e.response.);
+        //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
+        throw (e.response?.statusMessage ?? "");
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        //        print(e.request);
+        //        print(e.message);
+      }
+    } catch (e) {
+      throw ('API ERROR');
+    }
+
+    return false ;
+
+  }
+
+  static  Future<File?> compressAndGetFile(File file, String targetPath) async {
+    var result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path, targetPath,
+      quality: 60,
+      minWidth: 800,
+      minHeight: 600
+    );
+
+    return result;
   }
 
 }

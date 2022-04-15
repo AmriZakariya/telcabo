@@ -43,10 +43,17 @@ class DemandeList extends StatefulWidget {
 
 class _DemandeListState extends State<DemandeList> {
   final _scrollController = ScrollController();
+  late ResponseGetDemandesList demandesList;
+  final _formKey = GlobalKey<FormBuilderState>();
+
+  TextEditingController _searchController = TextEditingController(
+
+  );
 
   @override
   void initState() {
     Tools.initFiles();
+    // refreshDemandeList();
   }
 
   @override
@@ -95,7 +102,7 @@ class _DemandeListState extends State<DemandeList> {
                  Navigator.of(context).pushReplacement(MaterialPageRoute(
                    builder: (_) => LoginWidget(),
                  ));
-               }, icon: Icon(Icons.filter_list), label: Text("Filter"))
+               }, icon: Icon(Icons.refresh), label: Text("Actualiser"))
               ],
             ),
             SizedBox(height: 20.0),
@@ -108,20 +115,16 @@ class _DemandeListState extends State<DemandeList> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: Column(children: <Widget>[
-                  FormBuilderTextField(
-                    name: 'fullName',
+                child:  Column(children: <Widget>[
+                  TextField(
+                    controller: _searchController,
                     decoration: InputDecoration(
                       labelText: 'Nom client'.tr().capitalize(),
                       prefixIcon: Icon(Icons.person),
                     ),
                     onChanged: (value) {},
                     // valueTransformer: (text) => num.tryParse(text),
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
-                      // FormBuilderValidators.numeric(context),
-                      // FormBuilderValidators.max(context, 70),
-                    ]),
+
                     keyboardType: TextInputType.text,
                   ),
                   SizedBox(
@@ -138,6 +141,8 @@ class _DemandeListState extends State<DemandeList> {
                       // shape: const BeveledRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))),
                     ),
                     onPressed: () {
+                        print("Search value ==> ${_searchController.value.text}");
+
 
                     },
                   ),
@@ -324,6 +329,13 @@ class _DemandeListState extends State<DemandeList> {
       ),
     );
   }
+
+  // Future<void> refreshDemandeList() async {
+  //   demandesList = await Tools.getListDemandeFromLocalAndINternet();
+  //   setState(() {
+  //     demandesList = demandesList;
+  //   });
+  // }
 
 
 }

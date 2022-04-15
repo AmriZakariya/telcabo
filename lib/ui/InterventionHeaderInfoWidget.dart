@@ -47,7 +47,7 @@ class DemandeListItem extends StatelessWidget {
             children: [
               Container(
                 width: double.infinity,
-                height: 90,
+                height: 65,
                 decoration: BoxDecoration(
                     color: getColorByEtatId(int.parse(demande.etatId ?? "0")),
                     border: Border.all(
@@ -55,7 +55,7 @@ class DemandeListItem extends StatelessWidget {
                     ),
                     borderRadius: BorderRadius.circular(20) // use instead of BorderRadius.all(Radius.circular(20))
                 ),
-                child: Column(
+                child: Row(
                     children: [
                       SizedBox(height: 5.0,),
                       // CircleAvatar(
@@ -63,27 +63,164 @@ class DemandeListItem extends StatelessWidget {
                       //   backgroundImage: AssetImage('assets/user.png'),
                       //   backgroundColor: Colors.white,
                       // ),
-                      ElevatedButton(
-                        onPressed: () async {
-                        },
-                        style: ElevatedButton.styleFrom(
-                          // primary: Tools.colorPrimary,
-                          shape: CircleBorder(),
-                          padding: EdgeInsets.all(10),
-                        ),
-                        child: const Icon(Icons.person, size: 25,),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Icon(Icons.person, size: 22,),
                       ),
-                      SizedBox(height: 8,),
-                      Text('Client : ${demande.client}',
-                          style: TextStyle(
-                            color:Colors.black,
-                            fontSize: 16.0,
-                          )),
+                      Container(
+                        width: 200,
+                        child: Text('${demande.client}',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color:Colors.black,
+                              fontSize: 16.0,
+                            )),
+                      ),
+
+                      Spacer(),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+
+
+                          GestureDetector(
+                             onTap: () {
+                               Tools.selectedDemande = demande ;
+                                   print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+
+                                   if(demande.etatId == "3"
+                                       && demande.pPbiAvant != ""
+                                       && demande.pPbiApres != ""){
+                                     // Navigator.of(context).push(MaterialPageRoute(
+                                     //   builder: (_) => InterventionFormStep2(),
+                                     // ));
+                                     Tools.currentStep = 1 ;
+                                   }else{
+                                     // Navigator.of(context).push(MaterialPageRoute(
+                                     //   builder: (_) => InterventionFormStep1(),
+                                     // ));
+                                     Tools.currentStep = 0 ;
+
+                                   }
+
+                                   // FormBlocState.currentStep = Tools.currentStep ;
+
+                                   Navigator.of(context).push(MaterialPageRoute(
+                                     builder: (_) => WizardForm(),
+                                   ));
+
+                            },
+                            child: Tooltip(
+                              message: "Intervention",
+                              child: Container(
+
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                    color: Tools.colorPrimary,
+                                    shape: BoxShape.circle
+                                ),
+                                child: Center(child: FaIcon(FontAwesomeIcons.solidEye, color: Colors.white, size: 15,)),
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Tools.selectedDemande = demande ;
+                              print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+
+                              if(demande.etatId == "3"
+                                  && demande.pPbiAvant != ""
+                                  && demande.pPbiApres != ""){
+                                // Navigator.of(context).push(MaterialPageRoute(
+                                //   builder: (_) => InterventionFormStep2(),
+                                // ));
+                                Tools.currentStep = 1 ;
+                              }else{
+                                // Navigator.of(context).push(MaterialPageRoute(
+                                //   builder: (_) => InterventionFormStep1(),
+                                // ));
+                                Tools.currentStep = 0 ;
+
+                              }
+
+                              // FormBlocState.currentStep = Tools.currentStep ;
+
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (_) => WizardForm(),
+                              ));
+
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8 ),
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                    color: Tools.colorPrimary,
+                                    shape: BoxShape.circle
+                                ),
+                                child: Center(child: FaIcon(FontAwesomeIcons.screwdriver, color: Colors.white, size: 15,)),
+                              ),
+                            ),
+                          ),
+                          // ElevatedButton(
+                          //   child: Icon(Icons.remove_red_eye, size: 20),
+                          //   onPressed: () {
+                          //     Tools.selectedDemande = demande ;
+                          //
+                          //   },
+                          //   style: ElevatedButton .styleFrom(
+                          //     // minimumSize: Size.zero, // Set this
+                          //     // padding: EdgeInsets.zero,
+                          //     shape: const CircleBorder(),
+                          //   ),
+                          // ),
+                          // ElevatedButton(
+                          //   child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
+                          //   onPressed: () {
+                          //     Tools.selectedDemande = demande ;
+                          //     print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+                          //
+                          //     if(demande.etatId == "3"
+                          //         && demande.pPbiAvant != ""
+                          //         && demande.pPbiApres != ""){
+                          //       // Navigator.of(context).push(MaterialPageRoute(
+                          //       //   builder: (_) => InterventionFormStep2(),
+                          //       // ));
+                          //       Tools.currentStep = 1 ;
+                          //     }else{
+                          //       // Navigator.of(context).push(MaterialPageRoute(
+                          //       //   builder: (_) => InterventionFormStep1(),
+                          //       // ));
+                          //       Tools.currentStep = 0 ;
+                          //
+                          //     }
+                          //
+                          //     // FormBlocState.currentStep = Tools.currentStep ;
+                          //
+                          //     Navigator.of(context).push(MaterialPageRoute(
+                          //       builder: (_) => WizardForm(),
+                          //     ));
+                          //
+                          //   },
+                          //   style: ElevatedButton.styleFrom(
+                          //     // minimumSize: Size.zero, // Set this
+                          //     // padding: EdgeInsets.zero,
+                          //     shape: const CircleBorder(),
+                          //   ),
+                          // ),
+
+                        ],
+                      ),
 
                     ]
                 ),
               ),
               ExpandChild(
+                arrowSize: 25,
+                arrowPadding: EdgeInsets.all(0) ,
                 child: Container(
                   // color: Colors.white,
                     child: Padding(
@@ -149,87 +286,93 @@ class DemandeListItem extends StatelessWidget {
                             description: demande.etatName ?? "",
                           ),
 
+                          SizedBox(height: 20.0,),
+                          Divider(),
+                          SizedBox(height: 20.0,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Column(
+                                children: [
+                                  ElevatedButton(
+                                    child: Icon(Icons.remove_red_eye, size: 20),
+                                    onPressed: () {
+                                      Tools.selectedDemande = demande ;
+
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      fixedSize: const Size(10, 10),
+                                      shape: const CircleBorder(),
+                                    ),
+                                  ),
+                                  Text("Voir")
+                                ],
+                              ),
+
+                              Column(
+                                children: [
+                                  ElevatedButton(
+                                    child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
+                                    onPressed: () {
+                                      Tools.selectedDemande = demande ;
+                                      print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+
+                                      if(demande.etatId == "3"
+                                          && demande.pPbiAvant != ""
+                                          && demande.pPbiApres != ""){
+                                        // Navigator.of(context).push(MaterialPageRoute(
+                                        //   builder: (_) => InterventionFormStep2(),
+                                        // ));
+                                        Tools.currentStep = 1 ;
+                                      }else{
+                                        // Navigator.of(context).push(MaterialPageRoute(
+                                        //   builder: (_) => InterventionFormStep1(),
+                                        // ));
+                                        Tools.currentStep = 0 ;
+
+                                      }
+
+                                      // FormBlocState.currentStep = Tools.currentStep ;
+
+                                      Navigator.of(context).push(MaterialPageRoute(
+                                        builder: (_) => WizardForm(),
+                                      ));
+
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      fixedSize: const Size(10, 10),
+                                      shape: const CircleBorder(),
+                                    ),
+                                  ),
+                                  Text("Intervention")
+                                ],
+                              ),
+                              // Column(
+                              //   children: [
+                              //     ElevatedButton(
+                              //         child: Icon(Icons.edit, size: 20),
+                              //         onPressed: () {
+                              //           Tools.selectedDemande = demande ;
+                              //
+                              //         },
+                              //         style: ElevatedButton.styleFrom(
+                              //             fixedSize: const Size(10, 10),
+                              //             shape: const CircleBorder(),
+                              //       ),
+                              //     ),
+                              //     Text("Modifier")
+                              //
+                              //   ],
+                              // ),
+                            ],
+                          ),
+
+
 
                         ],
                       ),
                     )
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Column(
-                    children: [
-                      ElevatedButton(
-                          child: Icon(Icons.remove_red_eye, size: 20),
-                          onPressed: () {
-                            Tools.selectedDemande = demande ;
-
-                          },
-                          style: ElevatedButton.styleFrom(
-                              fixedSize: const Size(10, 10),
-                              shape: const CircleBorder(),
-                        ),
-                      ),
-                      Text("Voir")
-                    ],
-                  ),
-                  Column(
-                    children: [
-                      ElevatedButton(
-                          child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
-                          onPressed: () {
-                            Tools.selectedDemande = demande ;
-                            print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-
-                            if(demande.etatId == "3"
-                            && demande.pPbiAvant != ""
-                            && demande.pPbiApres != ""){
-                              // Navigator.of(context).push(MaterialPageRoute(
-                              //   builder: (_) => InterventionFormStep2(),
-                              // ));
-                              Tools.currentStep = 1 ;
-                            }else{
-                              // Navigator.of(context).push(MaterialPageRoute(
-                              //   builder: (_) => InterventionFormStep1(),
-                              // ));
-                              Tools.currentStep = 0 ;
-
-                            }
-
-                            // FormBlocState.currentStep = Tools.currentStep ;
-
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (_) => WizardForm(),
-                            ));
-
-                          },
-                          style: ElevatedButton.styleFrom(
-                            fixedSize: const Size(10, 10),
-                              shape: const CircleBorder(),
-                        ),
-                      ),
-                      Text("Intervention")
-                    ],
-                  ),
-                  // Column(
-                  //   children: [
-                  //     ElevatedButton(
-                  //         child: Icon(Icons.edit, size: 20),
-                  //         onPressed: () {
-                  //           Tools.selectedDemande = demande ;
-                  //
-                  //         },
-                  //         style: ElevatedButton.styleFrom(
-                  //             fixedSize: const Size(10, 10),
-                  //             shape: const CircleBorder(),
-                  //       ),
-                  //     ),
-                  //     Text("Modifier")
-                  //
-                  //   ],
-                  // ),
-                ],
               ),
               SizedBox(height: 5.0,),
 
