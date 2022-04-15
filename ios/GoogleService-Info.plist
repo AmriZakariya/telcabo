@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>131826341458-9p6bjqk4i9risu8855ue38bq60ld1st0.apps.googleusercontent.com</string>
+	<string>131826341458-u1tdkahoj8tpfsjbhicqq04avvfhtu74.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.131826341458-9p6bjqk4i9risu8855ue38bq60ld1st0</string>
+	<string>com.googleusercontent.apps.131826341458-u1tdkahoj8tpfsjbhicqq04avvfhtu74</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBS6ex6rXEZI0ckOj6IgvNlAEGjxqQFKM8</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.castlit.telcabo.mobileappios</string>
+	<string>com.castlit.telcabomobileappios</string>
 	<key>PROJECT_ID</key>
 	<string>castlit-7cade</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:131826341458:ios:e70fcd04104aad0be5f18b</string>
+	<string>1:131826341458:ios:71813b0c6d24697fe5f18b</string>
 </dict>
 </plist>

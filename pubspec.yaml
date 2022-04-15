@@ -88,6 +88,7 @@ dependencies:
   timelines: ^0.1.0
   image_watermark: ^0.0.3
   dio_http_formatter: ^2.1.0
+  notification_permissions: ^0.6.1
 
 dev_dependencies:
   flutter_test:

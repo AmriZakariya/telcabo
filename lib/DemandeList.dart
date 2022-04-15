@@ -43,18 +43,24 @@ class DemandeList extends StatefulWidget {
 
 class _DemandeListState extends State<DemandeList> {
   final _scrollController = ScrollController();
-  late ResponseGetDemandesList demandesList;
+  // late ResponseGetDemandesList demandesList;
   final _formKey = GlobalKey<FormBuilderState>();
+
+
+
+  GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  GlobalKey<RefreshIndicatorState>();
+  ResponseGetDemandesList? demandesList;
+  ResponseGetDemandesList? demandesListSaved;
+  Future<void>? _initDemandesData;
+
+
 
   TextEditingController _searchController = TextEditingController(
 
   );
 
-  @override
-  void initState() {
-    Tools.initFiles();
-    // refreshDemandeList();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -96,13 +102,10 @@ class _DemandeListState extends State<DemandeList> {
                   },
                 ),
                ElevatedButton.icon(onPressed: () async {
-                 final prefs = await SharedPreferences.getInstance();
 
-                  prefs.remove('isOnline') ;
-                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                   builder: (_) => LoginWidget(),
-                 ));
-               }, icon: Icon(Icons.refresh), label: Text("Actualiser"))
+
+
+               }, icon: Icon(Icons.filter_list), label: Text("Filtrer"))
               ],
             ),
             SizedBox(height: 20.0),
@@ -143,9 +146,20 @@ class _DemandeListState extends State<DemandeList> {
                     onPressed: () {
                         print("Search value ==> ${_searchController.value.text}");
 
-
+                        _filterListByCLient(_searchController.value.text);
                     },
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text("${demandesListSaved?.demandes?.length ?? 0} Demandes disponibles" ,
+                      style: TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontFamily: 'Open Sans',
+                              letterSpacing: 1.3,
+                              fontSize: 16),
+                      ),
+                  ),
+
                   SizedBox(
                     height: 20,
                   ),
@@ -153,67 +167,106 @@ class _DemandeListState extends State<DemandeList> {
                   Expanded(
                     child: Container(
                       height: MediaQuery.of(context).size.height,
-                      child: FutureBuilder<ResponseGetDemandesList>(
-                        future: Tools.getListDemandeFromLocalAndINternet(),
-                        builder: (BuildContext context, AsyncSnapshot<ResponseGetDemandesList> snapshot) {
-                          List<Widget> children;
-                          if (snapshot.hasData) {
-                            return Scrollbar(
-                              isAlwaysShown: true,
-                              child: ListView.builder(
-                                // Let the ListView know how many items it needs to build.
-                                itemCount: snapshot.data?.demandes?.length  ?? 0,
-                                // Provide a builder function. This is where the magic happens.
-                                // Convert each item into a widget based on the type of item it is.
-                                itemBuilder: (context, index) {
-                                  final item = snapshot.data?.demandes?[index];
+                      child: FutureBuilder(
+                        future: _initDemandesData,
+                        builder: (BuildContext context, snapshot) {
+                          switch (snapshot.connectionState) {
+                            case ConnectionState.none:
+                            case ConnectionState.waiting:
+                            case ConnectionState.active:
+                              {
+                                return Center(
+                                  child: Text('Loading...'),
+                                );
+                              }
+                            case ConnectionState.done:
+                              {
+                                return RefreshIndicator(
+                                    key: _refreshIndicatorKey,
+                                    displacement: 0,
+                                    onRefresh: _refreshList,
+                                    child: ListView.builder(
+                                      itemCount: demandesList?.demandes?.length  ?? 0,
+                                      itemBuilder: (BuildContext context, index) {
 
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: DemandeListItem(demande: item!,),
-                                  );
-                                },),
-                            );
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    color: Colors.red,
-                                    size: 60,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 16),
-                                    child: Text('Error: ${snapshot.error}'),
-                                  )
-                                ],
-                              ),
-                            );
+                                        final item = demandesList?.demandes?[index];
 
-                          } else {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 60,
-                                    height: 60,
-                                    child: CircularProgressIndicator(),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 16),
-                                    child: Text('résultat en attente...'),
-                                  )
-                                ],
-                              ),
-                            );
-
+                                        return Padding(
+                                          padding: const EdgeInsets.only(bottom: 8),
+                                          child: DemandeListItem(demande: item!,),
+                                        );
+                                      },
+                                    ));
+                              }
                           }
-
                         },
                       ),
+                      // FutureBuilder<ResponseGetDemandesList>(
+                      //   future: Tools.getListDemandeFromLocalAndINternet(),
+                      //   builder: (BuildContext context, AsyncSnapshot<ResponseGetDemandesList> snapshot) {
+                      //     List<Widget> children;
+                      //     if (snapshot.hasData) {
+                      //       return RefreshIndicator(
+                      //         onRefresh: () async {
+                      //           refreshDemandeList();
+                      //         },
+                      //         child: Scrollbar(
+                      //           isAlwaysShown: true,
+                      //           child: ListView.builder(
+                      //             // Let the ListView know how many items it needs to build.
+                      //             itemCount: snapshot.data?.demandes?.length  ?? 0,
+                      //             // Provide a builder function. This is where the magic happens.
+                      //             // Convert each item into a widget based on the type of item it is.
+                      //             itemBuilder: (context, index) {
+                      //               final item = snapshot.data?.demandes?[index];
+                      //
+                      //               return Padding(
+                      //                 padding: const EdgeInsets.only(bottom: 8),
+                      //                 child: DemandeListItem(demande: item!,),
+                      //               );
+                      //             },),
+                      //         ),
+                      //       );
+                      //     } else if (snapshot.hasError) {
+                      //       return Center(
+                      //         child: Column(
+                      //           mainAxisAlignment: MainAxisAlignment.center,
+                      //           children: [
+                      //             Icon(
+                      //               Icons.error_outline,
+                      //               color: Colors.red,
+                      //               size: 60,
+                      //             ),
+                      //             Padding(
+                      //               padding: const EdgeInsets.only(top: 16),
+                      //               child: Text('Error: ${snapshot.error}'),
+                      //             )
+                      //           ],
+                      //         ),
+                      //       );
+                      //
+                      //     } else {
+                      //       return Center(
+                      //         child: Column(
+                      //           mainAxisAlignment: MainAxisAlignment.center,
+                      //           children: [
+                      //             SizedBox(
+                      //               width: 60,
+                      //               height: 60,
+                      //               child: CircularProgressIndicator(),
+                      //             ),
+                      //             Padding(
+                      //               padding: EdgeInsets.only(top: 16),
+                      //               child: Text('résultat en attente...'),
+                      //             )
+                      //           ],
+                      //         ),
+                      //       );
+                      //
+                      //     }
+                      //
+                      //   },
+                      // ),
                     ),
                   ),
                 ]),
@@ -224,118 +277,45 @@ class _DemandeListState extends State<DemandeList> {
       ),
     );
 
-    return Scaffold(
 
-
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: const EdgeInsets.fromLTRB(0, 50.0, 0, 20.0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(15.0),
-                  bottomRight: Radius.circular(15.0),
-                ),
-                color: Tools.colorPrimary,
-              ),
-              child: TextButton.icon(
-                icon:  Icon(
-                  Icons.menu,
-                  color: Colors.white,
-                  size: 25,
-                ),
-                label: Container(
-                  width: double.infinity,
-                  child: Text("Liste demandes".tr().capitalize(),
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20.0
-                    ),),
-                ),
-                onPressed: () {
-                  // Navigator.pop ;
-                  // Navigator.pop(context);
-                },
-              ),
-            ),
-
-            Container(
-              height: MediaQuery.of(context).size.height,
-              child: FutureBuilder<ResponseGetDemandesList>(
-                future: Tools.getListDemandeFromLocalAndINternet(), // a previously-obtained Future<String> or null
-                builder: (BuildContext context, AsyncSnapshot<ResponseGetDemandesList> snapshot) {
-                  List<Widget> children;
-                  if (snapshot.hasData) {
-                    return ListView.builder(
-                      // Let the ListView know how many items it needs to build.
-                      itemCount: snapshot.data?.demandes?.length  ?? 0,
-                      // Provide a builder function. This is where the magic happens.
-                      // Convert each item into a widget based on the type of item it is.
-                      itemBuilder: (context, index) {
-                        final item = snapshot.data?.demandes?[index];
-
-                        return Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: DemandeListItem(demande: item!,),
-                        );
-                      },);
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 60,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16),
-                            child: Text('Error: ${snapshot.error}'),
-                          )
-                        ],
-                      ),
-                    );
-
-                  } else {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 60,
-                            height: 60,
-                            child: CircularProgressIndicator(),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 16),
-                            child: Text('résultat en attente...'),
-                          )
-                        ],
-                      ),
-                    );
-
-                  }
-
-                },
-              ),
-            ),
-
-          ],
-        ),
-      ),
-    );
   }
 
-  // Future<void> refreshDemandeList() async {
-  //   demandesList = await Tools.getListDemandeFromLocalAndINternet();
-  //   setState(() {
-  //     demandesList = demandesList;
-  //   });
-  // }
+
+  @override
+  void initState() {
+    super.initState();
+    _initDemandesData = _initList();
+  }
+
+
+  Future<void> _initList() async {
+    final items = await Tools.getListDemandeFromLocalAndINternet();
+    setState(() {
+      demandesListSaved = items ;
+      demandesList = items;
+    });
+  }
+
+  Future<void> _refreshList() async {
+    final items = await Tools.getListDemandeFromLocalAndINternet();
+    setState(() {
+      demandesListSaved = items ;
+      demandesList = items;
+    });
+  }
+  Future<void> _filterListByCLient(String client) async {
+    final items = ResponseGetDemandesList(
+      demandes: demandesListSaved?.demandes?.where((element) {
+        print("check ${element.client}");
+        return element.client?.toLowerCase().contains(client.toLowerCase()) ?? false;
+      }).toList()
+    );
+    setState(() {
+      demandesList = items;
+    });
+  }
+
+
 
 
 }

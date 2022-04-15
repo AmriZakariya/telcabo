@@ -32,16 +32,16 @@ import 'NotificationExample.dart';
 // import 'package:http/http.dart' as http;
 
 
-final GlobalKey<ScaffoldState> formStepperScaffoldKey = new GlobalKey<ScaffoldState>();
+import 'package:collection/collection.dart';
 
+final GlobalKey<ScaffoldState> formStepperScaffoldKey =
+    new GlobalKey<ScaffoldState>();
 
 class WizardFormBloc extends FormBloc<String, String> {
-
   late final ResponseGetListEtat responseListEtat;
 
   Directory dir = Directory("");
   File fileTraitementList = File("");
-
 
   /* Form Fields */
 
@@ -51,6 +51,7 @@ class WizardFormBloc extends FormBloc<String, String> {
       FieldBlocValidators.required,
     ],
     toJson: (value) => value?.id,
+
   );
 
   final sousEtatDropDown = SelectFieldBloc<SousEtat, dynamic>(
@@ -135,7 +136,6 @@ class WizardFormBloc extends FormBloc<String, String> {
     },
   );
 
-
   /* Step 2 */
 
   final traitementConsommationCableTextField = TextFieldBloc(
@@ -179,7 +179,7 @@ class WizardFormBloc extends FormBloc<String, String> {
     ],
   );
 
-  final dnsTextField = TextFieldBloc(
+  final dnsnTextField = TextFieldBloc(
     name: 'dnsn',
     validators: [
       FieldBlocValidators.required,
@@ -188,7 +188,7 @@ class WizardFormBloc extends FormBloc<String, String> {
   final snTelTextField = TextFieldBloc(
     name: 'sn_tel',
     validators: [
-      FieldBlocValidators.required,
+      // FieldBlocValidators.required,
     ],
   );
   final snGpomTextField = TextFieldBloc(
@@ -197,7 +197,6 @@ class WizardFormBloc extends FormBloc<String, String> {
       FieldBlocValidators.required,
     ],
   );
-
 
   final etatImmo = TextFieldBloc(
     name: 'etat_immo',
@@ -226,8 +225,21 @@ class WizardFormBloc extends FormBloc<String, String> {
   );
 
 
-  /* Step 3 */
+  final ptoTextField = TextFieldBloc(
+    name: 'pto',
+    validators: [
+      FieldBlocValidators.required,
+    ],
+  );
 
+  final jarretieresTextField = TextFieldBloc(
+    name: 'jarretieres',
+    validators: [
+      FieldBlocValidators.required,
+    ],
+  );
+
+  /* Step 3 */
 
   final InputFieldBloc<XFile?, Object> pEquipementInstalle = InputFieldBloc(
     initialValue: null,
@@ -320,11 +332,11 @@ class WizardFormBloc extends FormBloc<String, String> {
     },
   );
 
-  WizardFormBloc()  : super(isLoading: true) {
+  WizardFormBloc() : super(isLoading: true) {
+    Tools.currentStep = (Tools.selectedDemande?.etape ?? 1) - 1;
 
-    print("Tools.currentStep ==> ${Tools.currentStep }");
+    print("Tools.currentStep ==> ${Tools.currentStep}");
     emit(FormBlocLoading(currentStep: Tools.currentStep));
-
 
     addFieldBlocs(
       step: 0,
@@ -341,9 +353,11 @@ class WizardFormBloc extends FormBloc<String, String> {
         latitudeTextField,
         longintudeTextField,
         adresseMacTextField,
-        dnsTextField,
+        dnsnTextField,
         snTelTextField,
-        snGpomTextField
+        snGpomTextField,
+        ptoTextField,
+        jarretieresTextField
       ],
     );
     addFieldBlocs(
@@ -357,82 +371,73 @@ class WizardFormBloc extends FormBloc<String, String> {
         pFicheInstalation,
         pSpeedTest,
         commentaireTextField
-
       ],
     );
 
-    addFieldBlocs(
-      step: 3,
-      fieldBlocs: [commentaireTextField],
-    );
-
+    // addFieldBlocs(
+    //   step: 3,
+    //   fieldBlocs: [commentaireTextField],
+    // );
 
     etatDropDown.onValueChanges(
       onData: (previous, current) async* {
         // String currentId = current.value?.id ?? "" ;
         // List<SousEtat>? sousEtat = responseListEtat.etat?.firstWhere((element) => element.id == currentId).sousEtat! ?? []
 
-        if(current.value?.id == null){
-          return ;
+        if (current.value?.id == null) {
+          return;
         }
+
         print("etatDropDown onValueChanges ");
         print("current.value? ==> ${current.value} ");
         print(current.value?.id ?? "...");
 
-        removeFieldBlocs(
-            fieldBlocs: [motifDropDown]);
+        removeFieldBlocs(fieldBlocs: [motifDropDown]);
 
-        removeFieldBlocs(
-            fieldBlocs: [
-              etatImmo,
-              newLatitude,
-              newLongitude,
-              newAdresse,
-            ]);
+        removeFieldBlocs(fieldBlocs: [
+          etatImmo,
+          newLatitude,
+          newLongitude,
+          newAdresse,
+        ]);
 
+        if (current.value?.id == "1") {}
         if (current.value?.id == "1") {
-          addFieldBloc(
-              fieldBloc: rdvDate);
+          addFieldBloc(fieldBloc: rdvDate);
 
-          removeFieldBlocs(
-              fieldBlocs: [
-                sousEtatDropDown,
-                pPbiAvantTextField,
-                pPbiApresTextField,
-                pPboAvantTextField,
-                pPboApresTextField
-              ]);
+          removeFieldBlocs(fieldBlocs: [
+            sousEtatDropDown,
+            pPbiAvantTextField,
+            pPbiApresTextField,
+            pPboAvantTextField,
+            pPboApresTextField
+          ]);
         } else if (current.value?.id == "3") {
-          addFieldBlocs(
-              fieldBlocs: [
-                pPbiAvantTextField,
-                pPbiApresTextField,
-                pPboAvantTextField,
-                pPboApresTextField
-              ]);
+          addFieldBlocs(fieldBlocs: [
+            pPbiAvantTextField,
+            pPbiApresTextField,
+            pPboAvantTextField,
+            pPboApresTextField
+          ]);
 
-          removeFieldBlocs(
-              fieldBlocs: [
-                rdvDate,
-                sousEtatDropDown,
-              ]);
+          removeFieldBlocs(fieldBlocs: [
+            rdvDate,
+            sousEtatDropDown,
+          ]);
         } else {
-          removeFieldBlocs(
-              fieldBlocs: [
-                rdvDate,
-                pPbiAvantTextField,
-                pPbiApresTextField,
-                pPboAvantTextField,
-                pPboApresTextField
-              ]);
+          removeFieldBlocs(fieldBlocs: [
+            rdvDate,
+            pPbiAvantTextField,
+            pPbiApresTextField,
+            pPboAvantTextField,
+            pPboApresTextField
+          ]);
 
           if (current.value?.sousEtat?.isEmpty == true) {
-            removeFieldBloc(
-                fieldBloc: sousEtatDropDown);
+            removeFieldBloc(fieldBloc: sousEtatDropDown);
           } else {
             sousEtatDropDown.updateItems(current.value?.sousEtat ?? []);
-            addFieldBloc(
-                fieldBloc: sousEtatDropDown);
+            addFieldBloc(fieldBloc: sousEtatDropDown);
           }
         }
       },
@@ -443,29 +448,26 @@ class WizardFormBloc extends FormBloc<String, String> {
         // String currentId = current.value?.id ?? "" ;
         // List<SousEtat>? sousEtat = responseListEtat.etat?.firstWhere((element) => element.id == currentId).sousEtat! ?? []
 
-        if(current.value?.id == null){
-          return ;
+        if (current.value?.id == null) {
+          return;
         }
 
         print("sousEtatDropDown onValueChanges");
         print(current.value?.id ?? "...");
         print(current.value?.motifList ?? "...");
 
-        removeFieldBlocs(
-            fieldBlocs: [
-              etatImmo,
-              newLatitude,
-              newLongitude,
-              newAdresse,
-            ]);
+        removeFieldBlocs(fieldBlocs: [
+          etatImmo,
+          newLatitude,
+          newLongitude,
+          newAdresse,
+        ]);
 
         if (current.value?.motifList?.isEmpty == true) {
-          removeFieldBlocs(
-              fieldBlocs: [motifDropDown]);
+          removeFieldBlocs(fieldBlocs: [motifDropDown]);
         } else {
           motifDropDown.updateItems(current.value?.motifList ?? []);
-          addFieldBloc(
-              fieldBloc: motifDropDown);
+          addFieldBloc(fieldBloc: motifDropDown);
         }
       },
     );
@@ -475,56 +477,49 @@ class WizardFormBloc extends FormBloc<String, String> {
         // String currentId = current.value?.id ?? "" ;
         // List<SousEtat>? sousEtat = responseListEtat.etat?.firstWhere((element) => element.id == currentId).sousEtat! ?? []
 
-        if(current.value?.id == null){
-          return ;
+        if (current.value?.id == null) {
+          return;
         }
 
         print("motifDropDown onValueChanges");
         print(current.value?.id ?? "...");
 
-        if (etatDropDown.value?.id == "7" && sousEtatDropDown.value?.id == "8") {
-          addFieldBlocs(
-              fieldBlocs: [
-                etatImmo,
-                newLatitude,
-                newLongitude,
-                newAdresse,
-              ]);
+        if (etatDropDown.value?.id == "7" &&
+            sousEtatDropDown.value?.id == "8") {
+          addFieldBlocs(fieldBlocs: [
+            etatImmo,
+            newLatitude,
+            newLongitude,
+            newAdresse,
+          ]);
         } else {
-          removeFieldBlocs(
-              fieldBlocs: [
-                etatImmo,
-                newLatitude,
-                newLongitude,
-                newAdresse,
-              ]);
+          removeFieldBlocs(fieldBlocs: [
+            etatImmo,
+            newLatitude,
+            newLongitude,
+            newAdresse,
+          ]);
         }
       },
     );
-
-
   }
-
-
 
   void writeToFileTraitementList(Map jsonMapContent) {
     print("Writing to writeToFileTraitementList!");
 
-
     try {
-
-      for(var mapKey in jsonMapContent.keys){
+      for (var mapKey in jsonMapContent.keys) {
         // print('${k}: ${v}');
         // print(k);
 
-        if(mapKey == "p_pbi_avant"){
-          jsonMapContent[mapKey] = pPbiAvantTextField.value?.path ;
-        }else if(mapKey == "p_pbi_apres"){
-          jsonMapContent[mapKey] = pPbiApresTextField.value?.path ;
-        }else if(mapKey == "p_pbo_avant"){
-          jsonMapContent[mapKey] = pPboAvantTextField.value?.path ;
-        }else if(mapKey == "p_pbo_apres"){
-          jsonMapContent[mapKey] = pPboApresTextField.value?.path ;
+        if (mapKey == "p_pbi_avant") {
+          jsonMapContent[mapKey] = pPbiAvantTextField.value?.path;
+        } else if (mapKey == "p_pbi_apres") {
+          jsonMapContent[mapKey] = pPbiApresTextField.value?.path;
+        } else if (mapKey == "p_pbo_avant") {
+          jsonMapContent[mapKey] = pPboAvantTextField.value?.path;
+        } else if (mapKey == "p_pbo_apres") {
+          jsonMapContent[mapKey] = pPboApresTextField.value?.path;
         }
         /*if(mapKey == "p_pbi_avant"
             || mapKey == "p_pbi_apres"
@@ -537,110 +532,85 @@ class WizardFormBloc extends FormBloc<String, String> {
           }*/
       }
 
-
-
-      String fileContent =  fileTraitementList.readAsStringSync();
+      String fileContent = fileTraitementList.readAsStringSync();
       print("file content ==> ${fileContent}");
 
-      if(fileContent.isEmpty){
+      if (fileContent.isEmpty) {
         print("empty file");
 
-        Map emptyMap = {
-          "traitementList" : []
-        };
+        Map emptyMap = {"traitementList": []};
 
         fileTraitementList.writeAsStringSync(json.encode(emptyMap));
 
-        fileContent =  fileTraitementList.readAsStringSync();
-
+        fileContent = fileTraitementList.readAsStringSync();
       }
 
-
-      Map traitementListMap =
-      json.decode(fileContent);
+      Map traitementListMap = json.decode(fileContent);
 
       print("file content decode ==> ${traitementListMap}");
 
-
-      List traitementList =  traitementListMap["traitementList"] ;
+      List traitementList = traitementListMap["traitementList"];
 
       traitementList.add(json.encode(jsonMapContent));
 
-      traitementListMap["traitementList"] = traitementList ;
+      traitementListMap["traitementList"] = traitementList;
 
       fileTraitementList.writeAsStringSync(json.encode(traitementListMap));
-
-
     } catch (e) {
-      print("exeption -- "+e.toString());
+      print("exeption -- " + e.toString());
     }
-
   }
-
 
   void fethchFileTraitementList(Map jsonMapContent) {
     print("fethchFileTraitementList!");
 
     try {
-
       Map traitementListMap =
-      json.decode(fileTraitementList.readAsStringSync());
+          json.decode(fileTraitementList.readAsStringSync());
       print(traitementListMap);
-
 
       List traitementList = traitementListMap.values.elementAt(0);
 
-      traitementList.forEach((element) {
-
-      });
+      traitementList.forEach((element) {});
       fileTraitementList.writeAsStringSync(json.encode(traitementListMap));
-
-
     } catch (e) {
-      print("exeption -- "+e.toString());
+      print("exeption -- " + e.toString());
     }
-
   }
 
   @override
   void onLoading() async {
     Tools.initFiles();
 
-
     getApplicationDocumentsDirectory().then((Directory directory) {
       dir = directory;
       fileTraitementList = new File(dir.path + "/fileTraitementList.json");
 
-      if(!fileTraitementList.existsSync()){
+      if (!fileTraitementList.existsSync()) {
         fileTraitementList.createSync();
       }
-
     });
 
     try {
-
-      responseListEtat = await Tools.getListEtatFromLocalAndINternet() ;
+      responseListEtat = await Tools.getListEtatFromLocalAndINternet();
 
       print(responseListEtat.etat.toString());
 
-
-      if(Tools.currentStep == 0){
+      if (Tools.currentStep == 0) {
         // responseListEtat.etat = responseListEtat.etat?.take(3).toList();
         etatDropDown.updateItems(responseListEtat.etat?.take(3).toList() ?? []);
-
-
-      }else{
+      } else {
         // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
         etatDropDown.updateItems(responseListEtat.etat?.skip(3).toList() ?? []);
-
       }
-
 
       // print(responseListEtat.etat.toString());
       // etatDropDown.updateItems(responseListEtat.etat ?? []);
 
+      updateInputsFromDemande();
 
       emitLoaded();
+
 
       // emit(FormBlocLoaded(currentStep: Tools.currentStep));
       // emit(FormBlocLoaded(currentStep: 1));
@@ -649,160 +619,182 @@ class WizardFormBloc extends FormBloc<String, String> {
       print(e);
       emitLoadFailed(failureResponse: e.toString());
     }
-
-
   }
-
 
   @override
   void updateCurrentStep(int step) {
-
     print("override updateCurrentStep");
-    print("Tools.currentStep ==> ${Tools.currentStep }");
+    print("Tools.currentStep ==> ${Tools.currentStep}");
 
     clearInputs();
 
-
     super.updateCurrentStep(step);
-
   }
 
   @override
   void previousStep() {
     print("override previousStep");
-    print("Tools.currentStep ==> ${Tools.currentStep }");
+    print("Tools.currentStep ==> ${Tools.currentStep}");
 
     clearInputs();
 
-
-
-
     super.previousStep();
-
   }
-
-
 
   @override
   void onSubmitting() async {
-    if (state.currentStep == 0) {
+    print("FormStepper onSubmitting() ");
+    print("Tools.currentStep ==> ${Tools.currentStep}");
+    print('onSubmittinga ${state.toJson()}');
 
-      print("InterventionStep1FormBloc onSubmitting() ");
-      print('onSubmittinga ${state.toJson()}');
+    try {
+      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:s');
+      final String dateNowFormatted = formatter.format(DateTime.now());
 
+      Map<String, dynamic> formDateValues = await state.toJson();
 
-      try {
+      formDateValues.addAll({
+        "etape": Tools.currentStep + 1,
+        "demande_id": Tools.selectedDemande?.id ?? "",
+        "user_id": Tools.userId,
+        "date": dateNowFormatted
+      });
 
-        final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:s');
-        final String dateNowFormatted = formatter.format(DateTime.now());
+      print(formDateValues);
 
+      print("dio start");
 
+      var connectivityResult = await (Connectivity().checkConnectivity());
+      if (connectivityResult == ConnectivityResult.mobile ||
+          connectivityResult == ConnectivityResult.wifi) {
+        print('YAY! Free cute dog pics!');
 
-        Map<String, dynamic> formDateValues = await state.toJson();
+        bool checkCallWs = await Tools.callWsAddMobile(formDateValues);
 
-        formDateValues.addAll({
-          "etape" : "1",
-          "demande_id" : Tools.selectedDemande?.id ?? "",
-          "user_id" : Tools.userId,
-          "date" : dateNowFormatted
-        });
-
-
-        print(formDateValues);
-
-        print("dio start");
-
-
-        var connectivityResult = await (Connectivity().checkConnectivity());
-        if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
-          print('YAY! Free cute dog pics!');
-
-          bool checkCallWs = await Tools.callWsAddMobile(formDateValues);
-
-          if(checkCallWs){
-            emitSuccess(canSubmitAgain: true);
-
-          }else{
-            emitFailure(failureResponse: "WS");
-
-          }
-
-        } else if (connectivityResult == ConnectivityResult.none) {
-          print('No internet :( Reason:');
-          writeToFileTraitementList(formDateValues);
-          emitSuccess();
-
+        if (checkCallWs) {
+          emitSuccess(canSubmitAgain: true);
+        } else {
+          emitFailure(failureResponse: "WS");
         }
-
-
-
-
-
-
-        // readJson();
-      } catch (e) {
-        emitFailure();
+      } else if (connectivityResult == ConnectivityResult.none) {
+        print('No internet :( Reason:');
+        writeToFileTraitementList(formDateValues);
+        emitSuccess();
       }
 
-
-    } else if (state.currentStep == 1) {
-      await Future.delayed(Duration(milliseconds: 500));
-      emitSuccess(canSubmitAgain: true, );
-
-    } else if (state.currentStep == 2) {
-      await Future.delayed(Duration(milliseconds: 500));
-      emitSuccess(canSubmitAgain: true);
-
+      // readJson();
+    } catch (e) {
+      emitFailure();
     }
+
+    if (state.currentStep == 0) {
+    } else if (state.currentStep == 1) {
+    } else if (state.currentStep == 2) {}
   }
-
-
-
 
   void clearInputs() {
     print("clearInputs()");
-    print("Tools.currentStep ==> ${Tools.currentStep }");
+    print("Tools.currentStep ==> ${Tools.currentStep}");
 
     clear();
 
-
-    if(Tools.currentStep == 0){
+    if (Tools.currentStep == 0) {
       // responseListEtat.etat = responseListEtat.etat?.take(3).toList();
       etatDropDown.updateItems(responseListEtat.etat?.take(3).toList() ?? []);
-
-
-    }else{
+    } else {
       // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
       etatDropDown.updateItems(responseListEtat.etat?.skip(3).toList() ?? []);
-
     }
 
-    removeFieldBlocs(
-        fieldBlocs: [
-          sousEtatDropDown,
-          motifDropDown,
-          rdvDate,
-          pPbiAvantTextField,
-          pPbiApresTextField,
-          pPboAvantTextField,
-          pPboApresTextField
-        ]);
+    removeFieldBlocs(fieldBlocs: [
+      sousEtatDropDown,
+      motifDropDown,
+      rdvDate,
+      pPbiAvantTextField,
+      pPbiApresTextField,
+      pPboAvantTextField,
+      pPboApresTextField
+    ]);
 
-    removeFieldBlocs(
-        fieldBlocs: [
-          etatImmo,
-          newLatitude,
-          newLongitude,
-          newAdresse,
-        ]);
+    removeFieldBlocs(fieldBlocs: [
+      etatImmo,
+      newLatitude,
+      newLongitude,
+      newAdresse,
+    ]);
 
-
-    if(Tools.selectedDemande?.etatId == "5"){
-      pSpeedTest.removeValidators([FieldBlocValidators.required,]);
-    }else{
-      pSpeedTest.addValidators([FieldBlocValidators.required,]);
-
+    if (Tools.selectedDemande?.etatId == "5") {
+      pSpeedTest.removeValidators([
+        FieldBlocValidators.required,
+      ]);
+    } else {
+      pSpeedTest.addValidators([
+        FieldBlocValidators.required,
+      ]);
     }
+
+
+    updateInputsFromDemande();
+  }
+
+  void updateInputsFromDemande() {
+    var selectedEtat = responseListEtat.etat?.firstWhereOrNull((element) {
+      return element.id == Tools.selectedDemande?.etatId;
+    });
+    print("selectedEtat ==> ${selectedEtat}");
+
+    if (selectedEtat != null) {
+      if (etatDropDown.state.items.contains(selectedEtat)) {
+        etatDropDown.updateValue(selectedEtat);
+      } else {
+        etatDropDown.addItem(selectedEtat);
+        etatDropDown.updateValue(selectedEtat);
+      }
+    }
+
+    var selectedSousEtat = etatDropDown.value?.sousEtat?.firstWhereOrNull((element) {
+      return element.id == Tools.selectedDemande?.subStatutId;
+    });
+    print("selectedSousEtat ==> ${selectedSousEtat}");
+
+    if (selectedSousEtat != null) {
+      if (sousEtatDropDown.state.items.contains(selectedSousEtat)) {
+        sousEtatDropDown.updateValue(selectedSousEtat);
+      } else {
+        sousEtatDropDown.addItem(selectedSousEtat);
+        sousEtatDropDown.updateValue(selectedSousEtat);
+      }
+    }
+    var selectedMotif = sousEtatDropDown.value?.motifList?.firstWhereOrNull((element) {
+      return element.id == Tools.selectedDemande?.motifEtatId;
+    });
+    print("selectedSousEtat ==> ${selectedMotif}");
+
+    if (selectedMotif != null) {
+      if (motifDropDown.state.items.contains(selectedMotif)) {
+        motifDropDown.updateValue(selectedMotif);
+      } else {
+        motifDropDown.addItem(selectedMotif);
+        motifDropDown.updateValue(selectedMotif);
+      }
+    }
+
+    traitementConsommationCableTextField.updateValue(Tools.selectedDemande?.consommationCable ?? "");
+    speedTextField.updateValue(Tools.selectedDemande?.speed ?? "");
+    debitTextField.updateValue(Tools.selectedDemande?.debit ?? "");
+    latitudeTextField.updateValue(Tools.selectedDemande?.latitude ?? "");
+    longintudeTextField.updateValue(Tools.selectedDemande?.longitude ?? "");
+    adresseMacTextField.updateValue(Tools.selectedDemande?.adresseMac ?? "");
+    dnsnTextField.updateValue(Tools.selectedDemande?.dnsn ?? "");
+    snTelTextField.updateValue(Tools.selectedDemande?.snTel ?? "");
+    snGpomTextField.updateValue(Tools.selectedDemande?.snRouteur ?? "");
+    // snTelTextField.updateValue(Tools.selectedDemande?.snTel ?? "");
+
+    ptoTextField.updateValue(Tools.selectedDemande?.pto.toString() ?? "");
+    jarretieresTextField.updateValue(Tools.selectedDemande?.jarretieres.toString() ?? "");
+
+
+
   }
 }
 
@@ -845,7 +837,8 @@ class _WizardFormState extends State<WizardForm> {
                 leading: Builder(
                   builder: (BuildContext context) {
                     final ScaffoldState? scaffold = Scaffold.maybeOf(context);
-                    final ModalRoute<Object?>? parentRoute = ModalRoute.of(context);
+                    final ModalRoute<Object?>? parentRoute =
+                        ModalRoute.of(context);
                     final bool hasEndDrawer = scaffold?.hasEndDrawer ?? false;
                     final bool canPop = parentRoute?.canPop ?? false;
 
@@ -856,42 +849,38 @@ class _WizardFormState extends State<WizardForm> {
                     }
                   },
                 ),
-
                 title: Text('Intervention'),
                 actions: <Widget>[
-
                   NamedIcon(
-                    text: '',
-                    iconData: _type == StepperType.horizontal
-                        ? Icons.swap_vert
-                        : Icons.swap_horiz,
-                    onTap: _toggleType
-                  ),
+                      text: '',
+                      iconData: _type == StepperType.horizontal
+                          ? Icons.swap_vert
+                          : Icons.swap_horiz,
+                      onTap: _toggleType),
                   NamedIcon(
                     text: '',
                     iconData: Icons.comment,
-                    notificationCount: Tools.selectedDemande?.commentaires?.length ?? 0,
+                    notificationCount:
+                        Tools.selectedDemande?.commentaires?.length ?? 0,
                     onTap: () {
                       formStepperScaffoldKey.currentState?.openEndDrawer();
                     },
                   ),
-
                 ],
               ),
               endDrawer: EndDrawerWidget(),
-
               body: SafeArea(
                 child: FormBlocListener<WizardFormBloc, String, String>(
                   onSubmitting: (context, state) {
+                    print("FormBlocListener onSubmitting");
                     LoadingDialog.show(context);
                   },
                   onSuccess: (context, state) {
+                    print("FormBlocListener onSuccess");
                     LoadingDialog.hide(context);
 
-
-                    Tools.currentStep = state.currentStep ;
+                    Tools.currentStep = state.currentStep;
                     context.read<WizardFormBloc>().clearInputs();
-
 
                     if (state.stepCompleted == state.lastStep) {
                       Navigator.of(context).pushReplacement(
@@ -899,9 +888,11 @@ class _WizardFormState extends State<WizardForm> {
                     }
                   },
                   onFailure: (context, state) {
+                    print("FormBlocListener onFailure");
                     LoadingDialog.hide(context);
                   },
                   onSubmissionFailed: (context, state) {
+                    print("FormBlocListener onSubmissionFailed");
                     LoadingDialog.hide(context);
                   },
                   child: StepperFormBlocBuilder<WizardFormBloc>(
@@ -915,12 +906,12 @@ class _WizardFormState extends State<WizardForm> {
                     //
                     // },
                     controlsBuilder: (
-                        BuildContext context,
-                        VoidCallback? onStepContinue,
-                        VoidCallback? onStepCancel,
-                        int step,
-                        FormBloc formBloc,
-                        ) {
+                      BuildContext context,
+                      VoidCallback? onStepContinue,
+                      VoidCallback? onStepCancel,
+                      int step,
+                      FormBloc formBloc,
+                    ) {
                       return Column(
                         children: <Widget>[
                           Row(
@@ -937,10 +928,10 @@ class _WizardFormState extends State<WizardForm> {
                                       // formBloc.readJson();
                                       // formBloc.fileTraitementList.writeAsStringSync("");
 
-
                                       formBloc.submit();
                                     },
-                                    child: const Text('Enregistrer',
+                                    child: const Text(
+                                      'Enregistrer',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 18.0,
@@ -952,15 +943,15 @@ class _WizardFormState extends State<WizardForm> {
                                       minimumSize: Size(280, 50),
                                       // primary: Tools.colorPrimary,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: new BorderRadius.circular(30.0),
+                                        borderRadius:
+                                            new BorderRadius.circular(30.0),
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                              if (!formBloc.state.isFirstStep
-                                  &&  !formBloc.state.isLastStep
-                              )
+                              if (!formBloc.state.isFirstStep &&
+                                  !formBloc.state.isLastStep)
                                 // Expanded(
                                 //   child: ElevatedButton(
                                 //     onPressed: () {
@@ -993,13 +984,12 @@ class _WizardFormState extends State<WizardForm> {
                                 //     ),
                                 //   ),
                                 // ),
-                              SizedBox(
-                                height: 50,
-                              ),
+                                SizedBox(
+                                  height: 50,
+                                ),
 //                              Text(Translations.of(context).confidential)
                             ],
                           ),
-
                         ],
                       );
                     },
@@ -1010,28 +1000,17 @@ class _WizardFormState extends State<WizardForm> {
                         _step3(formBloc),
                       ];
                     },
-                    onStepTapped: (FormBloc? formBloc, int step){
+                    onStepTapped: (FormBloc? formBloc, int step) {
                       print("onStepTapped");
-                      if(step > 0){
-                        if(
-                        !(Tools.selectedDemande?.etatId == "3"
-                            && Tools.selectedDemande?.pPbiAvant != ""
-                            && Tools.selectedDemande?.pPbiApres != "")
+                      if (step > (Tools.selectedDemande?.etape ?? 1 ) -1) {
 
-                        ){
-                          // Navigator.of(context).push(MaterialPageRoute(
-                          //   builder: (_) => InterventionFormStep2(),
-                          // ));
-                          return ;
-                        }
                       }
-                      Tools.currentStep = step ;
+                      Tools.currentStep = step;
                       print(formBloc);
                       formBloc?.updateCurrentStep(step);
                       // formBloc?.emit(FormBlocLoaded(currentStep: Tools.currentStep));
                     },
                   ),
-
                 ),
               ),
             ),
@@ -1044,7 +1023,7 @@ class _WizardFormState extends State<WizardForm> {
   FormBlocStep _step1(WizardFormBloc wizardFormBloc) {
     return FormBlocStep(
       title: Text('Etape 1'),
-      content:  Column(
+      content: Column(
         children: <Widget>[
           InterventionHeaderInfoClientWidget(),
           SizedBox(
@@ -1062,6 +1041,7 @@ class _WizardFormState extends State<WizardForm> {
             height: 20,
           ),
           DropdownFieldBlocBuilder<Etat>(
+            // isEnabled: Tools.selectedDemande?.etape == 1,
             selectFieldBloc: wizardFormBloc.etatDropDown,
             decoration: const InputDecoration(
               labelText: 'Etat',
@@ -1103,60 +1083,59 @@ class _WizardFormState extends State<WizardForm> {
             ),
           ),
           Container(
-            // margin: const EdgeInsets.only(top: 20),
+              // margin: const EdgeInsets.only(top: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                //Center Row contents horizontally,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                //Center Row contents vertically,
-                children: [
-                  Flexible(
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pPbiAvantTextField,
-                      labelText: "PBI avant ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                  Flexible(
-                    // flex: 2,
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pPbiApresTextField,
-                      labelText: "PBI apres ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                ],
-              )),
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //Center Row contents horizontally,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            //Center Row contents vertically,
+            children: [
+              Flexible(
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pPbiAvantTextField,
+                  labelText: "PBI avant ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+              Flexible(
+                // flex: 2,
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pPbiApresTextField,
+                  labelText: "PBI apres ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+            ],
+          )),
           Container(
-            // margin: const EdgeInsets.only(top: 20),
+              // margin: const EdgeInsets.only(top: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                //Center Row contents horizontally,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                //Center Row contents vertically,
-                children: [
-                  Flexible(
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pPboAvantTextField,
-                      labelText: "PBO avant ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                  Flexible(
-                    // flex: 2,
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pPboApresTextField,
-                      labelText: "PBO apres ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                ],
-              )),
-
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //Center Row contents horizontally,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            //Center Row contents vertically,
+            children: [
+              Flexible(
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pPboAvantTextField,
+                  labelText: "PBO avant ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+              Flexible(
+                // flex: 2,
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pPboApresTextField,
+                  labelText: "PBO apres ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+            ],
+          )),
           TextFieldBlocBuilder(
             textFieldBloc: wizardFormBloc.commentaireTextField,
             keyboardType: TextInputType.text,
@@ -1165,11 +1144,8 @@ class _WizardFormState extends State<WizardForm> {
             decoration: InputDecoration(
               labelText: "Commentaire",
               prefixIcon: Icon(Icons.comment),
-
             ),
           ),
-
-
         ],
       ),
     );
@@ -1241,8 +1217,7 @@ class _WizardFormState extends State<WizardForm> {
           //   color: Colors.black,
           // ),
           TextFieldBlocBuilder(
-            textFieldBloc:
-            formBloc.etatImmo,
+            textFieldBloc: formBloc.etatImmo,
             keyboardType: TextInputType.text,
             decoration: InputDecoration(
               labelText: "Etat immeble ",
@@ -1254,84 +1229,76 @@ class _WizardFormState extends State<WizardForm> {
             builder: (BuildContext context, bool canShow) {
               return Container(
                   child: Row(
-                    children: [
-                      Flexible(
-                        flex: 5,
-                        child: Container(
-                          child: Column(
-                            children: [
-                              TextFieldBlocBuilder(
-                                readOnly: true,
-                                textFieldBloc:
-                                formBloc.newLatitude,
-                                clearTextIcon: Icon(Icons.cancel),
-                                suffixButton: SuffixButton.clearText,
-                                keyboardType: TextInputType.text,
-                                decoration: InputDecoration(
-                                  labelText: "Nouvelle latitude ",
-                                  prefixIcon: Icon(Icons.location_on),
-                                  disabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        width: 1,
-                                        // color: Tools.colorPrimary
-                                      ),
-                                      borderRadius:
-                                      BorderRadius.circular(20)),
-                                ),
-                              ),
-                              TextFieldBlocBuilder(
-                                readOnly: true,
-                                textFieldBloc:
-                                formBloc.newLongitude,
-                                keyboardType: TextInputType.text,
-                                clearTextIcon: Icon(Icons.cancel),
-                                suffixButton: SuffixButton.clearText,
-                                decoration: InputDecoration(
-                                  labelText: "Nouvelle Longitude ",
-                                  prefixIcon: Icon(Icons.location_on),
-                                  disabledBorder: OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                        width: 1,
-                                        // color: Tools.colorPrimary
-                                      ),
-                                      borderRadius:
-                                      BorderRadius.circular(20)),
-                                ),
-                              ),
-                            ],
+                children: [
+                  Flexible(
+                    flex: 5,
+                    child: Container(
+                      child: Column(
+                        children: [
+                          TextFieldBlocBuilder(
+                            readOnly: true,
+                            textFieldBloc: formBloc.newLatitude,
+                            clearTextIcon: Icon(Icons.cancel),
+                            suffixButton: SuffixButton.clearText,
+                            keyboardType: TextInputType.text,
+                            decoration: InputDecoration(
+                              labelText: "Nouvelle latitude ",
+                              prefixIcon: Icon(Icons.location_on),
+                              disabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    width: 1,
+                                    // color: Tools.colorPrimary
+                                  ),
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
                           ),
-                        ),
-                      ),
-                      Flexible(
-                        // flex: 2,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            Position? position =
-                            await Tools.determinePosition();
-                            if (position != null) {
-                              formBloc.newLatitude.updateValue(
-                                  position.latitude
-                                      .toStringAsFixed(4));
-                              formBloc.newLongitude
-                                  .updateValue(position.longitude
-                                  .toStringAsFixed(4));
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            // primary: Tools.colorPrimary,
-                            shape: CircleBorder(),
-                            padding: EdgeInsets.all(10),
+                          TextFieldBlocBuilder(
+                            readOnly: true,
+                            textFieldBloc: formBloc.newLongitude,
+                            keyboardType: TextInputType.text,
+                            clearTextIcon: Icon(Icons.cancel),
+                            suffixButton: SuffixButton.clearText,
+                            decoration: InputDecoration(
+                              labelText: "Nouvelle Longitude ",
+                              prefixIcon: Icon(Icons.location_on),
+                              disabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    width: 1,
+                                    // color: Tools.colorPrimary
+                                  ),
+                                  borderRadius: BorderRadius.circular(20)),
+                            ),
                           ),
-                          child: const Icon(Icons.my_location),
-                        ),
+                        ],
                       ),
-                    ],
-                  ));
+                    ),
+                  ),
+                  Flexible(
+                    // flex: 2,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        Position? position = await Tools.determinePosition();
+                        if (position != null) {
+                          formBloc.newLatitude.updateValue(
+                              position.latitude.toStringAsFixed(4));
+                          formBloc.newLongitude.updateValue(
+                              position.longitude.toStringAsFixed(4));
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        // primary: Tools.colorPrimary,
+                        shape: CircleBorder(),
+                        padding: EdgeInsets.all(10),
+                      ),
+                      child: const Icon(Icons.my_location),
+                    ),
+                  ),
+                ],
+              ));
             },
           ),
           TextFieldBlocBuilder(
-            textFieldBloc:
-            formBloc.newAdresse,
+            textFieldBloc: formBloc.newAdresse,
             keyboardType: TextInputType.text,
             decoration: InputDecoration(
               labelText: "Nouvelle adresse ",
@@ -1344,8 +1311,7 @@ class _WizardFormState extends State<WizardForm> {
           // ),
 
           TextFieldBlocBuilder(
-            textFieldBloc:
-            formBloc.traitementConsommationCableTextField,
+            textFieldBloc: formBloc.traitementConsommationCableTextField,
             keyboardType: TextInputType.text,
             decoration: InputDecoration(
               labelText: "Consomation cable ",
@@ -1373,79 +1339,72 @@ class _WizardFormState extends State<WizardForm> {
           ),
           Container(
               child: Row(
-                children: [
-                  Flexible(
-                    flex: 5,
-                    child: Container(
-                      child: Column(
-                        children: [
-                          TextFieldBlocBuilder(
-                            readOnly: true,
-                            textFieldBloc:
-                            formBloc.latitudeTextField,
-                            clearTextIcon: Icon(Icons.cancel),
-                            suffixButton: SuffixButton.clearText,
-                            keyboardType: TextInputType.text,
-                            decoration: InputDecoration(
-                              labelText: "Latitude ",
-                              prefixIcon: Icon(Icons.location_on),
-                              disabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    width: 1,
-                                    // color: Tools.colorPrimary
-                                  ),
-                                  borderRadius:
-                                  BorderRadius.circular(20)),
-                            ),
-                          ),
-                          TextFieldBlocBuilder(
-                            readOnly: true,
-                            textFieldBloc:
-                            formBloc.longintudeTextField,
-                            keyboardType: TextInputType.text,
-                            clearTextIcon: Icon(Icons.cancel),
-                            suffixButton: SuffixButton.clearText,
-                            decoration: InputDecoration(
-                              labelText: "Longitude ",
-                              prefixIcon: Icon(Icons.location_on),
-                              disabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    width: 1,
-                                    // color: Tools.colorPrimary
-                                  ),
-                                  borderRadius:
-                                  BorderRadius.circular(20)),
-                            ),
-                          ),
-                        ],
+            children: [
+              Flexible(
+                flex: 5,
+                child: Container(
+                  child: Column(
+                    children: [
+                      TextFieldBlocBuilder(
+                        readOnly: true,
+                        textFieldBloc: formBloc.latitudeTextField,
+                        clearTextIcon: Icon(Icons.cancel),
+                        suffixButton: SuffixButton.clearText,
+                        keyboardType: TextInputType.text,
+                        decoration: InputDecoration(
+                          labelText: "Latitude ",
+                          prefixIcon: Icon(Icons.location_on),
+                          disabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 1,
+                                // color: Tools.colorPrimary
+                              ),
+                              borderRadius: BorderRadius.circular(20)),
+                        ),
                       ),
-                    ),
-                  ),
-                  Flexible(
-                    // flex: 2,
-                    child: ElevatedButton(
-                      onPressed: () async {
-                        Position? position =
-                        await Tools.determinePosition();
-                        if (position != null) {
-                          formBloc.latitudeTextField.updateValue(
-                              position.latitude
-                                  .toStringAsFixed(4));
-                          formBloc.longintudeTextField
-                              .updateValue(position.longitude
-                              .toStringAsFixed(4));
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        // primary: Tools.colorPrimary,
-                        shape: CircleBorder(),
-                        padding: EdgeInsets.all(10),
+                      TextFieldBlocBuilder(
+                        readOnly: true,
+                        textFieldBloc: formBloc.longintudeTextField,
+                        keyboardType: TextInputType.text,
+                        clearTextIcon: Icon(Icons.cancel),
+                        suffixButton: SuffixButton.clearText,
+                        decoration: InputDecoration(
+                          labelText: "Longitude ",
+                          prefixIcon: Icon(Icons.location_on),
+                          disabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                width: 1,
+                                // color: Tools.colorPrimary
+                              ),
+                              borderRadius: BorderRadius.circular(20)),
+                        ),
                       ),
-                      child: const Icon(Icons.my_location),
-                    ),
+                    ],
                   ),
-                ],
-              )),
+                ),
+              ),
+              Flexible(
+                // flex: 2,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Position? position = await Tools.determinePosition();
+                    if (position != null) {
+                      formBloc.latitudeTextField
+                          .updateValue(position.latitude.toStringAsFixed(4));
+                      formBloc.longintudeTextField
+                          .updateValue(position.longitude.toStringAsFixed(4));
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    // primary: Tools.colorPrimary,
+                    shape: CircleBorder(),
+                    padding: EdgeInsets.all(10),
+                  ),
+                  child: const Icon(Icons.my_location),
+                ),
+              ),
+            ],
+          )),
           Divider(
             color: Colors.black,
           ),
@@ -1461,7 +1420,7 @@ class _WizardFormState extends State<WizardForm> {
             formBloc: formBloc,
             iconField: Icon(Icons.text_snippet),
             labelText: "DNSN ",
-            qrCodeTextFieldBloc: formBloc.dnsTextField,
+            qrCodeTextFieldBloc: formBloc.dnsnTextField,
           ),
 
           QrScannerTextFieldBlocBuilder(
@@ -1478,6 +1437,29 @@ class _WizardFormState extends State<WizardForm> {
             qrCodeTextFieldBloc: formBloc.snGpomTextField,
           ),
 
+          TextFieldBlocBuilder(
+            textFieldBloc: formBloc.ptoTextField,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly
+            ], // Only numbers can be entered
+            decoration: InputDecoration(
+              labelText: "Pto ",
+              prefixIcon: Icon(Icons.height),
+            ),
+          ),
+
+          TextFieldBlocBuilder(
+            textFieldBloc: formBloc.jarretieresTextField,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly
+            ],
+            decoration: InputDecoration(
+              labelText: "Jarretieres ",
+              prefixIcon: Icon(Icons.height),
+            ),
+          ),
           Divider(
             color: Colors.black,
           ),
@@ -1492,8 +1474,6 @@ class _WizardFormState extends State<WizardForm> {
               prefixIcon: Icon(Icons.comment),
             ),
           ),
-
-
         ],
       ),
     );
@@ -1505,105 +1485,102 @@ class _WizardFormState extends State<WizardForm> {
       content: Column(
         children: <Widget>[
           Container(
-            // margin: const EdgeInsets.only(top: 20),
+              // margin: const EdgeInsets.only(top: 20),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                //Center Row contents horizontally,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                //Center Row contents vertically,
-                children: [
-                  Flexible(
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pEquipementInstalle,
-                      labelText: "Equipement installé ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                  Flexible(
-                    // flex: 2,
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pTestSignal,
-                      labelText: "Test signal ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                ],
-              )),
-          Container(
-            // margin: const EdgeInsets.only(top: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                //Center Row contents horizontally,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                //Center Row contents vertically,
-                children: [
-                  Flexible(
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pEtiquetageIndoor,
-                      labelText: "Etiquetage indoor ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                  Flexible(
-                    // flex: 2,
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pEtiquetageOutdoor,
-                      labelText: "Etiquetage outdoor ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                ],
-              )),
-          Container(
-            // margin: const EdgeInsets.only(top: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                //Center Row contents horizontally,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                //Center Row contents vertically,
-                children: [
-                  Flexible(
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pPassageCable,
-                      labelText: "Passage cable ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                  Flexible(
-                    // flex: 2,
-                    child: ImageFieldBlocBuilder(
-                      formBloc: wizardFormBloc,
-                      fileFieldBloc: wizardFormBloc.pFicheInstalation,
-                      labelText: "Fiche instalation ",
-                      iconField: Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                ],
-              )),
-              Center(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //Center Row contents horizontally,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            //Center Row contents vertically,
+            children: [
+              Flexible(
                 child: ImageFieldBlocBuilder(
                   formBloc: wizardFormBloc,
-                  fileFieldBloc: wizardFormBloc.pSpeedTest,
-                  labelText: "Speed test ",
+                  fileFieldBloc: wizardFormBloc.pEquipementInstalle,
+                  labelText: "Equipement installé ",
                   iconField: Icon(Icons.image_not_supported),
                 ),
               ),
+              Flexible(
+                // flex: 2,
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pTestSignal,
+                  labelText: "Test signal ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+            ],
+          )),
+          Container(
+              // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //Center Row contents horizontally,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            //Center Row contents vertically,
+            children: [
+              Flexible(
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pEtiquetageIndoor,
+                  labelText: "Etiquetage indoor ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+              Flexible(
+                // flex: 2,
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pEtiquetageOutdoor,
+                  labelText: "Etiquetage outdoor ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+            ],
+          )),
+          Container(
+              // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //Center Row contents horizontally,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            //Center Row contents vertically,
+            children: [
+              Flexible(
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pPassageCable,
+                  labelText: "Passage cable ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+              Flexible(
+                // flex: 2,
+                child: ImageFieldBlocBuilder(
+                  formBloc: wizardFormBloc,
+                  fileFieldBloc: wizardFormBloc.pFicheInstalation,
+                  labelText: "Fiche instalation ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+            ],
+          )),
+          Center(
+            child: ImageFieldBlocBuilder(
+              formBloc: wizardFormBloc,
+              fileFieldBloc: wizardFormBloc.pSpeedTest,
+              labelText: "Speed test ",
+              iconField: Icon(Icons.image_not_supported),
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-
-
 class EndDrawerWidget extends StatelessWidget {
   const EndDrawerWidget({Key? key}) : super(key: key);
-
 
   @override
   Widget build(BuildContext context) {
@@ -1625,7 +1602,9 @@ class EndDrawerWidget extends StatelessWidget {
                     contentsBuilder: (context, index) => Card(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text(Tools.selectedDemande?.commentaires?[0].commentaire ?? ""),
+                        child: Text(Tools.selectedDemande?.commentaires?[0]
+                                .commentaire ??
+                            ""),
                       ),
                     ),
                     // oppositeContentsBuilder: (context, index) => Padding(
@@ -1641,21 +1620,19 @@ class EndDrawerWidget extends StatelessWidget {
               ),
             ],
           ),
-
         ),
       ),
     );
   }
 }
 
-
 class LoadingDialog extends StatelessWidget {
   static void show(BuildContext context, {Key? key}) => showDialog<void>(
-    context: context,
-    useRootNavigator: false,
-    barrierDismissible: false,
-    builder: (_) => LoadingDialog(key: key),
-  ).then((_) => FocusScope.of(context).requestFocus(FocusNode()));
+        context: context,
+        useRootNavigator: false,
+        barrierDismissible: false,
+        builder: (_) => LoadingDialog(key: key),
+      ).then((_) => FocusScope.of(context).requestFocus(FocusNode()));
 
   static void hide(BuildContext context) => Navigator.pop(context);
 
@@ -1732,7 +1709,6 @@ class NamedIcon extends StatelessWidget {
       child: Container(
         width: 50,
         padding: const EdgeInsets.only(top: 15),
-
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -1743,17 +1719,18 @@ class NamedIcon extends StatelessWidget {
                 Text(text, overflow: TextOverflow.ellipsis),
               ],
             ),
-            if(notificationCount > 0)
-            Positioned(
-              top: 10,
-              right: 30,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.red),
-                alignment: Alignment.center,
-                child: Text('$notificationCount'),
-              ),
-            )
+            if (notificationCount > 0)
+              Positioned(
+                top: 10,
+                right: 30,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration:
+                      BoxDecoration(shape: BoxShape.circle, color: Colors.red),
+                  alignment: Alignment.center,
+                  child: Text('$notificationCount'),
+                ),
+              )
           ],
         ),
       ),

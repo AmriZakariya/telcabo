@@ -89,22 +89,6 @@ class DemandeListItem extends StatelessWidget {
                                Tools.selectedDemande = demande ;
                                    print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
 
-                                   if(demande.etatId == "3"
-                                       && demande.pPbiAvant != ""
-                                       && demande.pPbiApres != ""){
-                                     // Navigator.of(context).push(MaterialPageRoute(
-                                     //   builder: (_) => InterventionFormStep2(),
-                                     // ));
-                                     Tools.currentStep = 1 ;
-                                   }else{
-                                     // Navigator.of(context).push(MaterialPageRoute(
-                                     //   builder: (_) => InterventionFormStep1(),
-                                     // ));
-                                     Tools.currentStep = 0 ;
-
-                                   }
-
-                                   // FormBlocState.currentStep = Tools.currentStep ;
 
                                    Navigator.of(context).push(MaterialPageRoute(
                                      builder: (_) => WizardForm(),
@@ -130,22 +114,7 @@ class DemandeListItem extends StatelessWidget {
                               Tools.selectedDemande = demande ;
                               print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
 
-                              if(demande.etatId == "3"
-                                  && demande.pPbiAvant != ""
-                                  && demande.pPbiApres != ""){
-                                // Navigator.of(context).push(MaterialPageRoute(
-                                //   builder: (_) => InterventionFormStep2(),
-                                // ));
-                                Tools.currentStep = 1 ;
-                              }else{
-                                // Navigator.of(context).push(MaterialPageRoute(
-                                //   builder: (_) => InterventionFormStep1(),
-                                // ));
-                                Tools.currentStep = 0 ;
 
-                              }
-
-                              // FormBlocState.currentStep = Tools.currentStep ;
 
                               Navigator.of(context).push(MaterialPageRoute(
                                 builder: (_) => WizardForm(),
@@ -317,26 +286,27 @@ class DemandeListItem extends StatelessWidget {
                                       Tools.selectedDemande = demande ;
                                       print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
 
-                                      if(demande.etatId == "3"
-                                          && demande.pPbiAvant != ""
-                                          && demande.pPbiApres != ""){
-                                        // Navigator.of(context).push(MaterialPageRoute(
-                                        //   builder: (_) => InterventionFormStep2(),
-                                        // ));
-                                        Tools.currentStep = 1 ;
-                                      }else{
-                                        // Navigator.of(context).push(MaterialPageRoute(
-                                        //   builder: (_) => InterventionFormStep1(),
-                                        // ));
-                                        Tools.currentStep = 0 ;
-
-                                      }
+                                      // if(demande.etatId == "3"
+                                      //     && demande.pPbiAvant != ""
+                                      //     && demande.pPbiApres != ""){
+                                      //   // Navigator.of(context).push(MaterialPageRoute(
+                                      //   //   builder: (_) => InterventionFormStep2(),
+                                      //   // ));
+                                      //   Tools.currentStep = 1 ;
+                                      // }else{
+                                      //   // Navigator.of(context).push(MaterialPageRoute(
+                                      //   //   builder: (_) => InterventionFormStep1(),
+                                      //   // ));
+                                      //   Tools.currentStep = 0 ;
+                                      //
+                                      // }
 
                                       // FormBlocState.currentStep = Tools.currentStep ;
 
                                       Navigator.of(context).push(MaterialPageRoute(
                                         builder: (_) => WizardForm(),
                                       ));
+
 
                                     },
                                     style: ElevatedButton.styleFrom(

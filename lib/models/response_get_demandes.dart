@@ -78,7 +78,9 @@ class Demandes {
   String? etatName;
   String? plaqueName;
   List<Commentaires>? commentaires;
-
+  int? etape;
+  int? pto;
+  int? jarretieres;
   Demandes(
       {this.id,
         this.code,
@@ -136,7 +138,10 @@ class Demandes {
         this.created,
         this.etatName,
         this.plaqueName,
-        this.commentaires});
+        this.commentaires,
+        this.pto,
+        this.jarretieres,
+        this.etape});
 
   Demandes.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -201,6 +206,9 @@ class Demandes {
         commentaires!.add(new Commentaires.fromJson(v));
       });
     }
+    etape = json['etape'];
+    pto = json['pto'];
+    jarretieres = json['jarretieres'];
   }
 
   Map<String, dynamic> toJson() {
@@ -261,9 +269,13 @@ class Demandes {
     data['created'] = this.created;
     data['etat_name'] = this.etatName;
     data['plaque_name'] = this.plaqueName;
+    data['plaque_name'] = this.plaqueName;
     if (this.commentaires != null) {
       data['commentaires'] = this.commentaires!.map((v) => v.toJson()).toList();
     }
+    data['etape'] = this.etape;
+    data['pto'] = this.pto;
+    data['jarretieres'] = this.jarretieres;
     return data;
   }
 }

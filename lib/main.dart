@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:notification_permissions/notification_permissions.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:telcabo/DemandeList.dart';
@@ -39,6 +40,15 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  Tools.initFiles();
+  NotificationPermissions.requestNotificationPermissions(
+      iosSettings: const NotificationSettingsIos(
+          sound: true, badge: true, alert: true))
+      .then((_) {
+    // when finished, check the permission status
+
+  });
 
 
   runApp(
