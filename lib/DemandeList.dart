@@ -321,3 +321,30 @@ class _DemandeListState extends State<DemandeList> {
 }
 
 
+
+
+class EndDrawerFilterWidget extends StatelessWidget {
+  const EndDrawerFilterWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: SafeArea(
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/bg_home.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Column(
+            children: [
+              Text("Commentaires"),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

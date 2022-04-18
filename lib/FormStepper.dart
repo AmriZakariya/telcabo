@@ -17,6 +17,7 @@ import 'package:telcabo/Tools.dart';
 import 'package:telcabo/custome/ConnectivityCheckBlocBuilder.dart';
 import 'package:telcabo/custome/ImageFieldBlocbuilder.dart';
 import 'package:telcabo/custome/QrScannerTextFieldBlocBuilder.dart';
+import 'package:telcabo/custome/SearchableDropDownFieldBlocBuilder.dart';
 import 'package:telcabo/models/response_get_demandes.dart';
 import 'package:telcabo/models/response_get_liste_etats.dart';
 import 'dart:convert';
@@ -24,6 +25,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
+import 'package:telcabo/models/response_get_liste_types.dart';
 import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
 import 'package:timelines/timelines.dart';
 
@@ -39,6 +41,7 @@ final GlobalKey<ScaffoldState> formStepperScaffoldKey =
 
 class WizardFormBloc extends FormBloc<String, String> {
   late final ResponseGetListEtat responseListEtat;
+  late final ResponseGetListType responseGetListType;
 
   Directory dir = Directory("");
   File fileTraitementList = File("");
@@ -69,6 +72,15 @@ class WizardFormBloc extends FormBloc<String, String> {
     ],
     toJson: (value) => value?.id,
   );
+
+  final etatImmeubleDropDown = SelectFieldBloc<Etatimmeubles, dynamic>(
+    name: "Etat_immo",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) => value?.id,
+  );
+
 
   final commentaireTextField = TextFieldBloc(
     name: 'commentaire',
@@ -123,7 +135,7 @@ class WizardFormBloc extends FormBloc<String, String> {
     },
   );
 
-  final rdvDate = InputFieldBloc<DateTime?, Object>(
+  final dateRdvInputFieldBLoc = InputFieldBloc<DateTime?, Object>(
     initialValue: null,
     name: "date_rdv",
     validators: [
@@ -137,6 +149,26 @@ class WizardFormBloc extends FormBloc<String, String> {
   );
 
   /* Step 2 */
+
+
+  final listTypeInstallationDropDown = SelectFieldBloc<Types, dynamic>(
+    name: "type_installation_id",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) => value?.id,
+
+  );
+
+  final motiflistTypeInstallationDropDown = SelectFieldBloc<Motifs, dynamic>(
+    name: "motif_typeinstallation_id",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) => value?.id,
+  );
+
+
 
   final traitementConsommationCableTextField = TextFieldBloc(
     name: 'consommation_cable',
@@ -198,12 +230,12 @@ class WizardFormBloc extends FormBloc<String, String> {
     ],
   );
 
-  final etatImmo = TextFieldBloc(
-    name: 'etat_immo',
-    validators: [
-      FieldBlocValidators.required,
-    ],
-  );
+  // final etatImmo = TextFieldBloc(
+  //   name: 'etat_immo',
+  //   validators: [
+  //     FieldBlocValidators.required,
+  //   ],
+  // );
   final newLatitude = TextFieldBloc(
     name: 'new_latitude',
     validators: [
@@ -346,6 +378,7 @@ class WizardFormBloc extends FormBloc<String, String> {
       step: 1,
       fieldBlocs: [
         etatDropDown,
+        listTypeInstallationDropDown,
         commentaireTextField,
         traitementConsommationCableTextField,
         speedTextField,
@@ -392,10 +425,11 @@ class WizardFormBloc extends FormBloc<String, String> {
         print("current.value? ==> ${current.value} ");
         print(current.value?.id ?? "...");
 
-        removeFieldBlocs(fieldBlocs: [motifDropDown]);
+        removeFieldBlocs(fieldBlocs: [motifDropDown, etatImmeubleDropDown]);
 
         removeFieldBlocs(fieldBlocs: [
-          etatImmo,
+          // etatImmo,
+          etatImmeubleDropDown,
           newLatitude,
           newLongitude,
           newAdresse,
@@ -403,7 +437,23 @@ class WizardFormBloc extends FormBloc<String, String> {
 
         if (current.value?.id == "1") {}
         if (current.value?.id == "1") {
-          addFieldBloc(fieldBloc: rdvDate);
+
+          /* check current RDV date */
+          String? selectedRdvDate = Tools.selectedDemande?.dateRdv ;
+          if(selectedRdvDate?.isNotEmpty == true){
+            print("selected rdvDate ==> ${selectedRdvDate}");
+
+            var parsedDate = DateTime.parse(selectedRdvDate!);
+
+            dateRdvInputFieldBLoc.updateValue(parsedDate);
+
+          }else{
+            dateRdvInputFieldBLoc.updateValue(null);
+
+          }
+
+
+          addFieldBloc(fieldBloc: dateRdvInputFieldBLoc);
 
           removeFieldBlocs(fieldBlocs: [
             sousEtatDropDown,
@@ -421,12 +471,12 @@ class WizardFormBloc extends FormBloc<String, String> {
           ]);
 
           removeFieldBlocs(fieldBlocs: [
-            rdvDate,
+            dateRdvInputFieldBLoc,
             sousEtatDropDown,
           ]);
         } else {
           removeFieldBlocs(fieldBlocs: [
-            rdvDate,
+            dateRdvInputFieldBLoc,
             pPbiAvantTextField,
             pPbiApresTextField,
             pPboAvantTextField,
@@ -457,14 +507,15 @@ class WizardFormBloc extends FormBloc<String, String> {
         print(current.value?.motifList ?? "...");
 
         removeFieldBlocs(fieldBlocs: [
-          etatImmo,
+          // etatImmo,
+          etatImmeubleDropDown,
           newLatitude,
           newLongitude,
           newAdresse,
         ]);
 
         if (current.value?.motifList?.isEmpty == true) {
-          removeFieldBlocs(fieldBlocs: [motifDropDown]);
+          removeFieldBlocs(fieldBlocs: [motifDropDown, etatImmeubleDropDown]);
         } else {
           motifDropDown.updateItems(current.value?.motifList ?? []);
           addFieldBloc(fieldBloc: motifDropDown);
@@ -487,21 +538,69 @@ class WizardFormBloc extends FormBloc<String, String> {
         if (etatDropDown.value?.id == "7" &&
             sousEtatDropDown.value?.id == "8") {
           addFieldBlocs(fieldBlocs: [
-            etatImmo,
+            // etatImmo,
+            etatImmeubleDropDown,
             newLatitude,
             newLongitude,
             newAdresse,
           ]);
         } else {
           removeFieldBlocs(fieldBlocs: [
-            etatImmo,
+            etatImmeubleDropDown,
             newLatitude,
             newLongitude,
             newAdresse,
           ]);
         }
+
+        print("++++");
+
+        if (current.value?.etatimmeubles?.isEmpty == true) {
+          removeFieldBloc(fieldBloc: etatImmeubleDropDown);
+
+        } else {
+
+          etatImmeubleDropDown.updateItems(current.value?.etatimmeubles ?? []);
+          // addFieldBloc(fieldBloc: motifDropDown);
+        }
+
+
       },
     );
+
+
+
+
+    /* Manage listTypeInstallationDropDown */
+
+
+    listTypeInstallationDropDown.onValueChanges(
+      onData: (previous, current) async* {
+        // String currentId = current.value?.id ?? "" ;
+        // List<SousEtat>? sousEtat = responseListEtat.etat?.firstWhere((element) => element.id == currentId).sousEtat! ?? []
+
+        if (current.value?.id == null) {
+          return;
+        }
+
+        print("listTypeInstallationDropDown onValueChanges ");
+        print("current.value? ==> ${current.value} ");
+        print(current.value?.id ?? "...");
+
+
+        if (current.value?.motifs?.isEmpty == true) {
+          removeFieldBloc(fieldBloc: motiflistTypeInstallationDropDown);
+        } else {
+          motiflistTypeInstallationDropDown.updateItems(current.value?.motifs ?? []);
+          addFieldBloc(fieldBloc: motiflistTypeInstallationDropDown);
+        }
+
+
+      },
+    );
+
+
+
   }
 
   void writeToFileTraitementList(Map jsonMapContent) {
@@ -593,6 +692,7 @@ class WizardFormBloc extends FormBloc<String, String> {
 
     try {
       responseListEtat = await Tools.getListEtatFromLocalAndINternet();
+      responseGetListType = await Tools.getTypeListFromLocalAndINternet();
 
       print(responseListEtat.etat.toString());
 
@@ -603,6 +703,9 @@ class WizardFormBloc extends FormBloc<String, String> {
         // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
         etatDropDown.updateItems(responseListEtat.etat?.skip(3).toList() ?? []);
       }
+
+
+      listTypeInstallationDropDown.updateItems(responseGetListType.types ?? []);
 
       // print(responseListEtat.etat.toString());
       // etatDropDown.updateItems(responseListEtat.etat ?? []);
@@ -672,7 +775,23 @@ class WizardFormBloc extends FormBloc<String, String> {
         bool checkCallWs = await Tools.callWsAddMobile(formDateValues);
 
         if (checkCallWs) {
-          emitSuccess(canSubmitAgain: true);
+
+          if(await Tools.refreshSelectedDemande()){
+
+            print("refreshed refreshSelectedDemande");
+            print("Tools.selectedDemande ==> ${Tools.selectedDemande?.etape}");
+            print("state.currentStep ==> ${state.currentStep}");
+
+            if(((Tools.selectedDemande?.etape ?? 1 ) - 1) <= state.currentStep ){
+              commentaireTextField.updateValue("");
+              emitFailure(failureResponse: "sameStep");
+
+            }else{
+              commentaireTextField.updateValue("");
+              emitSuccess(canSubmitAgain: true);
+            }
+
+          }
         } else {
           emitFailure(failureResponse: "WS");
         }
@@ -709,7 +828,7 @@ class WizardFormBloc extends FormBloc<String, String> {
     removeFieldBlocs(fieldBlocs: [
       sousEtatDropDown,
       motifDropDown,
-      rdvDate,
+      dateRdvInputFieldBLoc,
       pPbiAvantTextField,
       pPbiApresTextField,
       pPboAvantTextField,
@@ -717,7 +836,8 @@ class WizardFormBloc extends FormBloc<String, String> {
     ]);
 
     removeFieldBlocs(fieldBlocs: [
-      etatImmo,
+      // etatImmo,
+      etatImmeubleDropDown,
       newLatitude,
       newLongitude,
       newAdresse,
@@ -765,10 +885,14 @@ class WizardFormBloc extends FormBloc<String, String> {
         sousEtatDropDown.updateValue(selectedSousEtat);
       }
     }
+
+
+
     var selectedMotif = sousEtatDropDown.value?.motifList?.firstWhereOrNull((element) {
       return element.id == Tools.selectedDemande?.motifEtatId;
     });
-    print("selectedSousEtat ==> ${selectedMotif}");
+
+    print("selectedMotif ==> ${selectedMotif}");
 
     if (selectedMotif != null) {
       if (motifDropDown.state.items.contains(selectedMotif)) {
@@ -790,8 +914,33 @@ class WizardFormBloc extends FormBloc<String, String> {
     snGpomTextField.updateValue(Tools.selectedDemande?.snRouteur ?? "");
     // snTelTextField.updateValue(Tools.selectedDemande?.snTel ?? "");
 
-    ptoTextField.updateValue(Tools.selectedDemande?.pto.toString() ?? "");
-    jarretieresTextField.updateValue(Tools.selectedDemande?.jarretieres.toString() ?? "");
+    ptoTextField.updateValue(Tools.selectedDemande?.pto ?? "");
+    jarretieresTextField.updateValue(Tools.selectedDemande?.jarretieres ?? "");
+
+    listTypeInstallationDropDown.updateValue(
+      listTypeInstallationDropDown.state.items.firstWhereOrNull((element) {
+        return element.id == Tools.selectedDemande?.typeInstallationId;
+      })
+    );
+
+    motiflistTypeInstallationDropDown.updateValue(
+        motiflistTypeInstallationDropDown.state.items.firstWhereOrNull((element) {
+          return element.id == Tools.selectedDemande?.motifTypeinstallationId;
+        })
+    );
+
+
+    String? selectedRdvDate = Tools.selectedDemande?.dateRdv ;
+    if(selectedRdvDate?.isNotEmpty == true){
+      print("selected rdvDate ==> ${selectedRdvDate}");
+
+      var parsedDate = DateTime.parse(selectedRdvDate!);
+
+      dateRdvInputFieldBLoc.updateValue(parsedDate);
+
+    }
+
+
 
 
 
@@ -816,10 +965,21 @@ class _WizardFormState extends State<WizardForm> {
     });
   }
 
+  ValueNotifier<int> commentaireCuuntValueNotifer =ValueNotifier(Tools.selectedDemande?.commentaires?.length ?? 0);
+
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => WizardFormBloc(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<WizardFormBloc>(
+          create: (BuildContext context) => WizardFormBloc(),
+        ),
+        BlocProvider<InternetCubit>(
+          create: (BuildContext context) => InternetCubit(connectivity: Connectivity()),
+        ),
+      ],
+      // c
       child: Builder(
         builder: (context) {
           return Theme(
@@ -857,15 +1017,20 @@ class _WizardFormState extends State<WizardForm> {
                           ? Icons.swap_vert
                           : Icons.swap_horiz,
                       onTap: _toggleType),
-                  NamedIcon(
-                    text: '',
-                    iconData: Icons.comment,
-                    notificationCount:
-                        Tools.selectedDemande?.commentaires?.length ?? 0,
-                    onTap: () {
-                      formStepperScaffoldKey.currentState?.openEndDrawer();
+                  ValueListenableBuilder(
+                    valueListenable: commentaireCuuntValueNotifer,
+                    builder: (BuildContext context, int commentaireCount, Widget? child){
+                      return NamedIcon(
+                        text: '',
+                        iconData: Icons.comment,
+                        notificationCount: commentaireCount,
+                        onTap: () {
+                          formStepperScaffoldKey.currentState?.openEndDrawer();
+                        },
+                      );
                     },
-                  ),
+                  )
+
                 ],
               ),
               endDrawer: EndDrawerWidget(),
@@ -879,8 +1044,23 @@ class _WizardFormState extends State<WizardForm> {
                     print("FormBlocListener onSuccess");
                     LoadingDialog.hide(context);
 
+
+                    commentaireCuuntValueNotifer.value = Tools.selectedDemande?.commentaires?.length ?? 0;
+                    CoolAlert.show(
+                      context: context,
+                      type: CoolAlertType.success,
+                      text: "Enregistré avec succès",
+                      // autoCloseDuration: Duration(seconds: 2),
+                      title: "Succès",
+                    );
+
+
+
+
+
                     Tools.currentStep = state.currentStep;
                     context.read<WizardFormBloc>().clearInputs();
+
 
                     if (state.stepCompleted == state.lastStep) {
                       Navigator.of(context).pushReplacement(
@@ -890,126 +1070,188 @@ class _WizardFormState extends State<WizardForm> {
                   onFailure: (context, state) {
                     print("FormBlocListener onFailure");
                     LoadingDialog.hide(context);
+
+                    if(state.failureResponse == "sameStep"){
+                      commentaireCuuntValueNotifer.value = Tools.selectedDemande?.commentaires?.length ?? 0;
+
+                      CoolAlert.show(
+                        context: context,
+                        type: CoolAlertType.success,
+                        text: "Enregistré avec succès",
+                        // autoCloseDuration: Duration(seconds: 2),
+                        title: "Succès",
+                      );
+                    }
                   },
                   onSubmissionFailed: (context, state) {
                     print("FormBlocListener onSubmissionFailed");
                     LoadingDialog.hide(context);
                   },
-                  child: StepperFormBlocBuilder<WizardFormBloc>(
-                    formBloc: context.read<WizardFormBloc>(),
-                    type: _type,
-                    physics: ClampingScrollPhysics(),
-                    // onStepCancel: (formBloc) {
-                    //   print("Cancel clicked");
-                    //
-                    //
-                    //
-                    // },
-                    controlsBuilder: (
-                      BuildContext context,
-                      VoidCallback? onStepContinue,
-                      VoidCallback? onStepCancel,
-                      int step,
-                      FormBloc formBloc,
-                    ) {
-                      return Column(
-                        children: <Widget>[
-                          Row(
+                  child: Stack(
+                    children: [
+                      StepperFormBlocBuilder<WizardFormBloc>(
+                        formBloc: context.read<WizardFormBloc>(),
+                        type: _type,
+                        physics: ClampingScrollPhysics(),
+                        // onStepCancel: (formBloc) {
+                        //   print("Cancel clicked");
+                        //
+                        //
+                        //
+                        // },
+                        controlsBuilder: (
+                          BuildContext context,
+                          VoidCallback? onStepContinue,
+                          VoidCallback? onStepCancel,
+                          int step,
+                          FormBloc formBloc,
+                        ) {
+                          return Column(
                             children: <Widget>[
-                              SizedBox(
-                                height: 50,
-                              ),
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      print("cliick");
-                                      // formBloc.readJson();
-                                      // formBloc.fileTraitementList.writeAsStringSync("");
+                              Row(
+                                children: <Widget>[
+                                  SizedBox(
+                                    height: 50,
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      // padding: const  EdgeInsets.only(top: 8,left: 8,right: 8, bottom: 20),
 
-                                      formBloc.submit();
-                                    },
-                                    child: const Text(
-                                      'Enregistrer',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 18.0,
-                                        wordSpacing: 12,
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          print("cliick");
+                                          // formBloc.readJson();
+                                          // formBloc.fileTraitementList.writeAsStringSync("");
+
+                                          formBloc.submit();
+                                        },
+                                        child: const Text(
+                                          'Enregistrer',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 18.0,
+                                            wordSpacing: 12,
+                                          ),
+                                        ),
+                                        style: ElevatedButton.styleFrom(
+                                          // shape: CircleBorder(),
+                                          minimumSize: Size(280, 50),
+                                          // primary: Tools.colorPrimary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                new BorderRadius.circular(30.0),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    style: ElevatedButton.styleFrom(
-                                      // shape: CircleBorder(),
-                                      minimumSize: Size(280, 50),
-                                      // primary: Tools.colorPrimary,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            new BorderRadius.circular(30.0),
+                                  ),
+                                  if (!formBloc.state.isFirstStep &&
+                                      !formBloc.state.isLastStep)
+                                    // Expanded(
+                                    //   child: ElevatedButton(
+                                    //     onPressed: () {
+                                    //       print("cliick");
+                                    //       // formBloc.readJson();
+                                    //       // formBloc.fileTraitementList.writeAsStringSync("");
+                                    //
+                                    //       // context.read<WizardFormBloc>().clear();
+                                    //
+                                    //
+                                    //
+                                    //       onStepCancel!() ;
+                                    //     },
+                                    //     child: const Text('Annuler',
+                                    //       textAlign: TextAlign.center,
+                                    //       style: TextStyle(
+                                    //         fontSize: 18.0,
+                                    //         wordSpacing: 12,
+                                    //       ),
+                                    //     ),
+                                    //     style: ElevatedButton.styleFrom(
+                                    //       primary: Colors.grey,
+                                    //       // shape: CircleBorder(),
+                                    //       minimumSize: Size(200, 50),
+                                    //       // primary: Tools.colorPrimary,
+                                    //       shape: RoundedRectangleBorder(
+                                    //         borderRadius: new BorderRadius.circular(30.0),
+                                    //       ),
+                                    //
+                                    //     ),
+                                    //   ),
+                                    // ),
+                                    SizedBox(
+                                      height: 50,
+                                    ),
+//                              Text(Translations.of(context).confidential)
+                                ],
+                              ),
+                            ],
+                          );
+                        },
+                        stepsBuilder: (formBloc) {
+                          return [
+                            _step1(formBloc!),
+                            _step2(formBloc),
+                            _step3(formBloc),
+                          ];
+                        },
+                        onStepTapped: (FormBloc? formBloc, int step) {
+                          print("onStepTapped");
+                          if (step > (Tools.selectedDemande?.etape ?? 1 ) -1) {
+                              return ;
+                          }
+                          Tools.currentStep = step;
+                          print(formBloc);
+                          formBloc?.updateCurrentStep(step);
+                          // formBloc?.emit(FormBlocLoaded(currentStep: Tools.currentStep));
+                        },
+                      ),
+                      BlocBuilder<InternetCubit, InternetState>(
+                        builder: (context, state) {
+                          if (state is InternetConnected &&
+                              state.connectionType == ConnectionType.wifi) {
+                            // return Text(
+                            //   'Wifi',
+                            //   style: TextStyle(color: Colors.green, fontSize: 30),
+                            // );
+                          } else if (state is InternetConnected &&
+                              state.connectionType == ConnectionType.mobile) {
+                            // return Text(
+                            //   'Mobile',
+                            //   style: TextStyle(color: Colors.yellow, fontSize: 30),
+                            // );
+                          } else if (state is InternetDisconnected) {
+                            return Positioned(
+                              bottom: 0,
+                              child: Center(
+                                child: Container(
+                                  color: Colors.grey.shade400,
+                                  width: MediaQuery.of(context).size.width,
+                                  padding: const EdgeInsets.all(0.0),
+                                  child: Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        "Pas d'accès internet",
+                                        style: TextStyle(color: Colors.red, fontSize: 20),
+
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
-                              if (!formBloc.state.isFirstStep &&
-                                  !formBloc.state.isLastStep)
-                                // Expanded(
-                                //   child: ElevatedButton(
-                                //     onPressed: () {
-                                //       print("cliick");
-                                //       // formBloc.readJson();
-                                //       // formBloc.fileTraitementList.writeAsStringSync("");
-                                //
-                                //       // context.read<WizardFormBloc>().clear();
-                                //
-                                //
-                                //
-                                //       onStepCancel!() ;
-                                //     },
-                                //     child: const Text('Annuler',
-                                //       textAlign: TextAlign.center,
-                                //       style: TextStyle(
-                                //         fontSize: 18.0,
-                                //         wordSpacing: 12,
-                                //       ),
-                                //     ),
-                                //     style: ElevatedButton.styleFrom(
-                                //       primary: Colors.grey,
-                                //       // shape: CircleBorder(),
-                                //       minimumSize: Size(200, 50),
-                                //       // primary: Tools.colorPrimary,
-                                //       shape: RoundedRectangleBorder(
-                                //         borderRadius: new BorderRadius.circular(30.0),
-                                //       ),
-                                //
-                                //     ),
-                                //   ),
-                                // ),
-                                SizedBox(
-                                  height: 50,
-                                ),
-//                              Text(Translations.of(context).confidential)
-                            ],
-                          ),
-                        ],
-                      );
-                    },
-                    stepsBuilder: (formBloc) {
-                      return [
-                        _step1(formBloc!),
-                        _step2(formBloc),
-                        _step3(formBloc),
-                      ];
-                    },
-                    onStepTapped: (FormBloc? formBloc, int step) {
-                      print("onStepTapped");
-                      if (step > (Tools.selectedDemande?.etape ?? 1 ) -1) {
+                            );
 
-                      }
-                      Tools.currentStep = step;
-                      print(formBloc);
-                      formBloc?.updateCurrentStep(step);
-                      // formBloc?.emit(FormBlocLoaded(currentStep: Tools.currentStep));
-                    },
+
+                          }
+                          // return CircularProgressIndicator();
+                          return Container(
+
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -1052,7 +1294,7 @@ class _WizardFormState extends State<WizardForm> {
             ),
           ),
           DateTimeFieldBlocBuilder(
-            dateTimeFieldBloc: wizardFormBloc.rdvDate,
+            dateTimeFieldBloc: wizardFormBloc.dateRdvInputFieldBLoc,
             format: DateFormat('yyyy-MM-dd HH:mm'),
             //  Y-m-d H:i:s
             initialDate: DateTime.now(),
@@ -1182,7 +1424,7 @@ class _WizardFormState extends State<WizardForm> {
             ),
           ),
           DateTimeFieldBlocBuilder(
-            dateTimeFieldBloc: formBloc.rdvDate,
+            dateTimeFieldBloc: formBloc.dateRdvInputFieldBLoc,
             format: DateFormat('dd-MM-yyyy'),
             initialDate: DateTime.now(),
             firstDate: DateTime.now(),
@@ -1212,18 +1454,28 @@ class _WizardFormState extends State<WizardForm> {
               child: Text(value.name ?? ""),
             ),
           ),
+          DropdownFieldBlocBuilder<Etatimmeubles>(
+            selectFieldBloc: formBloc.etatImmeubleDropDown,
+            decoration: const InputDecoration(
+              labelText: 'Etat immeuble',
+              prefixIcon: Icon(Icons.list),
+            ),
+            itemBuilder: (context, value) => FieldItem(
+              child: Text(value.name ?? ""),
+            ),
+          ),
 
           // Divider(
           //   color: Colors.black,
           // ),
-          TextFieldBlocBuilder(
-            textFieldBloc: formBloc.etatImmo,
-            keyboardType: TextInputType.text,
-            decoration: InputDecoration(
-              labelText: "Etat immeble ",
-              prefixIcon: Icon(Icons.gps_fixed),
-            ),
-          ),
+          // TextFieldBlocBuilder(
+          //   textFieldBloc: formBloc.etatImmo,
+          //   keyboardType: TextInputType.text,
+          //   decoration: InputDecoration(
+          //     labelText: "Etat immeble ",
+          //     prefixIcon: Icon(Icons.gps_fixed),
+          //   ),
+          // ),
           CanShowFieldBlocBuilder(
             fieldBloc: formBloc.newLongitude,
             builder: (BuildContext context, bool canShow) {
@@ -1309,6 +1561,41 @@ class _WizardFormState extends State<WizardForm> {
           // Divider(
           //   color: Colors.black,
           // ),
+
+          DropdownFieldBlocBuilder<Types>(
+            selectFieldBloc: formBloc.listTypeInstallationDropDown,
+            decoration: const InputDecoration(
+              labelText: 'Type installation',
+              prefixIcon: Icon(Icons.list),
+            ),
+            itemBuilder: (context, value) => FieldItem(
+              child: Text(value.name ?? ""),
+            ),
+          ),
+
+          DropdownFieldBlocBuilder<Motifs>(
+            selectFieldBloc: formBloc.motiflistTypeInstallationDropDown,
+            decoration: const InputDecoration(
+              labelText: 'Motif type installation',
+              prefixIcon: Icon(Icons.list),
+              helperMaxLines: 10
+            ),
+            itemBuilder: (context, value) => FieldItem(
+              child: Text(value.name ?? ""),
+            ),
+
+
+          ),
+
+//           SearchableDropDownFieldBlocBuilder<Motifs>(
+//             selectFieldBloc: formBloc.motiflistTypeInstallationDropDown,
+//             itemBuilder: (context, value) => value.name,
+// //                            onChanged: (String value) => value.value,
+//             hint: 'Motif type installation',
+//             searchHint: 'Motif type installation',
+// //                            items: [],
+//           ),
+
 
           TextFieldBlocBuilder(
             textFieldBloc: formBloc.traitementConsommationCableTextField,
@@ -1602,7 +1889,7 @@ class EndDrawerWidget extends StatelessWidget {
                     contentsBuilder: (context, index) => Card(
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Text(Tools.selectedDemande?.commentaires?[0]
+                        child: Text(Tools.selectedDemande?.commentaires?[index]
                                 .commentaire ??
                             ""),
                       ),

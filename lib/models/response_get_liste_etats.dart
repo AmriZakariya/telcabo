@@ -23,14 +23,13 @@ class ResponseGetListEtat {
   }
 }
 
-class Etat extends Equatable {
+
+class Etat {
   String? id;
   String? name;
   List<SousEtat>? sousEtat;
 
   Etat({this.id, this.name, this.sousEtat});
-
-
 
   Etat.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -52,13 +51,6 @@ class Etat extends Equatable {
     }
     return data;
   }
-
-
-  @override
-  List<Object> get props => [this.id ?? "", this.name ?? "", this.sousEtat ?? []];
-
-
-
 }
 
 class SousEtat {
@@ -88,19 +80,45 @@ class SousEtat {
     }
     return data;
   }
-
-
-  @override
-  List<Object> get props => [this.id ?? "", this.name ?? "", this.motifList ?? []];
 }
 
-class MotifList extends Equatable{
+class MotifList {
+  String? id;
+  String? name;
+  List<Etatimmeubles>? etatimmeubles;
+
+  MotifList({this.id, this.name, this.etatimmeubles});
+
+  MotifList.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    name = json['name'];
+    if (json['etatimmeubles'] != null) {
+      etatimmeubles = <Etatimmeubles>[];
+      json['etatimmeubles'].forEach((v) {
+        etatimmeubles!.add(new Etatimmeubles.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['name'] = this.name;
+    if (this.etatimmeubles != null) {
+      data['etatimmeubles'] =
+          this.etatimmeubles!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class Etatimmeubles {
   String? id;
   String? name;
 
-  MotifList({this.id, this.name});
+  Etatimmeubles({this.id, this.name});
 
-  MotifList.fromJson(Map<String, dynamic> json) {
+  Etatimmeubles.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
   }
@@ -111,9 +129,4 @@ class MotifList extends Equatable{
     data['name'] = this.name;
     return data;
   }
-
-
-
-  @override
-  List<Object> get props => [this.id ?? "", this.name ?? ""];
 }

@@ -24,7 +24,11 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:flutter/services.dart';
+import 'package:telcabo/models/response_get_liste_types.dart';
 import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
+
+import 'package:dio_logger/dio_logger.dart';
+
 class Tools{
 
   static Demandes? selectedDemande;
@@ -60,6 +64,7 @@ class Tools{
 
 
   static File fileEtatsList = File("");
+  static File fileListType = File("");
   static File fileDemandesList = File("");
   static File fileTraitementList = File("");
 
@@ -72,11 +77,16 @@ class Tools{
     try {
       getApplicationDocumentsDirectory().then((Directory directory) {
         fileEtatsList = new File(directory.path + "/fileEtatsList.json");
+        fileListType = new File(directory.path + "/fileListType.json");
         fileDemandesList = new File(directory.path + "/fileDemandesList.json");
         // fileTraitementList = new File(directory.path + "/fileDemandesList.json");
 
         if(!fileEtatsList.existsSync()){
           fileEtatsList.createSync();
+        }
+
+        if(!fileListType.existsSync()){
+          fileListType.createSync();
         }
 
         if(!fileDemandesList.existsSync()){
@@ -95,7 +105,7 @@ class Tools{
     Response response ;
     try {
       Dio dio = new Dio();
-      dio.interceptors.add(HttpFormatter());
+      dio.interceptors.add(dioLoggerInterceptor);
 
       response =
       await dio.get("http://telcabo.castlit.com/etats/liste_etats");
@@ -140,6 +150,57 @@ class Tools{
     // return ResponseGetListEtat(etat: []);
 
   }
+  static  Future<ResponseGetListType> callWSGetlisteTypes() async {
+    print("****** callWSGetlisteTypes ***");
+
+    Response response ;
+    try {
+      Dio dio = new Dio();
+      dio.interceptors.add(dioLoggerInterceptor);
+
+      response =
+      await dio.get("http://telcabo.castlit.com/etats/liste_types");
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.data}');
+
+      if (response.statusCode == 200) {
+        var responseApiHome = jsonDecode(response.data);
+        writeToFileEtatsList(responseApiHome);
+
+        ResponseGetListType etats = ResponseGetListType.fromJson(responseApiHome);
+        print(etats);
+
+        return etats;
+      } else {
+        throw Exception('error fetching posts');
+      }
+
+
+    } on DioError catch (e) {
+      print("**************DioError***********");
+      print(e);
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx and is also not 304.
+      if (e.response != null) {
+        //        print(e.response.data);
+        //        print(e.response.headers);
+        //        print(e.response.);
+        //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
+        throw (e.response?.statusMessage ?? "");
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        //        print(e.request);
+        //        print(e.message);
+      }
+    } catch (e) {
+      throw ('API ERROR');
+    }
+
+    return Tools.readfileListType();
+    // return ResponseGetListEtat(etat: []);
+
+  }
 
   static  Future<ResponseGetDemandesList> getDemandes() async {
 
@@ -153,7 +214,7 @@ class Tools{
     try {
       print("************** getDemandes ***********");
       Dio dio = new Dio();
-      dio.interceptors.add(HttpFormatter());
+      dio.interceptors.add(dioLoggerInterceptor);
 
 
       apiRespon =
@@ -324,6 +385,28 @@ class Tools{
     return ResponseGetListEtat(etat: []);
   }
 
+  static ResponseGetListType readfileListType() {
+    ResponseGetListType responseGetListType;
+
+    print("Read to readfileListType!");
+    try {
+      Map<String, dynamic> etatsListMap =
+      json.decode(fileListType.readAsStringSync());
+      print(etatsListMap);
+
+      responseGetListType = ResponseGetListType.fromJson(etatsListMap);
+
+      print("OK");
+
+      return responseGetListType ;
+
+    } catch (e) {
+      print("exeption -- " + e.toString());
+    }
+
+    return ResponseGetListType(types: []);
+  }
+
   static ResponseGetDemandesList readfileDemandesList() {
     ResponseGetDemandesList responseGetDemandesList;
 
@@ -366,6 +449,21 @@ class Tools{
     }
 
     return responseListEtat;
+
+  }
+  static Future<ResponseGetListType> getTypeListFromLocalAndINternet() async{
+    print("****** getTYpeListFromLocalAndINternet ***");
+    ResponseGetListType responseGetListType;
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+      responseGetListType = await Tools.callWSGetlisteTypes();
+
+    }else{
+      responseGetListType =  Tools.readfileListType() ;
+    }
+
+    return responseGetListType;
 
   }
   static Future<ResponseGetDemandesList> getListDemandeFromLocalAndINternet() async{
@@ -521,7 +619,7 @@ class Tools{
     try {
       print("**************doPOST***********");
       Dio dio = new Dio();
-      dio.interceptors.add(HttpFormatter());
+      dio.interceptors.add(dioLoggerInterceptor);
 
 
       apiRespon =
@@ -572,6 +670,85 @@ class Tools{
     } catch (e) {
       throw ('API ERROR');
     }
+
+    return false ;
+
+  }
+
+
+
+
+  static  Future<bool> refreshSelectedDemande() async {
+    print("****** callWSRefreshSelectedDEmande ***");
+
+    FormData formData = FormData.fromMap({
+      "demande_id" : Tools.selectedDemande?.id ?? ""
+    });
+
+    print(formData);
+
+    Response apiRespon ;
+    try {
+      print("************** getDemandes ***********");
+      Dio dio = new Dio();
+      dio.interceptors.add(dioLoggerInterceptor);
+
+
+      apiRespon =
+      await dio.post("http://telcabo.castlit.com/demandes/get_demandes_byid",
+          data: formData,
+          options: Options(
+            // followRedirects: false,
+            // validateStatus: (status) { return status < 500; },
+            method: "POST",
+            headers: {
+              'Content-Type': 'multipart/form-data;charset=UTF-8',
+              'Charset': 'utf-8',
+              'Accept': 'application/json',
+            },
+          ));
+
+
+      print('Response status: ${apiRespon.statusCode}');
+      print('Response body: ${apiRespon.data}');
+
+      if (apiRespon.statusCode == 200) {
+        var responseApiHome = jsonDecode(apiRespon.data);
+
+        ResponseGetDemandesList demandesList = ResponseGetDemandesList.fromJson(responseApiHome);
+        print(demandesList);
+
+        Tools.selectedDemande = demandesList.demandes?.first ;
+
+        return true ;
+
+      } else {
+        throw Exception('error fetching posts');
+      }
+
+
+
+    } on DioError catch (e) {
+
+      print("**************DioError***********");
+      print(e);
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx and is also not 304.
+      if (e.response != null) {
+        //        print(e.response.data);
+        //        print(e.response.headers);
+        //        print(e.response.);
+        //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
+        throw (e.response?.statusMessage ?? "");
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        //        print(e.request);
+        //        print(e.message);
+      }
+    } catch (e) {
+      throw ('API ERROR');
+    }
+
 
     return false ;
 

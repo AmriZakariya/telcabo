@@ -20,6 +20,7 @@ class ResponseGetDemandesList {
     return data;
   }
 }
+
 class Demandes {
   String? id;
   String? code;
@@ -65,6 +66,7 @@ class Demandes {
   String? pSpeedTest;
   String? newAdresse;
   String? etatImmo;
+  String? etatImmeubleId;
   String? newLatitude;
   String? newLongitude;
   String? etatId;
@@ -73,14 +75,21 @@ class Demandes {
   String? motifSubstatutId;
   String? dateRdv;
   String? dateIntervention;
+  String? dateActivation;
   String? archiveId;
+  String? prestataireId;
+  String? typeInstallationId;
+  String? motifTypeinstallationId;
+  String? photoBlocage1;
+  String? photoBlocage2;
+  String? pto;
+  String? jarretieres;
   String? created;
   String? etatName;
   String? plaqueName;
   List<Commentaires>? commentaires;
   int? etape;
-  int? pto;
-  int? jarretieres;
+
   Demandes(
       {this.id,
         this.code,
@@ -126,6 +135,7 @@ class Demandes {
         this.pSpeedTest,
         this.newAdresse,
         this.etatImmo,
+        this.etatImmeubleId,
         this.newLatitude,
         this.newLongitude,
         this.etatId,
@@ -134,13 +144,19 @@ class Demandes {
         this.motifSubstatutId,
         this.dateRdv,
         this.dateIntervention,
+        this.dateActivation,
         this.archiveId,
+        this.prestataireId,
+        this.typeInstallationId,
+        this.motifTypeinstallationId,
+        this.photoBlocage1,
+        this.photoBlocage2,
+        this.pto,
+        this.jarretieres,
         this.created,
         this.etatName,
         this.plaqueName,
         this.commentaires,
-        this.pto,
-        this.jarretieres,
         this.etape});
 
   Demandes.fromJson(Map<String, dynamic> json) {
@@ -188,6 +204,7 @@ class Demandes {
     pSpeedTest = json['p_speed_test'];
     newAdresse = json['new_adresse'];
     etatImmo = json['etat_immo'];
+    etatImmeubleId = json['etat_immeuble_id'];
     newLatitude = json['new_latitude'];
     newLongitude = json['new_longitude'];
     etatId = json['etat_id'];
@@ -196,7 +213,15 @@ class Demandes {
     motifSubstatutId = json['motif_substatut_id'];
     dateRdv = json['date_rdv'];
     dateIntervention = json['date_intervention'];
+    dateActivation = json['date_activation'];
     archiveId = json['archive_id'];
+    prestataireId = json['prestataire_id'];
+    typeInstallationId = json['type_installation_id'];
+    motifTypeinstallationId = json['motif_typeinstallation_id'];
+    photoBlocage1 = json['photo_blocage1'];
+    photoBlocage2 = json['photo_blocage2'];
+    pto = json['pto'];
+    jarretieres = json['jarretieres'];
     created = json['created'];
     etatName = json['etat_name'];
     plaqueName = json['plaque_name'];
@@ -207,8 +232,6 @@ class Demandes {
       });
     }
     etape = json['etape'];
-    pto = json['pto'];
-    jarretieres = json['jarretieres'];
   }
 
   Map<String, dynamic> toJson() {
@@ -257,6 +280,7 @@ class Demandes {
     data['p_speed_test'] = this.pSpeedTest;
     data['new_adresse'] = this.newAdresse;
     data['etat_immo'] = this.etatImmo;
+    data['etat_immeuble_id'] = this.etatImmeubleId;
     data['new_latitude'] = this.newLatitude;
     data['new_longitude'] = this.newLongitude;
     data['etat_id'] = this.etatId;
@@ -265,17 +289,22 @@ class Demandes {
     data['motif_substatut_id'] = this.motifSubstatutId;
     data['date_rdv'] = this.dateRdv;
     data['date_intervention'] = this.dateIntervention;
+    data['date_activation'] = this.dateActivation;
     data['archive_id'] = this.archiveId;
+    data['prestataire_id'] = this.prestataireId;
+    data['type_installation_id'] = this.typeInstallationId;
+    data['motif_typeinstallation_id'] = this.motifTypeinstallationId;
+    data['photo_blocage1'] = this.photoBlocage1;
+    data['photo_blocage2'] = this.photoBlocage2;
+    data['pto'] = this.pto;
+    data['jarretieres'] = this.jarretieres;
     data['created'] = this.created;
     data['etat_name'] = this.etatName;
-    data['plaque_name'] = this.plaqueName;
     data['plaque_name'] = this.plaqueName;
     if (this.commentaires != null) {
       data['commentaires'] = this.commentaires!.map((v) => v.toJson()).toList();
     }
     data['etape'] = this.etape;
-    data['pto'] = this.pto;
-    data['jarretieres'] = this.jarretieres;
     return data;
   }
 }

@@ -89,6 +89,9 @@ dependencies:
   image_watermark: ^0.0.3
   dio_http_formatter: ^2.1.0
   notification_permissions: ^0.6.1
+  search_choices: ^2.0.19
+  dropdown_button2: ^1.4.0
+  dio_logger: ^4.0.8+8
 
 dev_dependencies:
   flutter_test:
