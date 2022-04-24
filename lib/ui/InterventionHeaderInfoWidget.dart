@@ -1,25 +1,38 @@
-
+import 'dart:async';
 import 'dart:io';
+import 'dart:math';
+import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expand_widget/expand_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:horizontal_card_pager/card_item.dart';
+import 'package:horizontal_card_pager/horizontal_card_pager.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:telcabo/DetailIntervention.dart';
 import 'package:telcabo/FormStepper.dart';
 import 'package:telcabo/InterventionFormStep2.dart';
 import 'package:telcabo/InterventionWidgetStep1.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/models/response_get_demandes.dart';
 import 'package:telcabo/models/response_get_liste_etats.dart';
-
+import 'package:timelines/timelines.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DemandeListItem extends StatelessWidget {
+  final Demandes demande;
+  final NavigatorState navigator;
 
-  final Demandes demande ;
-
-  const DemandeListItem({Key? key, required this.demande}) : super(key: key);
+  const DemandeListItem(
+      {Key? key, required this.demande, required this.navigator})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,345 +45,355 @@ class DemandeListItem extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: getColorByEtatId(int.parse(demande.etatId ?? "0")).withOpacity(0.5),
+              color: getColorByEtatId(int.parse(demande.etatId ?? "0"))
+                  .withOpacity(0.5),
               spreadRadius: 1,
               blurRadius: 1,
-              offset: Offset(1,0), // changes position of shadow
+              offset: Offset(1, 0), // changes position of shadow
             ),
           ],
-
-          borderRadius: BorderRadius.circular(20) // use instead of BorderRadius.all(Radius.circular(20))
-      ),
+          borderRadius: BorderRadius.circular(
+              20) // use instead of BorderRadius.all(Radius.circular(20))
+          ),
       child: Center(
-          child:Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: double.infinity,
-                height: 65,
-                decoration: BoxDecoration(
-                    color: getColorByEtatId(int.parse(demande.etatId ?? "0")),
-                    border: Border.all(
-                      color: Colors.transparent,
-                    ),
-                    borderRadius: BorderRadius.circular(20) // use instead of BorderRadius.all(Radius.circular(20))
+          child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: double.infinity,
+            height: 65,
+            decoration: BoxDecoration(
+                color: getColorByEtatId(int.parse(demande.etatId ?? "0")),
+                border: Border.all(
+                  color: Colors.transparent,
                 ),
-                child: Row(
+                borderRadius: BorderRadius.circular(
+                    20) // use instead of BorderRadius.all(Radius.circular(20))
+                ),
+            child: Row(children: [
+              SizedBox(
+                height: 5.0,
+              ),
+              // CircleAvatar(
+              //   radius: 32.0,
+              //   backgroundImage: AssetImage('assets/user.png'),
+              //   backgroundColor: Colors.white,
+              // ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Icon(
+                  Icons.person,
+                  size: 22,
+                ),
+              ),
+              Container(
+                width: 200,
+                child: Text('${demande.client}',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.0,
+                    )),
+              ),
+
+              Spacer(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Tools.selectedDemande = demande;
+                      print(
+                          "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+
+                      navigator.push(MaterialPageRoute(
+                        builder: (_) => DetailIntervention(),
+                      ));
+                    },
+                    child: Tooltip(
+                      message: "Voir",
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                            color: Tools.colorPrimary, shape: BoxShape.circle),
+                        child: Center(
+                            child: FaIcon(
+                          FontAwesomeIcons.solidEye,
+                          color: Colors.white,
+                          size: 15,
+                        )),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Tools.selectedDemande = demande;
+                      print(
+                          "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+
+                      navigator.push(MaterialPageRoute(
+                        builder: (_) => WizardForm(),
+                      ));
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                            color: Tools.colorPrimary, shape: BoxShape.circle),
+                        child: Center(
+                            child: FaIcon(
+                          FontAwesomeIcons.screwdriver,
+                          color: Colors.white,
+                          size: 15,
+                        )),
+                      ),
+                    ),
+                  ),
+                  // ElevatedButton(
+                  //   child: Icon(Icons.remove_red_eye, size: 20),
+                  //   onPressed: () {
+                  //     Tools.selectedDemande = demande ;
+                  //
+                  //   },
+                  //   style: ElevatedButton .styleFrom(
+                  //     // minimumSize: Size.zero, // Set this
+                  //     // padding: EdgeInsets.zero,
+                  //     shape: const CircleBorder(),
+                  //   ),
+                  // ),
+                  // ElevatedButton(
+                  //   child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
+                  //   onPressed: () {
+                  //     Tools.selectedDemande = demande ;
+                  //     print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+                  //
+                  //     if(demande.etatId == "3"
+                  //         && demande.pPbiAvant != ""
+                  //         && demande.pPbiApres != ""){
+                  //       // Navigator.of(context).push(MaterialPageRoute(
+                  //       //   builder: (_) => InterventionFormStep2(),
+                  //       // ));
+                  //       Tools.currentStep = 1 ;
+                  //     }else{
+                  //       // Navigator.of(context).push(MaterialPageRoute(
+                  //       //   builder: (_) => InterventionFormStep1(),
+                  //       // ));
+                  //       Tools.currentStep = 0 ;
+                  //
+                  //     }
+                  //
+                  //     // FormBlocState.currentStep = Tools.currentStep ;
+                  //
+                  //     Navigator.of(context).push(MaterialPageRoute(
+                  //       builder: (_) => WizardForm(),
+                  //     ));
+                  //
+                  //   },
+                  //   style: ElevatedButton.styleFrom(
+                  //     // minimumSize: Size.zero, // Set this
+                  //     // padding: EdgeInsets.zero,
+                  //     shape: const CircleBorder(),
+                  //   ),
+                  // ),
+                ],
+              ),
+            ]),
+          ),
+          ExpandChild(
+            arrowSize: 25,
+            arrowPadding: EdgeInsets.all(0),
+            child: Container(
+                // color: Colors.white,
+                child: Padding(
+              padding: EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Divider(color: Colors.black, height: 2,),
+                  // SizedBox(height: 15,),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    title: "Contact CLient :",
+                    description: demande.contactClient ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  InfoItemWidget(
+                    iconData: Icons.list,
+                    title: "Type :",
+                    description: demande.typeDemande ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  InfoItemWidget(
+                    iconData: Icons.location_city_sharp,
+                    title: "Type :",
+                    description: demande.ville ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  InfoItemWidget(
+                    iconData: Icons.list_alt,
+                    title: "PLaque :",
+                    description: demande.plaqueName ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  InfoItemWidget(
+                    iconData: Icons.list_alt,
+                    title: "Login SIP :",
+                    description: demande.loginSip ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  InfoItemWidget(
+                    iconData: Icons.list_alt,
+                    title: "Opportunité :",
+                    description: demande.sousTypeOpportunite ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  InfoItemWidget(
+                    iconData: Icons.list_alt,
+                    title: "Portabilité :",
+                    description: demande.loginSip ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+
+                  InfoItemWidget(
+                    iconData: Icons.edit_attributes_sharp,
+                    title: "Etat :",
+                    description: demande.etatName ?? "",
+                  ),
+
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  Divider(),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(height: 5.0,),
-                      // CircleAvatar(
-                      //   radius: 32.0,
-                      //   backgroundImage: AssetImage('assets/user.png'),
-                      //   backgroundColor: Colors.white,
-                      // ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Icon(Icons.person, size: 22,),
-                      ),
-                      Container(
-                        width: 200,
-                        child: Text('${demande.client}',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color:Colors.black,
-                              fontSize: 16.0,
-                            )),
-                      ),
-
-                      Spacer(),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.end,
+                      Column(
                         children: [
-
-
-                          GestureDetector(
-                             onTap: () {
-                               Tools.selectedDemande = demande ;
-                                   print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-
-
-                                   Navigator.of(context).push(MaterialPageRoute(
-                                     builder: (_) => WizardForm(),
-                                   ));
-
+                          ElevatedButton(
+                            child: Icon(Icons.remove_red_eye, size: 20),
+                            onPressed: () {
+                              Tools.selectedDemande = demande;
                             },
-                            child: Tooltip(
-                              message: "Intervention",
-                              child: Container(
-
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                    color: Tools.colorPrimary,
-                                    shape: BoxShape.circle
-                                ),
-                                child: Center(child: FaIcon(FontAwesomeIcons.solidEye, color: Colors.white, size: 15,)),
-                              ),
+                            style: ElevatedButton.styleFrom(
+                              fixedSize: const Size(10, 10),
+                              shape: const CircleBorder(),
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              Tools.selectedDemande = demande ;
-                              print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
+                          Text("Voir")
+                        ],
+                      ),
 
+                      Column(
+                        children: [
+                          ElevatedButton(
+                            child:
+                                FaIcon(FontAwesomeIcons.screwdriver, size: 20),
+                            onPressed: () {
+                              Tools.selectedDemande = demande;
+                              print(
+                                  "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
 
+                              // if(demande.etatId == "3"
+                              //     && demande.pPbiAvant != ""
+                              //     && demande.pPbiApres != ""){
+                              //   // Navigator.of(context).push(MaterialPageRoute(
+                              //   //   builder: (_) => InterventionFormStep2(),
+                              //   // ));
+                              //   Tools.currentStep = 1 ;
+                              // }else{
+                              //   // Navigator.of(context).push(MaterialPageRoute(
+                              //   //   builder: (_) => InterventionFormStep1(),
+                              //   // ));
+                              //   Tools.currentStep = 0 ;
+                              //
+                              // }
 
-                              Navigator.of(context).push(MaterialPageRoute(
+                              // FormBlocState.currentStep = Tools.currentStep ;
+
+                              navigator.push(MaterialPageRoute(
                                 builder: (_) => WizardForm(),
                               ));
-
                             },
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8 ),
-                              child: Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                    color: Tools.colorPrimary,
-                                    shape: BoxShape.circle
-                                ),
-                                child: Center(child: FaIcon(FontAwesomeIcons.screwdriver, color: Colors.white, size: 15,)),
-                              ),
+                            style: ElevatedButton.styleFrom(
+                              fixedSize: const Size(10, 10),
+                              shape: const CircleBorder(),
                             ),
                           ),
-                          // ElevatedButton(
-                          //   child: Icon(Icons.remove_red_eye, size: 20),
-                          //   onPressed: () {
-                          //     Tools.selectedDemande = demande ;
-                          //
-                          //   },
-                          //   style: ElevatedButton .styleFrom(
-                          //     // minimumSize: Size.zero, // Set this
-                          //     // padding: EdgeInsets.zero,
-                          //     shape: const CircleBorder(),
-                          //   ),
-                          // ),
-                          // ElevatedButton(
-                          //   child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
-                          //   onPressed: () {
-                          //     Tools.selectedDemande = demande ;
-                          //     print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-                          //
-                          //     if(demande.etatId == "3"
-                          //         && demande.pPbiAvant != ""
-                          //         && demande.pPbiApres != ""){
-                          //       // Navigator.of(context).push(MaterialPageRoute(
-                          //       //   builder: (_) => InterventionFormStep2(),
-                          //       // ));
-                          //       Tools.currentStep = 1 ;
-                          //     }else{
-                          //       // Navigator.of(context).push(MaterialPageRoute(
-                          //       //   builder: (_) => InterventionFormStep1(),
-                          //       // ));
-                          //       Tools.currentStep = 0 ;
-                          //
-                          //     }
-                          //
-                          //     // FormBlocState.currentStep = Tools.currentStep ;
-                          //
-                          //     Navigator.of(context).push(MaterialPageRoute(
-                          //       builder: (_) => WizardForm(),
-                          //     ));
-                          //
-                          //   },
-                          //   style: ElevatedButton.styleFrom(
-                          //     // minimumSize: Size.zero, // Set this
-                          //     // padding: EdgeInsets.zero,
-                          //     shape: const CircleBorder(),
-                          //   ),
-                          // ),
-
+                          Text("Intervention")
                         ],
                       ),
-
-                    ]
-                ),
+                      // Column(
+                      //   children: [
+                      //     ElevatedButton(
+                      //         child: Icon(Icons.edit, size: 20),
+                      //         onPressed: () {
+                      //           Tools.selectedDemande = demande ;
+                      //
+                      //         },
+                      //         style: ElevatedButton.styleFrom(
+                      //             fixedSize: const Size(10, 10),
+                      //             shape: const CircleBorder(),
+                      //       ),
+                      //     ),
+                      //     Text("Modifier")
+                      //
+                      //   ],
+                      // ),
+                    ],
+                  ),
+                ],
               ),
-              ExpandChild(
-                arrowSize: 25,
-                arrowPadding: EdgeInsets.all(0) ,
-                child: Container(
-                  // color: Colors.white,
-                    child: Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Divider(color: Colors.black, height: 2,),
-                          // SizedBox(height: 15,),
-                          InfoItemWidget(
-                            iconData: Icons.phone,
-                            title: "Contact CLient :",
-                            description: demande.contactClient ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-
-                          InfoItemWidget(
-                            iconData: Icons.list,
-                            title: "Type :",
-                            description: demande.typeDemande ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-                          InfoItemWidget(
-                            iconData: Icons.location_city_sharp,
-                            title: "Type :",
-                            description: demande.ville ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-                          InfoItemWidget(
-                            iconData: Icons.list_alt,
-                            title: "PLaque :",
-                            description: demande.plaqueName ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-                          InfoItemWidget(
-                            iconData: Icons.list_alt,
-                            title: "Login SIP :",
-                            description: demande.loginSip ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-                          InfoItemWidget(
-                            iconData: Icons.list_alt,
-                            title: "Opportunité :",
-                            description: demande.sousTypeOpportunite ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-                          InfoItemWidget(
-                            iconData: Icons.list_alt,
-                            title: "Portabilité :",
-                            description: demande.loginSip ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-                          InfoItemWidget(
-                            iconData: Icons.edit_attributes_sharp,
-                            title: "Etat :",
-                            description: demande.etatName ?? "",
-                          ),
-
-                          SizedBox(height: 20.0,),
-                          Divider(),
-                          SizedBox(height: 20.0,),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Column(
-                                children: [
-                                  ElevatedButton(
-                                    child: Icon(Icons.remove_red_eye, size: 20),
-                                    onPressed: () {
-                                      Tools.selectedDemande = demande ;
-
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      fixedSize: const Size(10, 10),
-                                      shape: const CircleBorder(),
-                                    ),
-                                  ),
-                                  Text("Voir")
-                                ],
-                              ),
-
-                              Column(
-                                children: [
-                                  ElevatedButton(
-                                    child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
-                                    onPressed: () {
-                                      Tools.selectedDemande = demande ;
-                                      print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-
-                                      // if(demande.etatId == "3"
-                                      //     && demande.pPbiAvant != ""
-                                      //     && demande.pPbiApres != ""){
-                                      //   // Navigator.of(context).push(MaterialPageRoute(
-                                      //   //   builder: (_) => InterventionFormStep2(),
-                                      //   // ));
-                                      //   Tools.currentStep = 1 ;
-                                      // }else{
-                                      //   // Navigator.of(context).push(MaterialPageRoute(
-                                      //   //   builder: (_) => InterventionFormStep1(),
-                                      //   // ));
-                                      //   Tools.currentStep = 0 ;
-                                      //
-                                      // }
-
-                                      // FormBlocState.currentStep = Tools.currentStep ;
-
-                                      Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (_) => WizardForm(),
-                                      ));
-
-
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      fixedSize: const Size(10, 10),
-                                      shape: const CircleBorder(),
-                                    ),
-                                  ),
-                                  Text("Intervention")
-                                ],
-                              ),
-                              // Column(
-                              //   children: [
-                              //     ElevatedButton(
-                              //         child: Icon(Icons.edit, size: 20),
-                              //         onPressed: () {
-                              //           Tools.selectedDemande = demande ;
-                              //
-                              //         },
-                              //         style: ElevatedButton.styleFrom(
-                              //             fixedSize: const Size(10, 10),
-                              //             shape: const CircleBorder(),
-                              //       ),
-                              //     ),
-                              //     Text("Modifier")
-                              //
-                              //   ],
-                              // ),
-                            ],
-                          ),
-
-
-
-                        ],
-                      ),
-                    )
-                ),
-              ),
-              SizedBox(height: 5.0,),
-
-            ],
-          )
-      ),
+            )),
+          ),
+          SizedBox(
+            height: 5.0,
+          ),
+        ],
+      )),
     );
   }
 
   getColorByEtatId(int etatId) {
-    if(Tools.arr_d.contains(etatId)){
-      return Colors.red ;
-    }else  if(Tools.arr_s.contains(etatId)){
-      return Colors.green ;
-
-    }else if(Tools.arr_w.contains(etatId)){
-      return Colors.orange ;
+    if (Tools.arr_d.contains(etatId)) {
+      return Colors.red;
+    } else if (Tools.arr_s.contains(etatId)) {
+      return Colors.green;
+    } else if (Tools.arr_w.contains(etatId)) {
+      return Colors.orange;
     }
 
-    return Colors.transparent ;
-
+    return Colors.transparent;
   }
-
-
 }
 
 class InterventionHeaderInfoClientWidget extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -379,103 +402,487 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
           border: Border.all(
             color: Colors.black,
           ),
-          borderRadius: BorderRadius.circular(20) // use instead of BorderRadius.all(Radius.circular(20))
-      ),
+          borderRadius: BorderRadius.circular(
+              20) // use instead of BorderRadius.all(Radius.circular(20))
+          ),
       child: Center(
-          child:Column(
-            children: [
-              Column(
-                  children: [
-                    SizedBox(height: 15.0,),
-                    // CircleAvatar(
-                    //   radius: 32.0,
-                    //   backgroundImage: AssetImage('assets/user.png'),
-                    //   backgroundColor: Colors.white,
-                    // ),
-                    ElevatedButton(
-                      onPressed: () async {
-                      },
-                      style: ElevatedButton.styleFrom(
-                        // primary: Tools.colorPrimary,
-                        shape: CircleBorder(),
-                        padding: EdgeInsets.all(10),
-                      ),
-                      child: const Icon(Icons.person, size: 40,),
-                    ),
-                    SizedBox(height: 12,),
-                    Text('Client : ${Tools.selectedDemande?.client}',
-                        style: TextStyle(
-                          color:Colors.black,
-                          fontSize: 16.0,
-                        )),
-
-                  ]
+          child: Column(
+        children: [
+          Column(children: [
+            SizedBox(
+              height: 15.0,
+            ),
+            // CircleAvatar(
+            //   radius: 32.0,
+            //   backgroundImage: AssetImage('assets/user.png'),
+            //   backgroundColor: Colors.white,
+            // ),
+            ElevatedButton(
+              onPressed: () async {},
+              style: ElevatedButton.styleFrom(
+                // primary: Tools.colorPrimary,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(10),
               ),
-              ExpandChild(
-                child: Container(
-                  // color: Colors.white,
-                    child: Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Divider(color: Colors.black, height: 2,),
-                          SizedBox(height: 15,),
-                          InfoItemWidget(
-                            iconData: Icons.circle,
-                            title: "Offre :",
-                            description: Tools.selectedDemande?.offre ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone,
-                            title: "Téléphone :",
-                            description: Tools.selectedDemande?.contactClient ?? "",
-                          ),
-
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone_android,
-                            title: "Numéro de la personne mandatée :",
-                            description: Tools.selectedDemande?.numPersMandatee ?? "",
-                          ),
-
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.person_pin_outlined  ,
-                            title: "Nom de la personne mandatée :",
-                            description: Tools.selectedDemande?.nomPerMandatee ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.person_pin_outlined  ,
-                            title: "Type logement :",
-                            description: Tools.selectedDemande?.typeLogement ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.location_on  ,
-                            title: "Adresse :",
-                            description: Tools.selectedDemande?.adresseInstallation ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-
-                        ],
-                      ),
-                    )
-                ),
+              child: const Icon(
+                Icons.person,
+                size: 40,
               ),
-            ],
-          )
-      ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Text('Client : ${Tools.selectedDemande?.client}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16.0,
+                )),
+          ]),
+          ExpandChild(
+            child: Container(
+                // color: Colors.white,
+                child: Padding(
+              padding: EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(
+                    color: Colors.black,
+                    height: 2,
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.circle,
+                    title: "Offre :",
+                    description: Tools.selectedDemande?.offre ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    title: "Téléphone :",
+                    description: Tools.selectedDemande?.contactClient ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone_android,
+                    title: "Numéro de la personne mandatée :",
+                    description: Tools.selectedDemande?.numPersMandatee ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.person_pin_outlined,
+                    title: "Nom de la personne mandatée :",
+                    description: Tools.selectedDemande?.nomPerMandatee ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.person_pin_outlined,
+                    title: "Type logement :",
+                    description: Tools.selectedDemande?.typeLogement ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.location_on,
+                    title: "Adresse :",
+                    description:
+                        Tools.selectedDemande?.adresseInstallation ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                ],
+              ),
+            )),
+          ),
+        ],
+      )),
     );
   }
-
-
 }
 
-
 class InterventionHeaderInfoProjectWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+      decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.black,
+          ),
+          borderRadius: BorderRadius.circular(
+              20) // use instead of BorderRadius.all(Radius.circular(20))
+          ),
+      child: Center(
+          child: Column(
+        children: [
+          Column(children: [
+            SizedBox(
+              height: 15.0,
+            ),
+            // CircleAvatar(
+            //   radius: 32.0,
+            //   backgroundImage: AssetImage('assets/user.png'),
+            //   backgroundColor: Colors.white,
+            // ),
+            ElevatedButton(
+              onPressed: () async {},
+              style: ElevatedButton.styleFrom(
+                // primary: Tools.colorPrimary,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(10),
+              ),
+              child: const Icon(
+                Icons.receipt,
+                size: 40,
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Center(
+              child: Text('Projet : ${Tools.selectedDemande?.projet}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                  )),
+            ),
+          ]),
+          ExpandChild(
+            child: Container(
+                // color: Colors.white,
+                child: Padding(
+              padding: EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(
+                    color: Colors.black,
+                    height: 2,
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.circle,
+                    title: "Type demande :",
+                    description: Tools.selectedDemande?.typeDemande ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.server,
+                      size: 18,
+                    ),
+                    title: "Equipements :",
+                    description: Tools.selectedDemande?.equipements ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone_android,
+                    icon: FaIcon(
+                      FontAwesomeIcons.handHolding,
+                      size: 18,
+                    ),
+                    title: "Equipements Livré :",
+                    description: Tools.selectedDemande?.equipementLivre ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone_android,
+                    icon: FaIcon(
+                      FontAwesomeIcons.inbox,
+                      size: 18,
+                    ),
+                    title: "Plan :",
+                    description: Tools.selectedDemande?.plan ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone_android,
+                    icon: FaIcon(
+                      FontAwesomeIcons.sitemap,
+                      size: 18,
+                    ),
+                    title: "Login internet :",
+                    description: Tools.selectedDemande?.loginInternet ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone_android,
+                    icon: FaIcon(
+                      FontAwesomeIcons.diagramProject,
+                      size: 18,
+                    ),
+                    title: "Login SIP :",
+                    description: Tools.selectedDemande?.loginSip ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone_android,
+                    icon: FaIcon(
+                      FontAwesomeIcons.boxOpen,
+                      size: 18,
+                    ),
+                    title: " Portabilité :",
+                    description: Tools.selectedDemande?.portabilite ?? "",
+                  ),
+                  SizedBox(
+                    height: 20.0,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone_android,
+                    icon: FaIcon(
+                      FontAwesomeIcons.timeline,
+                      size: 18,
+                    ),
+                    title: "Sous type opportunite :",
+                    description:
+                        Tools.selectedDemande?.sousTypeOpportunite ?? "",
+                  ),
+                ],
+              ),
+            )),
+          ),
+        ],
+      )),
+    );
+  }
+}
+
+class InterventionInformationWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+      decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.black,
+          ),
+          borderRadius: BorderRadius.circular(
+              20) // use instead of BorderRadius.all(Radius.circular(20))
+          ),
+      child: Center(
+          child: Column(
+        children: [
+          Column(children: [
+            SizedBox(
+              height: 15.0,
+            ),
+            // CircleAvatar(
+            //   radius: 32.0,
+            //   backgroundImage: AssetImage('assets/user.png'),
+            //   backgroundColor: Colors.white,
+            // ),
+            ElevatedButton(
+              onPressed: () async {},
+              style: ElevatedButton.styleFrom(
+                // primary: Tools.colorPrimary,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(10),
+              ),
+              child: const Icon(
+                Icons.info,
+                size: 40,
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Center(
+              child: Text("Informations de l'Intervention",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                  )),
+            ),
+          ]),
+          ExpandChild(
+            child: Container(
+                // color: Colors.white,
+                child: Padding(
+              padding: EdgeInsets.all(15.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Divider(
+                    color: Colors.black,
+                    height: 2,
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.gauge,
+                      size: 18,
+                    ),
+                    title: "Speed :",
+                    description: Tools.selectedDemande?.speed ?? "",
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.globe,
+                      size: 18,
+                    ),
+                    title: "DNSN :",
+                    description: Tools.selectedDemande?.dnsn ?? "",
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.houseSignal,
+                      size: 18,
+                    ),
+                    title: "Debit :",
+                    description: Tools.selectedDemande?.debit ?? "",
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.phoneVolume,
+                      size: 18,
+                    ),
+                    title: "SN Tel  :",
+                    description: Tools.selectedDemande?.snTel ?? "",
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.scribd,
+                      size: 18,
+                    ),
+                    title: "Consomation cable ",
+                    description: Tools.selectedDemande?.consommationCable ?? "",
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.terminal,
+                      size: 18,
+                    ),
+                    title: "Adresse MAC",
+                    description: Tools.selectedDemande?.adresseMac ?? "",
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  InfoItemWidget(
+                    iconData: Icons.phone,
+                    icon: FaIcon(
+                      FontAwesomeIcons.route,
+                      size: 18,
+                    ),
+                    title: "SN GPON",
+                    description: Tools.selectedDemande?.snRouteur ?? "",
+                  ),
+                  SizedBox(
+                    height: 15,
+                  ),
+                ],
+              ),
+            )),
+          ),
+        ],
+      )),
+    );
+  }
+}
+
+class ImagesModelTest {
+  final String? selectedImage;
+  final String? selectedImageTxt;
+
+  ImagesModelTest(this.selectedImage, this.selectedImageTxt);
+}
+
+class InterventionHeaderImagesWidget extends StatelessWidget {
+  ValueNotifier<ImagesModelTest> commentaireCuuntValueNotifer =
+      ValueNotifier(ImagesModelTest(
+    "https://telcabo.castlit.com/img/demandes/" +
+        (Tools.selectedDemande?.pPbiAvant ?? ""),
+    "Photo PBI avant l’installation",
+  ));
+
+
+
+  List<CardItem> items = [
+    ImageCarditem(
+        image: Image(
+      image: CachedNetworkImageProvider(
+          "https://telcabo.castlit.com/img/demandes/" +
+              (Tools.selectedDemande?.pPbiAvant ?? "")),
+    )),
+    ImageCarditem(
+        image: Image(
+      errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
+        return Container();
+      },
+      image: CachedNetworkImageProvider(
+          "https://telcabo.castlit.com/img/demandes/" +
+              (Tools.selectedDemande?.pPbiApres ?? "")),
+    )),
+    ImageCarditem(
+        image: Image(
+      image: CachedNetworkImageProvider(
+          "https://telcabo.castlit.com/img/demandes/" +
+              (Tools.selectedDemande?.pPboApres ?? "")),
+    )),
+    ImageCarditem(
+        image: Image(
+      errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
+        return Container();
+      },
+      image: CachedNetworkImageProvider(
+          "https://telcabo.castlit.com/img/demandes/" +
+              (Tools.selectedDemande?.pPboApres ?? "")),
+    )),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -485,119 +892,154 @@ class InterventionHeaderInfoProjectWidget extends StatelessWidget {
           border: Border.all(
             color: Colors.black,
           ),
-          borderRadius: BorderRadius.circular(20) // use instead of BorderRadius.all(Radius.circular(20))
-      ),
+          borderRadius: BorderRadius.circular(
+              20) // use instead of BorderRadius.all(Radius.circular(20))
+          ),
       child: Center(
-          child:Column(
-            children: [
-              Column(
-                  children: [
-                    SizedBox(height: 15.0,),
-                    // CircleAvatar(
-                    //   radius: 32.0,
-                    //   backgroundImage: AssetImage('assets/user.png'),
-                    //   backgroundColor: Colors.white,
-                    // ),
-                    ElevatedButton(
-                      onPressed: () async {
-                      },
-                      style: ElevatedButton.styleFrom(
-                        // primary: Tools.colorPrimary,
-                        shape: CircleBorder(),
-                        padding: EdgeInsets.all(10),
-                      ),
-                      child: const Icon(Icons.receipt, size: 40,),
-                    ),
-                    SizedBox(height: 12,),
-                    Center(
-                      child: Text('Projet : ${Tools.selectedDemande?.projet}',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color:Colors.black,
-                            fontSize: 16.0,
-
-                          )),
-                    ),
-
-                  ]
+          child: Column(
+        children: [
+          Column(children: [
+            SizedBox(
+              height: 15.0,
+            ),
+            // CircleAvatar(
+            //   radius: 32.0,
+            //   backgroundImage: AssetImage('assets/user.png'),
+            //   backgroundColor: Colors.white,
+            // ),
+            ElevatedButton(
+              onPressed: () async {},
+              style: ElevatedButton.styleFrom(
+                // primary: Tools.colorPrimary,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(10),
               ),
-              ExpandChild(
-                child: Container(
-                  // color: Colors.white,
-                    child: Padding(
-                      padding: EdgeInsets.all(15.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Divider(color: Colors.black, height: 2,),
-                          SizedBox(height: 15,),
-                          InfoItemWidget(
-                            iconData: Icons.circle,
-                            title: "Type demande :",
-                            description: Tools.selectedDemande?.typeDemande ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone,
-                            icon: FaIcon(FontAwesomeIcons.server, size: 18,),
-                            title: "Equipements :",
-                            description: Tools.selectedDemande?.equipements ?? "",
-                          ),
-
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone_android,
-                            icon: FaIcon(FontAwesomeIcons.handHolding, size: 18,),
-                            title: "Equipements Livré :",
-                            description: Tools.selectedDemande?.equipementLivre ?? "",
-                          ),
-                          SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone_android,
-                            icon: FaIcon(FontAwesomeIcons.inbox, size: 18,),
-                            title: "Plan :",
-                            description: Tools.selectedDemande?.plan ?? "",
-                          ), SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone_android,
-                            icon: FaIcon(FontAwesomeIcons.sitemap, size: 18,),
-                            title: "Login internet :",
-                            description: Tools.selectedDemande?.loginInternet ?? "",
-                          ), SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone_android,
-                            icon: FaIcon(FontAwesomeIcons.diagramProject, size: 18,),
-                            title: "Login SIP :",
-                            description: Tools.selectedDemande?.loginSip ?? "",
-                          ), SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone_android,
-                            icon: FaIcon(FontAwesomeIcons.boxOpen, size: 18,),
-                            title: " Portabilité :",
-                            description: Tools.selectedDemande?.portabilite ?? "",
-                          ), SizedBox(height: 20.0,),
-                          InfoItemWidget(
-                            iconData: Icons.phone_android,
-                            icon: FaIcon(FontAwesomeIcons.timeline, size: 18,),
-                            title: "Sous type opportunite :",
-                            description: Tools.selectedDemande?.sousTypeOpportunite ?? "",
-                          ),
-                        ],
-                      ),
-                    )
-                ),
+              child: const Icon(
+                Icons.image_sharp,
+                size: 40,
               ),
-            ],
-          )
-      ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Center(
+              child: Text('Photos',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                  )),
+            ),
+          ]),
+          ExpandChild(
+              child: ValueListenableBuilder(
+            valueListenable: commentaireCuuntValueNotifer,
+            builder: (BuildContext context, ImagesModelTest commentaireCount,
+                Widget? child) {
+              return Column(
+                children: [
+                  Text(
+                    commentaireCount.selectedImageTxt ?? "",
+                    style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontFamily: 'Open Sans',
+                        letterSpacing: 1.3,
+                        fontSize: 16),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(
+                      vertical: 20.0,
+                      horizontal: 20.0,
+                    ),
+                    height: 200.0,
+                    child: ClipRect(
+                      child: PhotoView(
+                        imageProvider: CachedNetworkImageProvider(
+                            commentaireCount.selectedImage ?? ""),
+                        maxScale: PhotoViewComputedScale.covered * 2.0,
+                        minScale: PhotoViewComputedScale.contained * 0.8,
+                        initialScale: PhotoViewComputedScale.covered,
+                      ),
+                    ),
+                  ),
+                  Center(
+                      child: HorizontalCardPager(
+                    onPageChanged: (page) {
+                      print("page : $page");
+
+                      if (page == 0) {
+                        commentaireCuuntValueNotifer.value = ImagesModelTest(
+                            "https://telcabo.castlit.com/img/demandes/" +
+                                (Tools.selectedDemande?.pPbiAvant ?? ""),
+                            "Photo PBI avant l’installation");
+                      } else if (page == 1) {
+                        commentaireCuuntValueNotifer.value = ImagesModelTest(
+                            "https://telcabo.castlit.com/img/demandes/" +
+                                (Tools.selectedDemande?.pPbiApres ?? ""),
+                            "Photo PBI après l’installation");
+                      }
+                      if (page == 2) {
+                        commentaireCuuntValueNotifer.value = ImagesModelTest(
+                            "https://telcabo.castlit.com/img/demandes/" +
+                                (Tools.selectedDemande?.pPboAvant ?? ""),
+                            "Photo PBO avant l’installation");
+                      }
+                      if (page == 3) {
+                        commentaireCuuntValueNotifer.value = ImagesModelTest(
+                            "https://telcabo.castlit.com/img/demandes/" +
+                                (Tools.selectedDemande?.pPboApres ?? ""),
+                            "Photo PBO après l’installation");
+                      }
+                    },
+                    onSelectedItem: (page) {
+                      print("onSelectedItem : $page");
+                    },
+                    items: items,
+                  )),
+
+                  // Container(
+                  //     height: 500,
+                  //     child: PhotoViewGallery.builder(
+                  //       scrollPhysics: const BouncingScrollPhysics(),
+                  //       builder: (BuildContext context, int index) {
+                  //         return PhotoViewGalleryPageOptions(
+                  //           imageProvider: CachedNetworkImageProvider(
+                  //               "https://telcabo.castlit.com/img/demandes/" +
+                  //                   (Tools.selectedDemande?.pPbiAvant ?? "")),
+                  //           initialScale: PhotoViewComputedScale.contained * 0.8,
+                  //           heroAttributes:
+                  //               PhotoViewHeroAttributes(tag: "pPbiAvant"),
+                  //         );
+                  //       },
+                  //       itemCount: 4,
+                  //       loadingBuilder: (context, event) => Center(
+                  //         child: Container(
+                  //           width: 20.0,
+                  //           height: 20.0,
+                  //           child: CircularProgressIndicator(
+                  //             value: event == null
+                  //                 ? 0
+                  //                 : (event.cumulativeBytesLoaded /
+                  //                         (event.expectedTotalBytes ?? 1)) ??
+                  //                     0,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //       // backgroundDecoration: widget.backgroundDecoration,
+                  //       // pageController: widget.pageController,
+                  //       // onPageChanged: onPageChanged,
+                  //     )),
+                ],
+              );
+            },
+          )),
+        ],
+      )),
     );
   }
-
-
 }
 
 class InfoItemWidget extends StatelessWidget {
-
   const InfoItemWidget({
     Key? key,
     required this.iconData,
@@ -611,39 +1053,331 @@ class InfoItemWidget extends StatelessWidget {
   final String description;
   final Widget? icon;
 
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        child: Row(
+      children: [
+        Container(
+            margin: const EdgeInsets.only(right: 10.0),
+            child: icon ?? Icon(iconData)),
+        Flexible(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15.0,
+                  color: Tools.colorPrimary,
+                ),
+              ),
+              SizedBox(
+                height: 2,
+              ),
+              Text(
+                description,
+                // maxLines: 1,
+                // overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16.0,
+                ),
+              )
+            ],
+          ),
+        ),
+      ],
+    ));
+  }
+}
+
+class MapSample extends StatelessWidget {
+  Completer<GoogleMapController> _controller = Completer();
+
+
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+
+  getCurrentLatitudeLongitude() {
+    double lat;
+    try {
+      lat = double.parse(Tools.selectedDemande?.latitude ?? " 33.589886");
+    } catch (e) {
+      print(e);
+      lat = 33.589886;
+    }
+
+    double long;
+    try {
+      long = double.parse(Tools.selectedDemande?.longitude ?? " -7.603869");
+    } catch (e) {
+      print(e);
+      long = -7.603869;
+    }
+
+    return LatLng(lat, long);
+  }
+
+  getCurrentLatitude() {
+    double lat;
+    try {
+      lat = double.parse(Tools.selectedDemande?.latitude ?? " 33.589886");
+    } catch (e) {
+      print(e);
+      lat = 33.589886;
+    }
+
+    return lat;
+  }
+
+  getCurrentLongitude() {
+    double long;
+    try {
+      long = double.parse(Tools.selectedDemande?.longitude ?? " -7.603869");
+    } catch (e) {
+      print(e);
+      long = -7.603869;
+    }
+
+    return long;
+  }
+
+  Future<void> _launchUrl(bool isDir, double lat, double lon) async {
+    String url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
+
+    if (isDir) {
+      url =
+          'https://www.google.com/maps/dir/?api=1&origin=Googleplex&destination=$lat,$lon';
+    }
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  Widget mapToolBar() {
+    return Row(
+      children: [
+        FloatingActionButton(
+          child: Icon(Icons.map),
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            _launchUrl(false, getCurrentLatitude(), getCurrentLatitude());
+          },
+        ),
+        FloatingActionButton(
+          child: Icon(Icons.directions),
+          backgroundColor: Colors.blue,
+          onPressed: () {
+            _launchUrl(true, getCurrentLatitude(), getCurrentLatitude());
+          },
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String markerIdVal = Tools.selectedDemande?.client ?? "";
+    final MarkerId markerId = MarkerId(markerIdVal);
+
+    final Marker marker = Marker(
+      markerId: markerId,
+      position: getCurrentLatitudeLongitude(),
+      infoWindow: InfoWindow(title: markerIdVal, snippet: '*'),
+      onTap: () {
+//                  _onMarkerTapped(markerId);
+      },
+      onDragEnd: (LatLng position) {
+//                  _onMarkerDragEnd(markerId, position);
+      },
+    );
+    markers[markerId] = marker;
+
+    return Container(
+      margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+      decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.black,
+          ),
+          borderRadius: BorderRadius.circular(
+              20) // use instead of BorderRadius.all(Radius.circular(20))
+          ),
+      child: Center(
+          child: Column(
+        children: [
+          Column(children: [
+            SizedBox(
+              height: 15.0,
+            ),
+            // CircleAvatar(
+            //   radius: 32.0,
+            //   backgroundImage: AssetImage('assets/user.png'),
+            //   backgroundColor: Colors.white,
+            // ),
+            ElevatedButton(
+              onPressed: () async {},
+              style: ElevatedButton.styleFrom(
+                // primary: Tools.colorPrimary,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(10),
+              ),
+              child: const Icon(
+                Icons.gps_fixed,
+                size: 40,
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Center(
+              child: Text("Geolocalisation",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                  )),
+            ),
+          ]),
+          ExpandChild(
+            child: Column(
+              children: [
+                Divider(
+                  color: Colors.black,
+                  height: 2,
+                ),
+                SizedBox(
+                  height: 15,
+                ),
+                Container(
+                    // color: Colors.white,
+                    padding: EdgeInsets.all(5),
+                    height: 300,
+                    child: GoogleMap(
+                      mapType: MapType.terrain,
+                      initialCameraPosition: CameraPosition(
+                        target: getCurrentLatitudeLongitude(),
+                        zoom: 14.4746,
+                      ),
+                      onMapCreated: (GoogleMapController controller) {
+                        _controller.complete(controller);
+                      },
+                      myLocationButtonEnabled: false,
+                      markers: Set<Marker>.of(markers.values),
+                    )),
+              ],
+            ),
+          ),
+        ],
+      )),
+    );
+  }
+}
+
+
+
+class HeaderCommentaireWidget extends StatelessWidget {
+
 
   @override
   Widget build(BuildContext context) {
 
     return Container(
-        child: Row(
-          children: [
-            Container(      margin: const EdgeInsets.only(right: 10.0)
-                ,child: icon ?? Icon(iconData)),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                    style: TextStyle(
-                      fontSize: 15.0,
-                      color: Tools.colorPrimary,
+      margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+      decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.black,
+          ),
+          borderRadius: BorderRadius.circular(
+              20) // use instead of BorderRadius.all(Radius.circular(20))
+      ),
+      child: Center(
+          child: Column(
+            children: [
+              Column(children: [
+                SizedBox(
+                  height: 15.0,
+                ),
+                // CircleAvatar(
+                //   radius: 32.0,
+                //   backgroundImage: AssetImage('assets/user.png'),
+                //   backgroundColor: Colors.white,
+                // ),
+                ElevatedButton(
+                  onPressed: () async {},
+                  style: ElevatedButton.styleFrom(
+                    // primary: Tools.colorPrimary,
+                    shape: CircleBorder(),
+                    padding: EdgeInsets.all(10),
+                  ),
+                  child: const Icon(
+                    Icons.comment,
+                    size: 40,
+                  ),
+                ),
+                SizedBox(
+                  height: 12,
+                ),
+                Center(
+                  child: Text("Commentaires",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16.0,
+                      )),
+                ),
+              ]),
+              ExpandChild(
+                child: Column(
+                  children: [
+                    Divider(
+                      color: Colors.black,
+                      height: 2,
+                    ),
+                    SizedBox(
+                      height: 15,
+                    ),
+                    Container(
+                      child: Timeline.tileBuilder(
+                        shrinkWrap: true,
+                        builder: TimelineTileBuilder.fromStyle(
+                          contentsBuilder: (context, index) => Card(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(Tools.selectedDemande?.commentaires?[index]
+                                  .commentaire ??
+                                  ""),
+                            ),
+                          ),
+                          oppositeContentsBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                                alignment: AlignmentDirectional.centerEnd,
+                                child: Column(
+                                  children: [
+                                    // Text(Tools.selectedDemande?.commentaires?[index].userId ?? ""),
+                                    Text(Tools
+                                        .selectedDemande?.commentaires?[index].created
+                                        ?.trim() ??
+                                        ""),
+                                  ],
+                                )),
+                          ),
+                          contentsAlign: ContentsAlign.alternating,
+                          indicatorStyle: IndicatorStyle.outlined,
+                          connectorStyle: ConnectorStyle.dashedLine,
+                          itemCount: Tools.selectedDemande?.commentaires?.length ?? 0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
 
-                    ),),
-                  SizedBox(height: 2,),
-                  Text(description,
-                    // maxLines: 1,
-                    // overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16.0,
-                    ),)
-                ],
               ),
-            ),
-          ],
-        ));
-
-
-
+            ],
+          )),
+    );
   }
 }
+

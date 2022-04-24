@@ -79,7 +79,7 @@ class Tools{
         fileEtatsList = new File(directory.path + "/fileEtatsList.json");
         fileListType = new File(directory.path + "/fileListType.json");
         fileDemandesList = new File(directory.path + "/fileDemandesList.json");
-        // fileTraitementList = new File(directory.path + "/fileDemandesList.json");
+        fileTraitementList = new File(directory.path + "/fileTraitementList.json");
 
         if(!fileEtatsList.existsSync()){
           fileEtatsList.createSync();
@@ -91,6 +91,10 @@ class Tools{
 
         if(!fileDemandesList.existsSync()){
           fileDemandesList.createSync();
+        }
+
+        if(!fileTraitementList.existsSync()){
+          fileTraitementList.createSync();
         }
 
       });
@@ -166,7 +170,7 @@ class Tools{
 
       if (response.statusCode == 200) {
         var responseApiHome = jsonDecode(response.data);
-        writeToFileEtatsList(responseApiHome);
+        writeToFileTypeInstallationList(responseApiHome);
 
         ResponseGetListType etats = ResponseGetListType.fromJson(responseApiHome);
         print(etats);
@@ -208,7 +212,7 @@ class Tools{
       "user_id" : userId
     });
 
-    print(formData);
+    print(formData.fields.toString());
 
     Response apiRespon ;
     try {
@@ -352,6 +356,15 @@ class Tools{
       print("exeption -- "+e.toString());
     }
   }
+  static void writeToFileTypeInstallationList(Map jsonMapContent) {
+    print("Writing to writeToFileTypeInstallationList!");
+    try {
+      fileListType.writeAsStringSync(json.encode(jsonMapContent));
+      print("OK");
+    } catch (e) {
+      print("exeption -- "+e.toString());
+    }
+  }
 
   static void writeToFileDemandeList(Map jsonMapContent) {
     print("Writing to writeToFileDemandeList!");
@@ -363,25 +376,161 @@ class Tools{
     }
   }
 
+
+  static Future<void> readFileTraitementList() async{
+    print("readFileTraitementList!");
+
+    // fileTraitementList.writeAsStringSync("");
+
+    try {
+
+      String fileContent =  fileTraitementList.readAsStringSync();
+      print("file content ==> ${fileContent}");
+
+      if(!fileContent.isEmpty){
+        Map<String, dynamic> demandeListMap = json.decode(fileContent);
+
+        print(demandeListMap);
+
+        List traitementList = demandeListMap.values.elementAt(0);
+        print("traitementList ==> ${traitementList}");
+
+        List traitementListResult  = [];
+
+
+        for(int i = 0; i < traitementList.length; i++){
+          print("element ==> ${traitementList[i]}");
+
+          var isUpdated = await callWsAddMobileFromLocale(jsonDecode(traitementList[i])) ;
+          if ( isUpdated == true){
+
+
+          }else{
+            traitementListResult.add(traitementList[i]);
+          }
+
+        }
+
+
+        Map rsultMap = {
+          "traitementList" : traitementListResult
+        };
+        fileTraitementList.writeAsStringSync(json.encode(rsultMap));
+
+
+
+
+      }else{
+        print("empty file");
+      }
+
+
+
+    } catch (e) {
+      print("exeption -- " + e.toString());
+    }
+  }
+
+
+  static Future<bool> callWsAddMobileFromLocale(Map<String, dynamic> formDateValues) async {
+    print("****** callWsAddMobile ***");
+
+    FormData formData = FormData.fromMap(formDateValues);
+    print(formData);
+
+
+    Response apiRespon ;
+    try {
+      print("**************doPOST***********");
+      Dio dio = new Dio();
+      dio.interceptors.add(dioLoggerInterceptor);
+
+
+      apiRespon =
+      await dio.post("https://telcabo.castlit.com/traitements/add_mobile",
+          data: formData,
+          options: Options(
+            method: "POST",
+            headers: {
+              'Content-Type': 'multipart/form-data;charset=UTF-8',
+              'Charset': 'utf-8'
+            },
+          ));
+
+      print("Image Upload ${apiRespon}");
+
+      print(apiRespon);
+
+      if(apiRespon.data == "000"){
+        return true ;
+      }
+
+      // if (apiRespon.statusCode == 201) {
+      //   apiRespon.statusCode == 201;
+      //
+      //   return true ;
+      // } else {
+      //   print('errr');
+      // }
+
+
+
+    } on DioError catch (e) {
+      print("**************DioError***********");
+      print(e);
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx and is also not 304.
+      if (e.response != null) {
+        //        print(e.response.data);
+        //        print(e.response.headers);
+        //        print(e.response.);
+        //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
+        throw (e.response?.statusMessage ?? "");
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        //        print(e.request);
+        //        print(e.message);
+      }
+    } catch (e) {
+      throw ('API ERROR');
+    }
+
+    return false ;
+
+  }
+
+
   static ResponseGetListEtat readfileEtatsList() {
     ResponseGetListEtat responseListEtat;
 
     print("Read to readfileEtatsList!");
     try {
-      Map<String, dynamic> etatsListMap =
-      json.decode(fileEtatsList.readAsStringSync());
-      print(etatsListMap);
 
-      responseListEtat = ResponseGetListEtat.fromJson(etatsListMap);
+      String fileContent =  fileDemandesList.readAsStringSync();
+      print("file content ==> ${fileContent}");
 
-      print("OK");
+      if(!fileContent.isEmpty){
+        Map<String, dynamic> etatsListMap =
+        json.decode(fileEtatsList.readAsStringSync());
+        print(etatsListMap);
 
-      return responseListEtat ;
+        responseListEtat = ResponseGetListEtat.fromJson(etatsListMap);
+
+
+        print("OK");
+
+        return responseListEtat ;
+
+      }else{
+        print("empty file");
+      }
+
 
     } catch (e) {
       print("exeption -- " + e.toString());
     }
 
+    print("return empty list");
     return ResponseGetListEtat(etat: []);
   }
 
@@ -389,7 +538,11 @@ class Tools{
     ResponseGetListType responseGetListType;
 
     print("Read to readfileListType!");
-    try {
+
+    String fileContent =  fileDemandesList.readAsStringSync();
+    print("file content ==> ${fileContent}");
+
+    if(!fileContent.isEmpty){
       Map<String, dynamic> etatsListMap =
       json.decode(fileListType.readAsStringSync());
       print(etatsListMap);
@@ -400,9 +553,12 @@ class Tools{
 
       return responseGetListType ;
 
-    } catch (e) {
-      print("exeption -- " + e.toString());
+
+    }else{
+      print("empty file");
     }
+
+
 
     return ResponseGetListType(types: []);
   }
@@ -447,6 +603,8 @@ class Tools{
     }else{
       responseListEtat =  Tools.readfileEtatsList() ;
     }
+
+    print("****** getListEtatFromLocalAndINternet *** return  ${responseListEtat.toJson()} " );
 
     return responseListEtat;
 
@@ -608,72 +766,7 @@ class Tools{
   }
 
 
-  static  Future<bool> callWsAddMobile(Map<String, dynamic> formDateValues) async {
-    print("****** callWsAddMobile ***");
 
-    FormData formData = FormData.fromMap(formDateValues);
-    print(formData);
-
-
-    Response apiRespon ;
-    try {
-      print("**************doPOST***********");
-      Dio dio = new Dio();
-      dio.interceptors.add(dioLoggerInterceptor);
-
-
-      apiRespon =
-      await dio.post("https://telcabo.castlit.com/traitements/add_mobile",
-          data: formData,
-          options: Options(
-            method: "POST",
-            headers: {
-              'Content-Type': 'multipart/form-data;charset=UTF-8',
-              'Charset': 'utf-8'
-            },
-          ));
-
-      print("Image Upload ${apiRespon}");
-
-      print(apiRespon);
-
-      if(apiRespon.data == "000"){
-        return true ;
-      }
-
-      // if (apiRespon.statusCode == 201) {
-      //   apiRespon.statusCode == 201;
-      //
-      //   return true ;
-      // } else {
-      //   print('errr');
-      // }
-
-
-
-    } on DioError catch (e) {
-      print("**************DioError***********");
-      print(e);
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx and is also not 304.
-      if (e.response != null) {
-        //        print(e.response.data);
-        //        print(e.response.headers);
-        //        print(e.response.);
-        //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
-        throw (e.response?.statusMessage ?? "");
-      } else {
-        // Something happened in setting up or sending the request that triggered an Error
-        //        print(e.request);
-        //        print(e.message);
-      }
-    } catch (e) {
-      throw ('API ERROR');
-    }
-
-    return false ;
-
-  }
 
 
 

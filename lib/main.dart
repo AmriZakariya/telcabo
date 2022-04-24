@@ -27,6 +27,7 @@ import 'firebase_options.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("Handling a background message: ${message.messageId}");
+  Tools.getDemandes();
 }
 
 
@@ -81,11 +82,11 @@ class _MyAppState extends State<MyApp> {
 
   PushNotification? _notificationInfo;
 
-  Future<String> registerNotification() async {
-    await Firebase.initializeApp();
-    String deviceToken = "" ;
-    _messaging = FirebaseMessaging.instance;
 
+  void registerNotification() async {
+    await Firebase.initializeApp();
+    _messaging = FirebaseMessaging.instance;
+    String deviceToken = "" ;
     await _messaging.getToken().then((value) {
       print("Device Token ${value}");
       deviceToken = value ?? "" ;
@@ -93,52 +94,54 @@ class _MyAppState extends State<MyApp> {
 
     Tools.deviceToken = deviceToken;
     print("registerNotification "+ Tools.deviceToken );
-    return deviceToken ;
 
 
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    NotificationSettings settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      provisional: false,
-      sound: true,
-    );
+    // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    //
+    //
+    //
+    // NotificationSettings settings = await _messaging.requestPermission(
+    //   alert: true,
+    //   badge: true,
+    //   provisional: false,
+    //   sound: true,
+    // );
+    //
+    // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    //   print('User granted permission');
+    //
+    //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    //     print(
+    //         'Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
+    //
+    //     // Parse the message received
+    //     PushNotification notification = PushNotification(
+    //       title: message.notification?.title,
+    //       body: message.notification?.body,
+    //       dataTitle: message.data['title'],
+    //       dataBody: message.data['body'],
+    //     );
+    //
+    //     Tools.getDemandes();
+    //
+    //
+    //     if (_notificationInfo != null) {
+    //       // For displaying the notification as an overlay
+    //       showSimpleNotification(
+    //         Text(_notificationInfo!.title!),
+    //         leading: NotificationBadge(totalNotifications: _totalNotifications),
+    //         subtitle: Text(_notificationInfo!.body!),
+    //         background: Colors.cyan.shade700,
+    //         duration: Duration(seconds: 2),
+    //       );
+    //     }
+    //   });
+    // } else {
+    //   print('User declined or has not accepted permission');
+    // }
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
 
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print(
-            'Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
-
-        // Parse the message received
-        PushNotification notification = PushNotification(
-          title: message.notification?.title,
-          body: message.notification?.body,
-          dataTitle: message.data['title'],
-          dataBody: message.data['body'],
-        );
-
-        // setState(() {
-        //   _notificationInfo = notification;
-        //   _totalNotifications++;
-        // });
-
-        if (_notificationInfo != null) {
-          // For displaying the notification as an overlay
-          showSimpleNotification(
-            Text(_notificationInfo!.title!),
-            leading: NotificationBadge(totalNotifications: _totalNotifications),
-            subtitle: Text(_notificationInfo!.body!),
-            background: Colors.cyan.shade700,
-            duration: Duration(seconds: 2),
-          );
-        }
-      });
-    } else {
-      print('User declined or has not accepted permission');
-    }
   }
 
   // For handling notification when the app is in terminated state
@@ -148,6 +151,10 @@ class _MyAppState extends State<MyApp> {
     await FirebaseMessaging.instance.getInitialMessage();
 
     if (initialMessage != null) {
+
+      print("*** FirebaseMessaging.instance.getInitialMessage() ***");
+
+
       PushNotification notification = PushNotification(
         title: initialMessage.notification?.title,
         body: initialMessage.notification?.body,
@@ -155,11 +162,29 @@ class _MyAppState extends State<MyApp> {
         dataBody: initialMessage.data['body'],
       );
 
-      // setState(() {
-      //   _notificationInfo = notification;
-      //   _totalNotifications++;
-      // });
+      Tools.getDemandes();
+
+
     }
+
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+
+      print("*** onMessageOpenedApp ***");
+
+      PushNotification notification = PushNotification(
+        title: message.notification?.title,
+        body: message.notification?.body,
+        dataTitle: message.data['title'],
+        dataBody: message.data['body'],
+      );
+
+      Tools.getDemandes();
+
+
+    });
+
+
   }
 
   @override
@@ -260,6 +285,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     registerNotification();
-
+    // checkForInitialMessage();
   }
 }

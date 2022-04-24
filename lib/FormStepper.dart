@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
+import 'package:dio_logger/dio_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -33,7 +34,6 @@ import 'InterventionFormStep2.dart';
 import 'NotificationExample.dart';
 // import 'package:http/http.dart' as http;
 
-
 import 'package:collection/collection.dart';
 
 final GlobalKey<ScaffoldState> formStepperScaffoldKey =
@@ -54,7 +54,6 @@ class WizardFormBloc extends FormBloc<String, String> {
       FieldBlocValidators.required,
     ],
     toJson: (value) => value?.id,
-
   );
 
   final sousEtatDropDown = SelectFieldBloc<SousEtat, dynamic>(
@@ -80,7 +79,6 @@ class WizardFormBloc extends FormBloc<String, String> {
     ],
     toJson: (value) => value?.id,
   );
-
 
   final commentaireTextField = TextFieldBloc(
     name: 'commentaire',
@@ -150,14 +148,12 @@ class WizardFormBloc extends FormBloc<String, String> {
 
   /* Step 2 */
 
-
   final listTypeInstallationDropDown = SelectFieldBloc<Types, dynamic>(
     name: "type_installation_id",
     validators: [
       FieldBlocValidators.required,
     ],
     toJson: (value) => value?.id,
-
   );
 
   final motiflistTypeInstallationDropDown = SelectFieldBloc<Motifs, dynamic>(
@@ -167,8 +163,6 @@ class WizardFormBloc extends FormBloc<String, String> {
     ],
     toJson: (value) => value?.id,
   );
-
-
 
   final traitementConsommationCableTextField = TextFieldBloc(
     name: 'consommation_cable',
@@ -255,7 +249,6 @@ class WizardFormBloc extends FormBloc<String, String> {
       FieldBlocValidators.required,
     ],
   );
-
 
   final ptoTextField = TextFieldBloc(
     name: 'pto',
@@ -435,23 +428,18 @@ class WizardFormBloc extends FormBloc<String, String> {
           newAdresse,
         ]);
 
-        if (current.value?.id == "1") {}
         if (current.value?.id == "1") {
-
           /* check current RDV date */
-          String? selectedRdvDate = Tools.selectedDemande?.dateRdv ;
-          if(selectedRdvDate?.isNotEmpty == true){
+          String? selectedRdvDate = Tools.selectedDemande?.dateRdv;
+          if (selectedRdvDate?.isNotEmpty == true) {
             print("selected rdvDate ==> ${selectedRdvDate}");
 
             var parsedDate = DateTime.parse(selectedRdvDate!);
 
             dateRdvInputFieldBLoc.updateValue(parsedDate);
-
-          }else{
+          } else {
             dateRdvInputFieldBLoc.updateValue(null);
-
           }
-
 
           addFieldBloc(fieldBloc: dateRdvInputFieldBLoc);
 
@@ -557,22 +545,14 @@ class WizardFormBloc extends FormBloc<String, String> {
 
         if (current.value?.etatimmeubles?.isEmpty == true) {
           removeFieldBloc(fieldBloc: etatImmeubleDropDown);
-
         } else {
-
           etatImmeubleDropDown.updateItems(current.value?.etatimmeubles ?? []);
           // addFieldBloc(fieldBloc: motifDropDown);
         }
-
-
       },
     );
 
-
-
-
     /* Manage listTypeInstallationDropDown */
-
 
     listTypeInstallationDropDown.onValueChanges(
       onData: (previous, current) async* {
@@ -587,23 +567,18 @@ class WizardFormBloc extends FormBloc<String, String> {
         print("current.value? ==> ${current.value} ");
         print(current.value?.id ?? "...");
 
-
         if (current.value?.motifs?.isEmpty == true) {
           removeFieldBloc(fieldBloc: motiflistTypeInstallationDropDown);
         } else {
-          motiflistTypeInstallationDropDown.updateItems(current.value?.motifs ?? []);
+          motiflistTypeInstallationDropDown
+              .updateItems(current.value?.motifs ?? []);
           addFieldBloc(fieldBloc: motiflistTypeInstallationDropDown);
         }
-
-
       },
     );
-
-
-
   }
 
-  void writeToFileTraitementList(Map jsonMapContent) {
+  bool writeToFileTraitementList(Map jsonMapContent) {
     print("Writing to writeToFileTraitementList!");
 
     try {
@@ -655,27 +630,18 @@ class WizardFormBloc extends FormBloc<String, String> {
       traitementListMap["traitementList"] = traitementList;
 
       fileTraitementList.writeAsStringSync(json.encode(traitementListMap));
+
+      return true ;
     } catch (e) {
       print("exeption -- " + e.toString());
     }
+
+
+    return false ;
+
   }
 
-  void fethchFileTraitementList(Map jsonMapContent) {
-    print("fethchFileTraitementList!");
 
-    try {
-      Map traitementListMap =
-          json.decode(fileTraitementList.readAsStringSync());
-      print(traitementListMap);
-
-      List traitementList = traitementListMap.values.elementAt(0);
-
-      traitementList.forEach((element) {});
-      fileTraitementList.writeAsStringSync(json.encode(traitementListMap));
-    } catch (e) {
-      print("exeption -- " + e.toString());
-    }
-  }
 
   @override
   void onLoading() async {
@@ -692,6 +658,7 @@ class WizardFormBloc extends FormBloc<String, String> {
 
     try {
       responseListEtat = await Tools.getListEtatFromLocalAndINternet();
+      print("OnLOading ** responseListEtat ==> ${responseListEtat.toJson()}");
       responseGetListType = await Tools.getTypeListFromLocalAndINternet();
 
       print(responseListEtat.etat.toString());
@@ -704,7 +671,6 @@ class WizardFormBloc extends FormBloc<String, String> {
         etatDropDown.updateItems(responseListEtat.etat?.skip(3).toList() ?? []);
       }
 
-
       listTypeInstallationDropDown.updateItems(responseGetListType.types ?? []);
 
       // print(responseListEtat.etat.toString());
@@ -713,7 +679,6 @@ class WizardFormBloc extends FormBloc<String, String> {
       updateInputsFromDemande();
 
       emitLoaded();
-
 
       // emit(FormBlocLoaded(currentStep: Tools.currentStep));
       // emit(FormBlocLoaded(currentStep: 1));
@@ -744,6 +709,76 @@ class WizardFormBloc extends FormBloc<String, String> {
     super.previousStep();
   }
 
+
+  Future<bool> callWsAddMobile(Map<String, dynamic> formDateValues) async {
+    print("****** callWsAddMobile ***");
+
+    FormData formData = FormData.fromMap(formDateValues);
+    print(formData);
+
+
+    Response apiRespon ;
+    try {
+      print("**************doPOST***********");
+      Dio dio = new Dio();
+      dio.interceptors.add(dioLoggerInterceptor);
+
+
+      apiRespon =
+      await dio.post("https://telcabo.castlit.com/traitements/add_mobile",
+          data: formData,
+          options: Options(
+            method: "POST",
+            headers: {
+              'Content-Type': 'multipart/form-data;charset=UTF-8',
+              'Charset': 'utf-8'
+            },
+          ));
+
+      print("Image Upload ${apiRespon}");
+
+      print(apiRespon);
+
+      if(apiRespon.data == "000"){
+        return true ;
+      }
+
+      // if (apiRespon.statusCode == 201) {
+      //   apiRespon.statusCode == 201;
+      //
+      //   return true ;
+      // } else {
+      //   print('errr');
+      // }
+
+
+
+    } on DioError catch (e) {
+      print("**************DioError***********");
+      print(e);
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx and is also not 304.
+      if (e.response != null) {
+        //        print(e.response.data);
+        //        print(e.response.headers);
+        //        print(e.response.);
+        //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
+        throw (e.response?.statusMessage ?? "");
+      } else {
+        // Something happened in setting up or sending the request that triggered an Error
+        //        print(e.request);
+        //        print(e.message);
+      }
+    } catch (e) {
+      throw ('API ERROR');
+    }
+
+    return writeToFileTraitementList(formDateValues);
+    return false ;
+
+  }
+
+
   @override
   void onSubmitting() async {
     print("FormStepper onSubmitting() ");
@@ -772,33 +807,35 @@ class WizardFormBloc extends FormBloc<String, String> {
           connectivityResult == ConnectivityResult.wifi) {
         print('YAY! Free cute dog pics!');
 
-        bool checkCallWs = await Tools.callWsAddMobile(formDateValues);
+        bool checkCallWs = await callWsAddMobile(formDateValues);
 
         if (checkCallWs) {
-
-          if(await Tools.refreshSelectedDemande()){
-
+          // if (await Tools.refreshSelectedDemande()) {
+          await Tools.refreshSelectedDemande() ;
             print("refreshed refreshSelectedDemande");
             print("Tools.selectedDemande ==> ${Tools.selectedDemande?.etape}");
             print("state.currentStep ==> ${state.currentStep}");
 
-            if(((Tools.selectedDemande?.etape ?? 1 ) - 1) <= state.currentStep ){
+            if (((Tools.selectedDemande?.etape ?? 1) - 1) <=
+                state.currentStep) {
               commentaireTextField.updateValue("");
               emitFailure(failureResponse: "sameStep");
-
-            }else{
+            } else {
               commentaireTextField.updateValue("");
               emitSuccess(canSubmitAgain: true);
             }
-
-          }
+          // }else {
+          //   emitFailure(failureResponse: "WS");
+          // }
         } else {
           emitFailure(failureResponse: "WS");
         }
       } else if (connectivityResult == ConnectivityResult.none) {
         print('No internet :( Reason:');
         writeToFileTraitementList(formDateValues);
-        emitSuccess();
+        commentaireTextField.updateValue("");
+        emitFailure(failureResponse: "sameStep");
+        // emitSuccess();
       }
 
       // readJson();
@@ -853,11 +890,11 @@ class WizardFormBloc extends FormBloc<String, String> {
       ]);
     }
 
-
     updateInputsFromDemande();
   }
 
   void updateInputsFromDemande() {
+    print("responseListEtat ==> ${responseListEtat}");
     var selectedEtat = responseListEtat.etat?.firstWhereOrNull((element) {
       return element.id == Tools.selectedDemande?.etatId;
     });
@@ -872,7 +909,8 @@ class WizardFormBloc extends FormBloc<String, String> {
       }
     }
 
-    var selectedSousEtat = etatDropDown.value?.sousEtat?.firstWhereOrNull((element) {
+    var selectedSousEtat =
+        etatDropDown.value?.sousEtat?.firstWhereOrNull((element) {
       return element.id == Tools.selectedDemande?.subStatutId;
     });
     print("selectedSousEtat ==> ${selectedSousEtat}");
@@ -886,9 +924,8 @@ class WizardFormBloc extends FormBloc<String, String> {
       }
     }
 
-
-
-    var selectedMotif = sousEtatDropDown.value?.motifList?.firstWhereOrNull((element) {
+    var selectedMotif =
+        sousEtatDropDown.value?.motifList?.firstWhereOrNull((element) {
       return element.id == Tools.selectedDemande?.motifEtatId;
     });
 
@@ -903,7 +940,8 @@ class WizardFormBloc extends FormBloc<String, String> {
       }
     }
 
-    traitementConsommationCableTextField.updateValue(Tools.selectedDemande?.consommationCable ?? "");
+    traitementConsommationCableTextField
+        .updateValue(Tools.selectedDemande?.consommationCable ?? "");
     speedTextField.updateValue(Tools.selectedDemande?.speed ?? "");
     debitTextField.updateValue(Tools.selectedDemande?.debit ?? "");
     latitudeTextField.updateValue(Tools.selectedDemande?.latitude ?? "");
@@ -918,32 +956,24 @@ class WizardFormBloc extends FormBloc<String, String> {
     jarretieresTextField.updateValue(Tools.selectedDemande?.jarretieres ?? "");
 
     listTypeInstallationDropDown.updateValue(
-      listTypeInstallationDropDown.state.items.firstWhereOrNull((element) {
-        return element.id == Tools.selectedDemande?.typeInstallationId;
-      })
-    );
+        listTypeInstallationDropDown.state.items.firstWhereOrNull((element) {
+      return element.id == Tools.selectedDemande?.typeInstallationId;
+    }));
 
     motiflistTypeInstallationDropDown.updateValue(
-        motiflistTypeInstallationDropDown.state.items.firstWhereOrNull((element) {
-          return element.id == Tools.selectedDemande?.motifTypeinstallationId;
-        })
-    );
+        motiflistTypeInstallationDropDown.state.items
+            .firstWhereOrNull((element) {
+      return element.id == Tools.selectedDemande?.motifTypeinstallationId;
+    }));
 
-
-    String? selectedRdvDate = Tools.selectedDemande?.dateRdv ;
-    if(selectedRdvDate?.isNotEmpty == true){
+    String? selectedRdvDate = Tools.selectedDemande?.dateRdv;
+    if (selectedRdvDate?.isNotEmpty == true) {
       print("selected rdvDate ==> ${selectedRdvDate}");
 
       var parsedDate = DateTime.parse(selectedRdvDate!);
 
       dateRdvInputFieldBLoc.updateValue(parsedDate);
-
     }
-
-
-
-
-
   }
 }
 
@@ -965,8 +995,8 @@ class _WizardFormState extends State<WizardForm> {
     });
   }
 
-  ValueNotifier<int> commentaireCuuntValueNotifer =ValueNotifier(Tools.selectedDemande?.commentaires?.length ?? 0);
-
+  ValueNotifier<int> commentaireCuuntValueNotifer =
+      ValueNotifier(Tools.selectedDemande?.commentaires?.length ?? 0);
 
   @override
   Widget build(BuildContext context) {
@@ -976,10 +1006,10 @@ class _WizardFormState extends State<WizardForm> {
           create: (BuildContext context) => WizardFormBloc(),
         ),
         BlocProvider<InternetCubit>(
-          create: (BuildContext context) => InternetCubit(connectivity: Connectivity()),
+          create: (BuildContext context) =>
+              InternetCubit(connectivity: Connectivity()),
         ),
       ],
-      // c
       child: Builder(
         builder: (context) {
           return Theme(
@@ -990,90 +1020,86 @@ class _WizardFormState extends State<WizardForm> {
                 ),
               ),
             ),
-            child: Scaffold(
-              key: formStepperScaffoldKey,
-              resizeToAvoidBottomInset: true,
-              appBar: AppBar(
-                leading: Builder(
-                  builder: (BuildContext context) {
-                    final ScaffoldState? scaffold = Scaffold.maybeOf(context);
-                    final ModalRoute<Object?>? parentRoute =
-                        ModalRoute.of(context);
-                    final bool hasEndDrawer = scaffold?.hasEndDrawer ?? false;
-                    final bool canPop = parentRoute?.canPop ?? false;
-
-                    if (hasEndDrawer && canPop) {
-                      return BackButton();
-                    } else {
-                      return SizedBox.shrink();
+            child: MultiBlocListener(
+              listeners: [
+                BlocListener<InternetCubit, InternetState>(
+                  listener: (context, state) {
+                    if(state is InternetConnected){
+                      // showSimpleNotification(
+                      //   Text("status : en ligne"),
+                      //   // subtitle: Text("onlime"),
+                      //   background: Colors.green,
+                      //   duration: Duration(seconds: 5),
+                      // );
+                    }
+                    if(state is InternetDisconnected ){
+                      showSimpleNotification(
+                        Text("Offline"),
+                        // subtitle: Text("onlime"),
+                        background: Colors.red,
+                        duration: Duration(seconds: 5),
+                      );
                     }
                   },
                 ),
-                title: Text('Intervention'),
-                actions: <Widget>[
-                  NamedIcon(
-                      text: '',
-                      iconData: _type == StepperType.horizontal
-                          ? Icons.swap_vert
-                          : Icons.swap_horiz,
-                      onTap: _toggleType),
-                  ValueListenableBuilder(
-                    valueListenable: commentaireCuuntValueNotifer,
-                    builder: (BuildContext context, int commentaireCount, Widget? child){
-                      return NamedIcon(
-                        text: '',
-                        iconData: Icons.comment,
-                        notificationCount: commentaireCount,
-                        onTap: () {
-                          formStepperScaffoldKey.currentState?.openEndDrawer();
-                        },
-                      );
+
+              ],
+              child: Scaffold(
+                key: formStepperScaffoldKey,
+                resizeToAvoidBottomInset: true,
+                appBar: AppBar(
+                  leading: Builder(
+                    builder: (BuildContext context) {
+                      final ScaffoldState? scaffold = Scaffold.maybeOf(context);
+                      final ModalRoute<Object?>? parentRoute =
+                          ModalRoute.of(context);
+                      final bool hasEndDrawer = scaffold?.hasEndDrawer ?? false;
+                      final bool canPop = parentRoute?.canPop ?? false;
+
+                      if (hasEndDrawer && canPop) {
+                        return BackButton();
+                      } else {
+                        return SizedBox.shrink();
+                      }
                     },
-                  )
+                  ),
+                  title: Text('Intervention'),
+                  actions: <Widget>[
+                    // NamedIcon(
+                    //     text: '',
+                    //     iconData: _type == StepperType.horizontal
+                    //         ? Icons.swap_vert
+                    //         : Icons.swap_horiz,
+                    //     onTap: _toggleType),
+                    ValueListenableBuilder(
+                      valueListenable: commentaireCuuntValueNotifer,
+                      builder: (BuildContext context, int commentaireCount,
+                          Widget? child) {
+                        return NamedIcon(
+                          text: '',
+                          iconData: Icons.comment,
+                          notificationCount: commentaireCount,
+                          onTap: () {
+                            formStepperScaffoldKey.currentState?.openEndDrawer();
+                          },
+                        );
+                      },
+                    )
+                  ],
+                ),
+                endDrawer: EndDrawerWidget(),
+                body: SafeArea(
+                  child: FormBlocListener<WizardFormBloc, String, String>(
+                    onSubmitting: (context, state) {
+                      print("FormBlocListener onSubmitting");
+                      LoadingDialog.show(context);
+                    },
+                    onSuccess: (context, state) {
+                      print("FormBlocListener onSuccess");
+                      LoadingDialog.hide(context);
 
-                ],
-              ),
-              endDrawer: EndDrawerWidget(),
-              body: SafeArea(
-                child: FormBlocListener<WizardFormBloc, String, String>(
-                  onSubmitting: (context, state) {
-                    print("FormBlocListener onSubmitting");
-                    LoadingDialog.show(context);
-                  },
-                  onSuccess: (context, state) {
-                    print("FormBlocListener onSuccess");
-                    LoadingDialog.hide(context);
-
-
-                    commentaireCuuntValueNotifer.value = Tools.selectedDemande?.commentaires?.length ?? 0;
-                    CoolAlert.show(
-                      context: context,
-                      type: CoolAlertType.success,
-                      text: "Enregistré avec succès",
-                      // autoCloseDuration: Duration(seconds: 2),
-                      title: "Succès",
-                    );
-
-
-
-
-
-                    Tools.currentStep = state.currentStep;
-                    context.read<WizardFormBloc>().clearInputs();
-
-
-                    if (state.stepCompleted == state.lastStep) {
-                      Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => SuccessScreen()));
-                    }
-                  },
-                  onFailure: (context, state) {
-                    print("FormBlocListener onFailure");
-                    LoadingDialog.hide(context);
-
-                    if(state.failureResponse == "sameStep"){
-                      commentaireCuuntValueNotifer.value = Tools.selectedDemande?.commentaires?.length ?? 0;
-
+                      commentaireCuuntValueNotifer.value =
+                          Tools.selectedDemande?.commentaires?.length ?? 0;
                       CoolAlert.show(
                         context: context,
                         type: CoolAlertType.success,
@@ -1081,177 +1107,200 @@ class _WizardFormState extends State<WizardForm> {
                         // autoCloseDuration: Duration(seconds: 2),
                         title: "Succès",
                       );
-                    }
-                  },
-                  onSubmissionFailed: (context, state) {
-                    print("FormBlocListener onSubmissionFailed");
-                    LoadingDialog.hide(context);
-                  },
-                  child: Stack(
-                    children: [
-                      StepperFormBlocBuilder<WizardFormBloc>(
-                        formBloc: context.read<WizardFormBloc>(),
-                        type: _type,
-                        physics: ClampingScrollPhysics(),
-                        // onStepCancel: (formBloc) {
-                        //   print("Cancel clicked");
-                        //
-                        //
-                        //
-                        // },
-                        controlsBuilder: (
-                          BuildContext context,
-                          VoidCallback? onStepContinue,
-                          VoidCallback? onStepCancel,
-                          int step,
-                          FormBloc formBloc,
-                        ) {
-                          return Column(
-                            children: <Widget>[
-                              Row(
-                                children: <Widget>[
-                                  SizedBox(
-                                    height: 50,
-                                  ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      // padding: const  EdgeInsets.only(top: 8,left: 8,right: 8, bottom: 20),
 
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          print("cliick");
-                                          // formBloc.readJson();
-                                          // formBloc.fileTraitementList.writeAsStringSync("");
+                      Tools.currentStep = state.currentStep;
+                      context.read<WizardFormBloc>().clearInputs();
 
-                                          formBloc.submit();
-                                        },
-                                        child: const Text(
-                                          'Enregistrer',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontSize: 18.0,
-                                            wordSpacing: 12,
+                      if (state.stepCompleted == state.lastStep) {
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (_) => SuccessScreen()));
+                      }
+                    },
+                    onFailure: (context, state) {
+                      print("FormBlocListener onFailure");
+                      LoadingDialog.hide(context);
+
+                      if (state.failureResponse == "sameStep") {
+                        commentaireCuuntValueNotifer.value =
+                            Tools.selectedDemande?.commentaires?.length ?? 0;
+
+                        CoolAlert.show(
+                          context: context,
+                          type: CoolAlertType.success,
+                          text: "Enregistré avec succès",
+                          // autoCloseDuration: Duration(seconds: 2),
+                          title: "Succès",
+                        );
+                      }
+                    },
+                    onSubmissionFailed: (context, state) {
+                      print("FormBlocListener onSubmissionFailed");
+                      LoadingDialog.hide(context);
+                    },
+                    child: Stack(
+                      children: [
+                        StepperFormBlocBuilder<WizardFormBloc>(
+                          formBloc: context.read<WizardFormBloc>(),
+                          type: _type,
+                          physics: ClampingScrollPhysics(),
+                          // onStepCancel: (formBloc) {
+                          //   print("Cancel clicked");
+                          //
+                          //
+                          //
+                          // },
+                          controlsBuilder: (
+                            BuildContext context,
+                            VoidCallback? onStepContinue,
+                            VoidCallback? onStepCancel,
+                            int step,
+                            FormBloc formBloc,
+                          ) {
+                            return Column(
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    SizedBox(
+                                      height: 50,
+                                    ),
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        // padding: const  EdgeInsets.only(top: 8,left: 8,right: 8, bottom: 20),
+
+                                        child: ElevatedButton(
+                                          onPressed: () {
+                                            print("cliick");
+                                            // formBloc.readJson();
+                                            // formBloc.fileTraitementList.writeAsStringSync("");
+
+                                            formBloc.submit();
+                                          },
+                                          child: const Text(
+                                            'Enregistrer',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontSize: 18.0,
+                                              wordSpacing: 12,
+                                            ),
                                           ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          // shape: CircleBorder(),
-                                          minimumSize: Size(280, 50),
-                                          // primary: Tools.colorPrimary,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                new BorderRadius.circular(30.0),
+                                          style: ElevatedButton.styleFrom(
+                                            // shape: CircleBorder(),
+                                            minimumSize: Size(280, 50),
+                                            // primary: Tools.colorPrimary,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  new BorderRadius.circular(30.0),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  if (!formBloc.state.isFirstStep &&
-                                      !formBloc.state.isLastStep)
-                                    // Expanded(
-                                    //   child: ElevatedButton(
-                                    //     onPressed: () {
-                                    //       print("cliick");
-                                    //       // formBloc.readJson();
-                                    //       // formBloc.fileTraitementList.writeAsStringSync("");
-                                    //
-                                    //       // context.read<WizardFormBloc>().clear();
-                                    //
-                                    //
-                                    //
-                                    //       onStepCancel!() ;
-                                    //     },
-                                    //     child: const Text('Annuler',
-                                    //       textAlign: TextAlign.center,
-                                    //       style: TextStyle(
-                                    //         fontSize: 18.0,
-                                    //         wordSpacing: 12,
-                                    //       ),
-                                    //     ),
-                                    //     style: ElevatedButton.styleFrom(
-                                    //       primary: Colors.grey,
-                                    //       // shape: CircleBorder(),
-                                    //       minimumSize: Size(200, 50),
-                                    //       // primary: Tools.colorPrimary,
-                                    //       shape: RoundedRectangleBorder(
-                                    //         borderRadius: new BorderRadius.circular(30.0),
-                                    //       ),
-                                    //
-                                    //     ),
-                                    //   ),
-                                    // ),
-                                    SizedBox(
-                                      height: 50,
-                                    ),
+                                    if (!formBloc.state.isFirstStep &&
+                                        !formBloc.state.isLastStep)
+                                      // Expanded(
+                                      //   child: ElevatedButton(
+                                      //     onPressed: () {
+                                      //       print("cliick");
+                                      //       // formBloc.readJson();
+                                      //       // formBloc.fileTraitementList.writeAsStringSync("");
+                                      //
+                                      //       // context.read<WizardFormBloc>().clear();
+                                      //
+                                      //
+                                      //
+                                      //       onStepCancel!() ;
+                                      //     },
+                                      //     child: const Text('Annuler',
+                                      //       textAlign: TextAlign.center,
+                                      //       style: TextStyle(
+                                      //         fontSize: 18.0,
+                                      //         wordSpacing: 12,
+                                      //       ),
+                                      //     ),
+                                      //     style: ElevatedButton.styleFrom(
+                                      //       primary: Colors.grey,
+                                      //       // shape: CircleBorder(),
+                                      //       minimumSize: Size(200, 50),
+                                      //       // primary: Tools.colorPrimary,
+                                      //       shape: RoundedRectangleBorder(
+                                      //         borderRadius: new BorderRadius.circular(30.0),
+                                      //       ),
+                                      //
+                                      //     ),
+                                      //   ),
+                                      // ),
+                                      SizedBox(
+                                        height: 50,
+                                      ),
 //                              Text(Translations.of(context).confidential)
-                                ],
-                              ),
-                            ],
-                          );
-                        },
-                        stepsBuilder: (formBloc) {
-                          return [
-                            _step1(formBloc!),
-                            _step2(formBloc),
-                            _step3(formBloc),
-                          ];
-                        },
-                        onStepTapped: (FormBloc? formBloc, int step) {
-                          print("onStepTapped");
-                          if (step > (Tools.selectedDemande?.etape ?? 1 ) -1) {
-                              return ;
-                          }
-                          Tools.currentStep = step;
-                          print(formBloc);
-                          formBloc?.updateCurrentStep(step);
-                          // formBloc?.emit(FormBlocLoaded(currentStep: Tools.currentStep));
-                        },
-                      ),
-                      BlocBuilder<InternetCubit, InternetState>(
-                        builder: (context, state) {
-                          if (state is InternetConnected &&
-                              state.connectionType == ConnectionType.wifi) {
-                            // return Text(
-                            //   'Wifi',
-                            //   style: TextStyle(color: Colors.green, fontSize: 30),
-                            // );
-                          } else if (state is InternetConnected &&
-                              state.connectionType == ConnectionType.mobile) {
-                            // return Text(
-                            //   'Mobile',
-                            //   style: TextStyle(color: Colors.yellow, fontSize: 30),
-                            // );
-                          } else if (state is InternetDisconnected) {
-                            return Positioned(
-                              bottom: 0,
-                              child: Center(
-                                child: Container(
-                                  color: Colors.grey.shade400,
-                                  width: MediaQuery.of(context).size.width,
-                                  padding: const EdgeInsets.all(0.0),
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(
-                                        "Pas d'accès internet",
-                                        style: TextStyle(color: Colors.red, fontSize: 20),
+                                  ],
+                                ),
+                              ],
+                            );
+                          },
+                          stepsBuilder: (formBloc) {
+                            return [
+                              _step1(formBloc!),
+                              _step2(formBloc),
+                              _step3(formBloc),
+                            ];
+                          },
+                          onStepTapped: (FormBloc? formBloc, int step) {
+                            print("onStepTapped");
+                            if (step > (Tools.selectedDemande?.etape ?? 1) - 1) {
+                              return;
+                            }
+                            Tools.currentStep = step;
+                            print(formBloc);
+                            formBloc?.updateCurrentStep(step);
+                            // formBloc?.emit(FormBlocLoaded(currentStep: Tools.currentStep));
+                          },
+                        ),
+                        BlocBuilder<InternetCubit, InternetState>(
+                          builder: (context, state) {
+                            print("BlocBuilder **** InternetCubit ${state}");
+                            if (state is InternetConnected &&
+                                state.connectionType == ConnectionType.wifi) {
+                              return Text(
+                                'Wifi',
+                                style: TextStyle(color: Colors.green, fontSize: 30),
+                              );
+                            } else if (state is InternetConnected &&
+                                state.connectionType == ConnectionType.mobile) {
+                              return Text(
+                                'Mobile',
+                                style: TextStyle(color: Colors.yellow, fontSize: 30),
+                              );
+                            } else if (state is InternetDisconnected) {
 
+                              return Positioned(
+                                bottom: 0,
+                                child: Center(
+                                  child: Container(
+                                    color: Colors.grey.shade400,
+                                    width: MediaQuery.of(context).size.width,
+                                    padding: const EdgeInsets.all(0.0),
+                                    child: Center(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Text(
+                                          "Pas d'accès internet",
+                                          style: TextStyle(
+                                              color: Colors.red, fontSize: 20),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-
-
-                          }
-                          // return CircularProgressIndicator();
-                          return Container(
-
-                          );
-                        },
-                      ),
-                    ],
+                              );
+                            }
+                            // return CircularProgressIndicator();
+                            return Container();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -1576,15 +1625,12 @@ class _WizardFormState extends State<WizardForm> {
           DropdownFieldBlocBuilder<Motifs>(
             selectFieldBloc: formBloc.motiflistTypeInstallationDropDown,
             decoration: const InputDecoration(
-              labelText: 'Motif type installation',
-              prefixIcon: Icon(Icons.list),
-              helperMaxLines: 10
-            ),
+                labelText: 'Motif type installation',
+                prefixIcon: Icon(Icons.list),
+                helperMaxLines: 10),
             itemBuilder: (context, value) => FieldItem(
               child: Text(value.name ?? ""),
             ),
-
-
           ),
 
 //           SearchableDropDownFieldBlocBuilder<Motifs>(
@@ -1595,7 +1641,6 @@ class _WizardFormState extends State<WizardForm> {
 //             searchHint: 'Motif type installation',
 // //                            items: [],
 //           ),
-
 
           TextFieldBlocBuilder(
             textFieldBloc: formBloc.traitementConsommationCableTextField,
@@ -1894,10 +1939,20 @@ class EndDrawerWidget extends StatelessWidget {
                             ""),
                       ),
                     ),
-                    // oppositeContentsBuilder: (context, index) => Padding(
-                    //   padding: const EdgeInsets.all(8.0),
-                    //   child: Text('opposite\ncontents'),
-                    // ),
+                    oppositeContentsBuilder: (context, index) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        alignment: AlignmentDirectional.centerEnd,
+                          child: Column(
+                        children: [
+                          // Text(Tools.selectedDemande?.commentaires?[index].userId ?? ""),
+                          Text(Tools
+                                  .selectedDemande?.commentaires?[index].created
+                                  ?.trim() ??
+                              ""),
+                        ],
+                      )),
+                    ),
                     contentsAlign: ContentsAlign.alternating,
                     indicatorStyle: IndicatorStyle.outlined,
                     connectorStyle: ConnectorStyle.dashedLine,

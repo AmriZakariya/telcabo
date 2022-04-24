@@ -27,10 +27,11 @@
 
 
 
+
     <application
         android:label="telcabo"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -62,5 +63,8 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <meta-data android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCuSDht671Z0eKnX665GqDWJWkFrzdAjc8"/>
     </application>
 </manifest>

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:telcabo/DemandeList.dart';
 import 'package:telcabo/Tools.dart';
@@ -118,11 +119,14 @@ class _LoginWidgetState extends State<LoginWidget> {
                               };
 
 
+                              var callWsLogin = await Tools.callWsLogin(loginMap) ;
+                              if(callWsLogin){
+                                SchedulerBinding.instance?.addPostFrameCallback((_) {
+                                  Navigator.of(context).pushReplacement(MaterialPageRoute(
+                                    builder: (_) => DemandeList(),
+                                  ));
+                                });
 
-                              if(await Tools.callWsLogin(loginMap)){
-                                 Navigator.of(context).pushReplacement(MaterialPageRoute(
-                                   builder: (_) => DemandeList(),
-                                 ));
                               };
                             },
                             child: const Text(

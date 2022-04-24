@@ -53,7 +53,7 @@ android {
         applicationId "com.castlit.telcabo.mobileapp"
 //        minSdkVersion flutter.minSdkVersion
         minSdkVersion 20
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 29
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
