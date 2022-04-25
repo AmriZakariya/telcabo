@@ -34,6 +34,10 @@ class Tools{
   static Demandes? selectedDemande;
   static int currentStep = 1 ;
 
+  static ResponseGetDemandesList? demandesListSaved;
+
+
+  static Map? searchFilter;
 
   static String deviceToken = "" ;
   static String userId = "" ;
@@ -434,6 +438,10 @@ class Tools{
 
   static Future<bool> callWsAddMobileFromLocale(Map<String, dynamic> formDateValues) async {
     print("****** callWsAddMobile ***");
+
+    formDateValues.addAll({
+      "isOffline" : true
+    });
 
     FormData formData = FormData.fromMap(formDateValues);
     print(formData);

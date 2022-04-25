@@ -59,6 +59,12 @@ class _DetailInterventionState extends State<DetailIntervention> {
       body: Scrollbar(
         child: SingleChildScrollView(
           child: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/bg_home.jpg"),
+                fit: BoxFit.cover,
+              ),
+            ),
             child: Column(
               children: [
                 SizedBox(

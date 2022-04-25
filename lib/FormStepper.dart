@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cool_alert/cool_alert.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_logger/dio_logger.dart';
+import 'package:floating_action_bubble/floating_action_bubble.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -29,12 +30,16 @@ import 'package:flutter/services.dart';
 import 'package:telcabo/models/response_get_liste_types.dart';
 import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
 import 'package:timelines/timelines.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'InterventionFormStep2.dart';
 import 'NotificationExample.dart';
 // import 'package:http/http.dart' as http;
 
 import 'package:collection/collection.dart';
+
+
+import 'package:flutter_share_me/flutter_share_me.dart';
 
 final GlobalKey<ScaffoldState> formStepperScaffoldKey =
     new GlobalKey<ScaffoldState>();
@@ -982,7 +987,9 @@ class WizardForm extends StatefulWidget {
   _WizardFormState createState() => _WizardFormState();
 }
 
-class _WizardFormState extends State<WizardForm> {
+class _WizardFormState extends State<WizardForm>
+    with SingleTickerProviderStateMixin {
+
   var _type = StepperType.horizontal;
 
   void _toggleType() {
@@ -997,6 +1004,26 @@ class _WizardFormState extends State<WizardForm> {
 
   ValueNotifier<int> commentaireCuuntValueNotifer =
       ValueNotifier(Tools.selectedDemande?.commentaires?.length ?? 0);
+
+
+
+  late Animation<double> _animation;
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 260),
+    );
+
+    final curvedAnimation =
+    CurvedAnimation(curve: Curves.easeInOut, parent: _animationController);
+    _animation = Tween<double>(begin: 0, end: 1).animate(curvedAnimation);
+
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1047,6 +1074,106 @@ class _WizardFormState extends State<WizardForm> {
               child: Scaffold(
                 key: formStepperScaffoldKey,
                 resizeToAvoidBottomInset: true,
+                floatingActionButtonLocation:
+                FloatingActionButtonLocation.miniStartFloat,
+
+                //Init Floating Action Bubble
+                floatingActionButton: FloatingActionBubble(
+                  // Menu items
+                  items: <Bubble>[
+                    // Floating action menu item
+                    Bubble(
+                      title: "WhatssApp",
+                      iconColor: Colors.white,
+                      bubbleColor: Colors.blue,
+                      icon: Icons.whatsapp,
+                      titleStyle: TextStyle(fontSize: 16, color: Colors.white),
+                      onPress: () async {
+                        print("share wtsp");
+
+                        String msgShare = "Merci d'intégrer le client:" ;
+
+                        msgShare += "\n SIP = ${Tools.selectedDemande?.loginSip} ";
+                        msgShare += "\n CITY_NAME	 = ${Tools.selectedDemande?.ville} ";
+                        msgShare += "\n LOCAL_AREA_NAME = ${Tools.selectedDemande?.plaqueName} ";
+                        msgShare += "\n PROJECT_NAME= ${Tools.selectedDemande?.projet} ";
+
+
+                        print("msgShare ==> ${msgShare}") ;
+
+                        // shareToWhatsApp({String msg,String imagePath})
+                        final FlutterShareMe flutterShareMe = FlutterShareMe();
+                        String? response = await flutterShareMe.shareToWhatsApp(msg: msgShare);
+
+
+                        /*
+                        var whatsapp = "+212619993849";
+                        var whatsappURl_android =
+                            "whatsapp://send?phone=" + whatsapp + "&text=${Uri.parse(msgShare)}";
+                        var whatappURL_ios =
+                            "https://wa.me/$whatsapp?text=${Uri.parse(msgShare)}";
+                        if (Platform.isIOS) {
+                          // for iOS phone only
+                          if (await canLaunch(whatappURL_ios)) {
+                            await launch(whatappURL_ios, forceSafariVC: false);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: new Text("whatsapp no installed")));
+                          }
+                        } else {
+                          // android , web
+                          if (await canLaunch(whatsappURl_android)) {
+                            await launch(whatsappURl_android);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: new Text("whatsapp no installed")));
+                          }
+                        }
+
+                         */
+                        _animationController.reverse();
+                      },
+                    ),
+                    // Floating action menu item
+                    Bubble(
+                      title: "Mail",
+                      iconColor: Colors.white,
+                      bubbleColor: Colors.blue,
+                      icon: Icons.mail_outline,
+                      titleStyle: TextStyle(fontSize: 16, color: Colors.white),
+                      onPress: () async {
+                        bool success = await Tools.callWSSendMail();
+                        if(success){
+                          CoolAlert.show(
+                              context: context,
+                              type: CoolAlertType.success,
+                              text: "Email Envoyé avec succès",
+                              autoCloseDuration: Duration(seconds: 5),
+                              title: "Succès"
+
+                          );
+                        }
+                        _animationController.reverse();
+                      },
+                    ),
+                    //Floating action menu item
+                  ],
+
+                  // animation controller
+                  animation: _animation,
+
+                  // On pressed change animation state
+                  onPress: () => _animationController.isCompleted
+                      ? _animationController.reverse()
+                      : _animationController.forward(),
+
+                  // Floating Action button Icon color
+                  iconColor: Tools.colorSecondary,
+
+                  // Flaoting Action button Icon
+                  iconData: Icons.whatsapp,
+                  backGroundColor: Colors.white,
+                ),
                 appBar: AppBar(
                   leading: Builder(
                     builder: (BuildContext context) {

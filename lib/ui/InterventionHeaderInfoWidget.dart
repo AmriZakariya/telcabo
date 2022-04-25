@@ -300,6 +300,10 @@ class DemandeListItem extends StatelessWidget {
                             child: Icon(Icons.remove_red_eye, size: 20),
                             onPressed: () {
                               Tools.selectedDemande = demande;
+
+                              navigator.push(MaterialPageRoute(
+                                builder: (_) => DetailIntervention(),
+                              ));
                             },
                             style: ElevatedButton.styleFrom(
                               fixedSize: const Size(10, 10),
@@ -577,6 +581,10 @@ class InterventionHeaderInfoProjectWidget extends StatelessWidget {
                   ),
                   InfoItemWidget(
                     iconData: Icons.circle,
+                    icon: FaIcon(
+                      FontAwesomeIcons.tag,
+                      size: 18,
+                    ),
                     title: "Type demande :",
                     description: Tools.selectedDemande?.typeDemande ?? "",
                   ),
@@ -1247,12 +1255,11 @@ class MapSample extends StatelessWidget {
                   color: Colors.black,
                   height: 2,
                 ),
-                SizedBox(
-                  height: 15,
-                ),
+                // SizedBox(
+                //   height: 15,
+                // ),
                 Container(
                     // color: Colors.white,
-                    padding: EdgeInsets.all(5),
                     height: 300,
                     child: GoogleMap(
                       mapType: MapType.terrain,

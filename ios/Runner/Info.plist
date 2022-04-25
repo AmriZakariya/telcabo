@@ -71,5 +71,8 @@
 	<true/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+	<array>
+        <string>whatsapp</string>
+    </array>
 </dict>
 </plist>

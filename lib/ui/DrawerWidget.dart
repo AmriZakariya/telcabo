@@ -50,7 +50,7 @@ class DrawerWidget extends StatelessWidget {
               color: Theme.of(context).focusColor.withOpacity(1),
             ),
             title: Text(
-              "Demandes",
+              "Demandes (${Tools.demandesListSaved?.demandes?.length ?? 0})",
               style: Theme.of(context).textTheme.subtitle1,
             ),
           ),
@@ -64,7 +64,9 @@ class DrawerWidget extends StatelessWidget {
               color: Theme.of(context).focusColor.withOpacity(1),
             ),
             title: Text(
-              "Demandes en attente",
+              "Demandes en attente (${Tools.demandesListSaved?.demandes?.where((element) {
+                return ( ["6", "9"].contains(element.etatId ) && (element.speed?.isEmpty == true)  && (element.speed?.isEmpty == true) );
+              }).length })",
               style: Theme.of(context).textTheme.subtitle1,
             ),
           ),
