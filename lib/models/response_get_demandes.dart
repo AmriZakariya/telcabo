@@ -84,6 +84,7 @@ class Demandes {
   String? photoBlocage2;
   String? pto;
   String? jarretieres;
+  String? routeur;
   String? created;
   String? etatName;
   String? plaqueName;
@@ -153,6 +154,7 @@ class Demandes {
         this.photoBlocage2,
         this.pto,
         this.jarretieres,
+        this.routeur,
         this.created,
         this.etatName,
         this.plaqueName,
@@ -222,6 +224,7 @@ class Demandes {
     photoBlocage2 = json['photo_blocage2'];
     pto = json['pto'];
     jarretieres = json['jarretieres'];
+    routeur = json['routeur'];
     created = json['created'];
     etatName = json['etat_name'];
     plaqueName = json['plaque_name'];
@@ -298,6 +301,7 @@ class Demandes {
     data['photo_blocage2'] = this.photoBlocage2;
     data['pto'] = this.pto;
     data['jarretieres'] = this.jarretieres;
+    data['routeur'] = this.routeur;
     data['created'] = this.created;
     data['etat_name'] = this.etatName;
     data['plaque_name'] = this.plaqueName;

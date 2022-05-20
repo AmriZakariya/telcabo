@@ -14,13 +14,29 @@ class DrawerWidget extends StatelessWidget {
     return Drawer(
       child: ListView(
         children: <Widget>[
+          // Container(
+          //     width: 10,
+          //     child: Image(image: AssetImage('assets/icon.png'),)),
+          //
+          // Text(
+          //   Tools.userName,
+          //   style: Theme.of(context).textTheme.headline6,
+          // ),
+          //
+          // Text(
+          //   Tools.userEmail,
+          //   style: Theme.of(context).textTheme.caption!.copyWith(
+          //       fontFamily: "Poppins"
+          //   ),
+          // ),
+
           GestureDetector(
             onTap: () {
               // currentUser.apiToken != null ? Navigator.of(context).pushNamed('/Profile') : Navigator.of(context).pushNamed('/Login');
             },
-            child:UserAccountsDrawerHeader(
+            child: UserAccountsDrawerHeader(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).hintColor.withOpacity(0.1),
+                      // color: Theme.of(context).hintColor.withOpacity(0.1),
                     ),
                     accountName: Text(
                       Tools.userName,
@@ -33,8 +49,11 @@ class DrawerWidget extends StatelessWidget {
                       ),
                     ),
                     currentAccountPicture: CircleAvatar(
-                      backgroundColor: Theme.of(context).accentColor,
-                      backgroundImage: NetworkImage("https://telcabo.castlit.com/img/logo.png"),
+                      radius: 20,
+                      backgroundColor: Colors.transparent,
+                      // backgroundImage: NetworkImage("${Tools.baseUrl}/img/logo.png"),
+                      backgroundImage: AssetImage('assets/icon.png',)
+                      ,
                     ),
                   )
 
@@ -43,6 +62,8 @@ class DrawerWidget extends StatelessWidget {
           ListTile(
             onTap: () {
               // context.read<SheetBloc>().add(SheetFetched(listType: SheetListType.webNovels));
+              Tools.showDemandesEnAttentes = false ;
+
               Navigator.pop(context);
             },
             leading: Icon(
@@ -57,6 +78,7 @@ class DrawerWidget extends StatelessWidget {
           ListTile(
             onTap: () {
               // context.read<SheetBloc>().add(SheetFetched(listType: SheetListType.webNovels));
+              Tools.showDemandesEnAttentes = true ;
               Navigator.pop(context);
             },
             leading: Icon(
@@ -79,7 +101,7 @@ class DrawerWidget extends StatelessWidget {
 
               prefs.remove('isOnline') ;
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (_) => LoginWidget(),
+                builder: (_) => LoginForm(),
               ));
             },
             leading: Icon(

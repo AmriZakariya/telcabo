@@ -1,3 +1,7 @@
+
+import 'dart:io';
+
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -6,17 +10,17 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:notification_permissions/notification_permissions.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:telcabo/DemandeList.dart';
 import 'package:telcabo/FormStepper.dart';
-import 'package:telcabo/InterventionFormStep2.dart';
 import 'package:telcabo/NotificationExample.dart';
+import 'package:telcabo/SplashPage.dart';
 import 'package:telcabo/TestWatermark.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/UploadTest.dart';
 
 import 'InterventionWidget.dart';
-import 'InterventionWidgetStep1.dart';
 import 'LoginWidget.dart';
 
 
@@ -51,6 +55,35 @@ void main() async {
 
   });
 
+  var cameraPermission = Permission.camera;
+  var storagePermission = Permission.storage;
+  var locationPermission = Permission.location;
+
+  if (await cameraPermission.status.isDenied) {
+    // We didn't ask for permission yet or the permission has been denied before but not permanently.
+    if (await cameraPermission.request().isGranted) {
+      // Either the permission was already granted before or the user just granted it.
+    }
+  }
+
+  if (await storagePermission.status.isDenied) {
+    // We didn't ask for permission yet or the permission has been denied before but not permanently.
+    if (await storagePermission.request().isGranted) {
+      // Either the permission was already granted before or the user just granted it.
+    }
+  }
+
+  if (await locationPermission.status.isDenied) {
+    // We didn't ask for permission yet or the permission has been denied before but not permanently.
+    if (await locationPermission.request().isGranted) {
+      // Either the permission was already granted before or the user just granted it.
+    }
+  }
+
+
+  HttpOverrides.global = MyHttpOverrides();
+
+  WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
     EasyLocalization(
@@ -76,16 +109,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late final FirebaseMessaging _messaging;
-
-  late int _totalNotifications;
-
-  PushNotification? _notificationInfo;
 
 
-  void registerNotification() async {
+  void getDeviceToken() async {
     await Firebase.initializeApp();
-    _messaging = FirebaseMessaging.instance;
+    final FirebaseMessaging _messaging = FirebaseMessaging.instance;
     String deviceToken = "" ;
     await _messaging.getToken().then((value) {
       print("Device Token ${value}");
@@ -95,97 +123,9 @@ class _MyAppState extends State<MyApp> {
     Tools.deviceToken = deviceToken;
     print("registerNotification "+ Tools.deviceToken );
 
-
-
-    // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    //
-    //
-    //
-    // NotificationSettings settings = await _messaging.requestPermission(
-    //   alert: true,
-    //   badge: true,
-    //   provisional: false,
-    //   sound: true,
-    // );
-    //
-    // if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    //   print('User granted permission');
-    //
-    //   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    //     print(
-    //         'Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
-    //
-    //     // Parse the message received
-    //     PushNotification notification = PushNotification(
-    //       title: message.notification?.title,
-    //       body: message.notification?.body,
-    //       dataTitle: message.data['title'],
-    //       dataBody: message.data['body'],
-    //     );
-    //
-    //     Tools.getDemandes();
-    //
-    //
-    //     if (_notificationInfo != null) {
-    //       // For displaying the notification as an overlay
-    //       showSimpleNotification(
-    //         Text(_notificationInfo!.title!),
-    //         leading: NotificationBadge(totalNotifications: _totalNotifications),
-    //         subtitle: Text(_notificationInfo!.body!),
-    //         background: Colors.cyan.shade700,
-    //         duration: Duration(seconds: 2),
-    //       );
-    //     }
-    //   });
-    // } else {
-    //   print('User declined or has not accepted permission');
-    // }
-
-
   }
 
-  // For handling notification when the app is in terminated state
-  checkForInitialMessage() async {
-    await Firebase.initializeApp();
-    RemoteMessage? initialMessage =
-    await FirebaseMessaging.instance.getInitialMessage();
 
-    if (initialMessage != null) {
-
-      print("*** FirebaseMessaging.instance.getInitialMessage() ***");
-
-
-      PushNotification notification = PushNotification(
-        title: initialMessage.notification?.title,
-        body: initialMessage.notification?.body,
-        dataTitle: initialMessage.data['title'],
-        dataBody: initialMessage.data['body'],
-      );
-
-      Tools.getDemandes();
-
-
-    }
-
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-
-      print("*** onMessageOpenedApp ***");
-
-      PushNotification notification = PushNotification(
-        title: message.notification?.title,
-        body: message.notification?.body,
-        dataTitle: message.data['title'],
-        dataBody: message.data['body'],
-      );
-
-      Tools.getDemandes();
-
-
-    });
-
-
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -231,6 +171,7 @@ class _MyAppState extends State<MyApp> {
           // ),
           // home: HomePage()
           theme: ThemeData(
+            // fontFamily: 'Roboto',
             colorScheme: ColorScheme.light().copyWith(primary: Tools.colorPrimary),
             // textTheme: TextTheme(labelMedium: TextStyle(
             //   fontSize: 30
@@ -244,47 +185,55 @@ class _MyAppState extends State<MyApp> {
           // home: WizardForm(),
           // home: InterventionFormStep1(),
           // home: TestWatermark(),
-          home: FutureBuilder<bool>(
-              future: _checkLogin(),
-              builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.waiting:
-                    return Center(child: const CircularProgressIndicator());
-                  default:
-                    if (snapshot.hasError) {
-                      return Text('Error: ${snapshot.error}');
-                    } else {
-                      if(snapshot.data == true){
-                        return DemandeList();
-                      }else{
-                        return LoginWidget();
-                      }
-                    }
-                }
-              }),
+          home: SplashPage(),
+          // home: FutureBuilder<bool>(
+          //     future: _checkLogin(),
+          //     builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          //       switch (snapshot.connectionState) {
+          //         case ConnectionState.waiting:
+          //           return Center(child: const CircularProgressIndicator());
+          //         default:
+          //           if (snapshot.hasError) {
+          //             return Text('Error: ${snapshot.error}');
+          //           } else {
+          //             if(snapshot.data == true){
+          //               return DemandeList();
+          //             }else{
+          //               return LoginWidget();
+          //             }
+          //           }
+          //       }
+          //     }),
           routes: {
-            'form': (context) => InterventionFormStep2(),
-            'login': (context) => LoginWidget(),
-            'intervention': (context) => InterventionWidget(),
+
           },
       ),
     );
 
   }
 
-  Future<bool> _checkLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    Tools.userId =  prefs.getString('userId') ?? "" ;
-    Tools.userName =  prefs.getString('userName') ?? "" ;
-    Tools.userEmail =  prefs.getString('userEmail') ?? "" ;
-
-    return prefs.getBool('isOnline') ?? false  ;
-  }
 
   @override
   void initState() {
-    registerNotification();
+    getDeviceToken();
+    checkInternet();
+
+
     // checkForInitialMessage();
+  }
+
+  void checkInternet() async {
+    Tools.connectivityResult = await (Connectivity().checkConnectivity());
+
+  }
+}
+
+
+
+class MyHttpOverrides extends HttpOverrides{
+  @override
+  HttpClient createHttpClient(SecurityContext? context){
+    return super.createHttpClient(context)
+      ..badCertificateCallback = (X509Certificate cert, String host, int port)=> true;
   }
 }

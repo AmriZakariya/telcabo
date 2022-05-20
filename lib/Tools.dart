@@ -8,8 +8,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:im_stepper/stepper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,6 +22,7 @@ import 'package:telcabo/models/response_get_liste_etats.dart';
 import 'dart:convert';
 
 import 'dart:developer' as developer;
+import 'package:image/image.dart' as imagePLugin;
 
 import 'package:flutter/services.dart';
 import 'package:telcabo/models/response_get_liste_types.dart';
@@ -29,94 +30,95 @@ import 'package:telcabo/ui/InterventionHeaderInfoWidget.dart';
 
 import 'package:dio_logger/dio_logger.dart';
 
-class Tools{
+class Tools {
 
+  // static String baseUrl = "https://telcabo.castlit.com" ;
+  static String baseUrl = "https://crmtelcabo.com" ;
+  
+  
+  static bool localWatermark = false ;
   static Demandes? selectedDemande;
-  static int currentStep = 1 ;
+  static int currentStep = 1;
 
   static ResponseGetDemandesList? demandesListSaved;
 
+  static Map? searchFilter = {};
+  static bool showDemandesEnAttentes = false;
 
-  static Map? searchFilter;
+  static String deviceToken = "";
 
-  static String deviceToken = "" ;
-  static String userId = "" ;
-  static String userName = "" ;
-  static String userEmail = "" ;
+  static String userId = "";
 
-  static List arr_d = [2,7,8];
-  static List arr_w = [1,3,4,5];
-  static List arr_s = [6,9];
+  static String userName = "";
 
+  static String userEmail = "";
 
-  static String languageCode = "ar" ;
+  static List arr_d = [2, 7, 8];
+  static List arr_w = [1, 3, 4, 5];
+  static List arr_s = [6, 9];
+
+  static String languageCode = "ar";
+
   static final Color colorPrimary = Color(0xff3f4d67);
   static final Color colorSecondary = Color(0xfff99e25);
+  static final Color colorBackground = Color(0xfff3f1ef);
 
-  static String getLanguageName(){
-
-    switch(languageCode){
+  static String getLanguageName() {
+    switch (languageCode) {
       case "ar":
-        return "العربية" ;
+        return "العربية";
       case "fr":
-        return "Français" ;
+        return "Français";
     }
 
     return languageCode;
   }
-
-
 
   static File fileEtatsList = File("");
   static File fileListType = File("");
   static File fileDemandesList = File("");
   static File fileTraitementList = File("");
 
-
-
-
-  static void initFiles(){
-
+  static void initFiles() {
     print("initFiles!");
     try {
       getApplicationDocumentsDirectory().then((Directory directory) {
         fileEtatsList = new File(directory.path + "/fileEtatsList.json");
         fileListType = new File(directory.path + "/fileListType.json");
         fileDemandesList = new File(directory.path + "/fileDemandesList.json");
-        fileTraitementList = new File(directory.path + "/fileTraitementList.json");
+        fileTraitementList =
+            new File(directory.path + "/fileTraitementList.json");
 
-        if(!fileEtatsList.existsSync()){
+        if (!fileEtatsList.existsSync()) {
           fileEtatsList.createSync();
         }
 
-        if(!fileListType.existsSync()){
+        if (!fileListType.existsSync()) {
           fileListType.createSync();
         }
 
-        if(!fileDemandesList.existsSync()){
+        if (!fileDemandesList.existsSync()) {
           fileDemandesList.createSync();
         }
 
-        if(!fileTraitementList.existsSync()){
+        if (!fileTraitementList.existsSync()) {
           fileTraitementList.createSync();
         }
-
       });
     } catch (e) {
       print("exeption -- " + e.toString());
     }
   }
 
-  static  Future<ResponseGetListEtat> callWSGetEtats() async {
+  static Future<ResponseGetListEtat> callWSGetEtats() async {
     print("****** callWSGetEtats ***");
 
-    Response response ;
+    Response response;
     try {
       Dio dio = new Dio();
       dio.interceptors.add(dioLoggerInterceptor);
 
-      response =
-      await dio.get("http://telcabo.castlit.com/etats/liste_etats");
+      response = await dio.get("${Tools.baseUrl}/etats/liste_etats");
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.data}');
@@ -125,15 +127,14 @@ class Tools{
         var responseApiHome = jsonDecode(response.data);
         writeToFileEtatsList(responseApiHome);
 
-        ResponseGetListEtat etats = ResponseGetListEtat.fromJson(responseApiHome);
+        ResponseGetListEtat etats =
+            ResponseGetListEtat.fromJson(responseApiHome);
         print(etats);
 
         return etats;
       } else {
         throw Exception('error fetching posts');
       }
-
-
     } on DioError catch (e) {
       print("**************DioError***********");
       print(e);
@@ -156,18 +157,17 @@ class Tools{
 
     return Tools.readfileEtatsList();
     // return ResponseGetListEtat(etat: []);
-
   }
-  static  Future<ResponseGetListType> callWSGetlisteTypes() async {
+
+  static Future<ResponseGetListType> callWSGetlisteTypes() async {
     print("****** callWSGetlisteTypes ***");
 
-    Response response ;
+    Response response;
     try {
       Dio dio = new Dio();
       dio.interceptors.add(dioLoggerInterceptor);
 
-      response =
-      await dio.get("http://telcabo.castlit.com/etats/liste_types");
+      response = await dio.get("${Tools.baseUrl}/etats/liste_types");
 
       print('Response status: ${response.statusCode}');
       print('Response body: ${response.data}');
@@ -176,15 +176,14 @@ class Tools{
         var responseApiHome = jsonDecode(response.data);
         writeToFileTypeInstallationList(responseApiHome);
 
-        ResponseGetListType etats = ResponseGetListType.fromJson(responseApiHome);
+        ResponseGetListType etats =
+            ResponseGetListType.fromJson(responseApiHome);
         print(etats);
 
         return etats;
       } else {
         throw Exception('error fetching posts');
       }
-
-
     } on DioError catch (e) {
       print("**************DioError***********");
       print(e);
@@ -207,38 +206,32 @@ class Tools{
 
     return Tools.readfileListType();
     // return ResponseGetListEtat(etat: []);
-
   }
 
-  static  Future<ResponseGetDemandesList> getDemandes() async {
-
-    FormData formData = FormData.fromMap({
-      "user_id" : userId
-    });
+  static Future<ResponseGetDemandesList> getDemandes() async {
+    FormData formData = FormData.fromMap({"user_id": userId});
 
     print(formData.fields.toString());
 
-    Response apiRespon ;
+    Response apiRespon;
     try {
       print("************** getDemandes ***********");
       Dio dio = new Dio();
       dio.interceptors.add(dioLoggerInterceptor);
 
-
       apiRespon =
-      await dio.post("http://telcabo.castlit.com/demandes/get_demandes",
-          data: formData,
-          options: Options(
-            // followRedirects: false,
-            // validateStatus: (status) { return status < 500; },
-            method: "POST",
-            headers: {
-              'Content-Type': 'multipart/form-data;charset=UTF-8',
-              'Charset': 'utf-8',
-              'Accept': 'application/json',
-            },
-          ));
-
+          await dio.post("${Tools.baseUrl}/demandes/get_demandes",
+              data: formData,
+              options: Options(
+                // followRedirects: false,
+                // validateStatus: (status) { return status < 500; },
+                method: "POST",
+                headers: {
+                  'Content-Type': 'multipart/form-data;charset=UTF-8',
+                  'Charset': 'utf-8',
+                  'Accept': 'application/json',
+                },
+              ));
 
       print('Response status: ${apiRespon.statusCode}');
       print('Response body: ${apiRespon.data}');
@@ -247,18 +240,15 @@ class Tools{
         var responseApiHome = jsonDecode(apiRespon.data);
         writeToFileDemandeList(responseApiHome);
 
-        ResponseGetDemandesList demandesList = ResponseGetDemandesList.fromJson(responseApiHome);
+        ResponseGetDemandesList demandesList =
+            ResponseGetDemandesList.fromJson(responseApiHome);
         print(demandesList);
 
         return demandesList;
       } else {
         throw Exception('error fetching posts');
       }
-
-
-
     } on DioError catch (e) {
-
       print("**************DioError***********");
       print(e);
       // The request was made and the server responded with a status code
@@ -268,13 +258,14 @@ class Tools{
         //        print(e.response.headers);
         //        print(e.response.);
         //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
-        throw (e.response?.statusMessage ?? "");
+        // throw (e.response?.statusMessage ?? "");
       } else {
         // Something happened in setting up or sending the request that triggered an Error
         //        print(e.request);
         //        print(e.message);
       }
     } catch (e) {
+      print("API ERROR ${e}");
       throw ('API ERROR');
     }
 
@@ -283,49 +274,40 @@ class Tools{
     return readfileDemandesList();
   }
 
+  static Future<bool> callWSSendMail() async {
+    FormData formData =
+        FormData.fromMap({"demande_id": Tools.selectedDemande?.id});
 
-  static  Future<bool> callWSSendMail() async {
-
-    FormData formData = FormData.fromMap({
-      "demande_id" : Tools.selectedDemande?.id
-    });
-
-    Response apiRespon ;
+    Response apiRespon;
     try {
       print("************** callWSSendMail ***********");
       Dio dio = new Dio();
 
-
       apiRespon =
-      await dio.post("http://telcabo.castlit.com/traitements/send_mail",
-          data: formData,
-          options: Options(
-            // followRedirects: false,
-            // validateStatus: (status) { return status < 500; },
-            method: "POST",
-            headers: {
-              'Content-Type': 'multipart/form-data;charset=UTF-8',
-              'Charset': 'utf-8',
-              'Accept': 'application/json',
-            },
-          ));
-
+          await dio.post("${Tools.baseUrl}/traitements/send_mail",
+              data: formData,
+              options: Options(
+                // followRedirects: false,
+                // validateStatus: (status) { return status < 500; },
+                method: "POST",
+                headers: {
+                  'Content-Type': 'multipart/form-data;charset=UTF-8',
+                  'Charset': 'utf-8',
+                  'Accept': 'application/json',
+                },
+              ));
 
       print('Response status: ${apiRespon.statusCode}');
       print('Response body: ${apiRespon.data}');
 
       if (apiRespon.statusCode == 200) {
-        if(apiRespon.data == "000"){
-          return true ;
+        if (apiRespon.data == "000") {
+          return true;
         }
       } else {
         throw Exception('error fetching posts');
       }
-
-
-
     } on DioError catch (e) {
-
       print("**************DioError***********");
       print(e);
       // The request was made and the server responded with a status code
@@ -350,23 +332,23 @@ class Tools{
     return false;
   }
 
-
   static void writeToFileEtatsList(Map jsonMapContent) {
     print("Writing to writeToFileEtatsList!");
     try {
       fileEtatsList.writeAsStringSync(json.encode(jsonMapContent));
       print("OK");
     } catch (e) {
-      print("exeption -- "+e.toString());
+      print("exeption -- " + e.toString());
     }
   }
+
   static void writeToFileTypeInstallationList(Map jsonMapContent) {
     print("Writing to writeToFileTypeInstallationList!");
     try {
       fileListType.writeAsStringSync(json.encode(jsonMapContent));
       print("OK");
     } catch (e) {
-      print("exeption -- "+e.toString());
+      print("exeption -- " + e.toString());
     }
   }
 
@@ -376,101 +358,168 @@ class Tools{
       fileDemandesList.writeAsStringSync(json.encode(jsonMapContent));
       print("OK");
     } catch (e) {
-      print("exeption -- "+e.toString());
+      print("exeption -- " + e.toString());
     }
   }
 
-
-  static Future<void> readFileTraitementList() async{
+  static Future<void> readFileTraitementList() async {
     print("readFileTraitementList!");
 
     // fileTraitementList.writeAsStringSync("");
-
+    // return ;
     try {
-
-      String fileContent =  fileTraitementList.readAsStringSync();
+      String fileContent = fileTraitementList.readAsStringSync();
       print("file content ==> ${fileContent}");
 
-      if(!fileContent.isEmpty){
+      if (!fileContent.isEmpty) {
         Map<String, dynamic> demandeListMap = json.decode(fileContent);
 
         print(demandeListMap);
 
         List traitementList = demandeListMap.values.elementAt(0);
+        print("traitementList length==> ${traitementList.length}");
         print("traitementList ==> ${traitementList}");
 
-        List traitementListResult  = [];
+        List traitementListResult = [];
 
-
-        for(int i = 0; i < traitementList.length; i++){
+        for (int i = 0; i < traitementList.length; i++) {
           print("element ==> ${traitementList[i]}");
 
-          var isUpdated = await callWsAddMobileFromLocale(jsonDecode(traitementList[i])) ;
-          if ( isUpdated == true){
+          var isUpdated =
+              await callWsAddMobileFromLocale(jsonDecode(traitementList[i]));
+          if (isUpdated == true) {
+            print("readFileTraitementList isUpdated success");
 
-
-          }else{
+          } else {
+            print("readFileTraitementList added");
             traitementListResult.add(traitementList[i]);
           }
-
         }
 
+        print("readFileTraitementList isUpdated traitementListResultlength ==> ${traitementListResult.length}");
 
-        Map rsultMap = {
-          "traitementList" : traitementListResult
-        };
+        Map rsultMap = {"traitementList": traitementListResult};
         fileTraitementList.writeAsStringSync(json.encode(rsultMap));
-
-
-
-
-      }else{
+      } else {
         print("empty file");
       }
-
-
-
     } catch (e) {
-      print("exeption -- " + e.toString());
+      print(" readFileTraitementList exeption -- " + e.toString());
     }
   }
 
+  static Future<bool> callWsAddMobileFromLocale(
+      Map<String, dynamic> jsonMapContent) async {
+    print("****** callWsAddMobileFromLocale ***");
 
-  static Future<bool> callWsAddMobileFromLocale(Map<String, dynamic> formDateValues) async {
-    print("****** callWsAddMobile ***");
+    String currentAddress = "" ;
 
-    formDateValues.addAll({
-      "isOffline" : true
-    });
+    try {
+      currentAddress = await Tools.getAddressFromLatLng();
+    } catch (e) {
+      return false ;
+    }
 
-    FormData formData = FormData.fromMap(formDateValues);
+    String currentDate = jsonMapContent["date"];
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+
+
+    for (var mapKey in jsonMapContent.keys) {
+      if (mapKey == "p_pbi_avant" ||
+          mapKey == "p_pbi_apres" ||
+          mapKey == "p_pbo_avant" ||
+          mapKey == "p_pbo_apres" ||
+          mapKey == "p_equipement_installe" ||
+          mapKey == "p_test_signal" ||
+          mapKey == "p_etiquetage_indoor" ||
+          mapKey == "p_etiquetage_outdoor" ||
+          mapKey == "p_passage_cable" ||
+          mapKey == "p_fiche_instalation" ||
+          mapKey == "p_speed_test") {
+        try {
+          if (jsonMapContent[mapKey] != null && jsonMapContent[mapKey] != "null" && jsonMapContent[mapKey] != "" )  {
+            final splitted = jsonMapContent[mapKey].split(";;");
+
+            if (Tools.localWatermark == true) {
+              final File fileResult = File(splitted[0]);
+
+              final image =
+              imagePLugin.decodeImage(fileResult.readAsBytesSync())!;
+              imagePLugin.drawString(
+                  image, imagePLugin.arial_24, 0, 0, currentDate);
+              imagePLugin.drawString(
+                  image, imagePLugin.arial_24, 0, 32, currentAddress);
+
+              await getApplicationDocumentsDirectory().then((Directory directory) {
+                File fileResultWithWatermark =
+                File(directory.path + "/" + fileName + '.png');
+                fileResultWithWatermark
+                    .writeAsBytesSync(imagePLugin.encodePng(image));
+
+                XFile xfileResult = XFile(fileResultWithWatermark.path);
+
+                jsonMapContent[mapKey] = MultipartFile.fromFileSync(
+                    xfileResult.path,
+                    filename: xfileResult.name);
+
+
+                print("watermark success");
+
+              });
+
+
+
+
+            }else{
+              jsonMapContent[mapKey] =
+                  MultipartFile.fromFileSync(splitted[0], filename: splitted[1]);
+            }
+
+
+
+
+
+
+
+          }
+        } catch (e) {
+          print("+++ exception ++++");
+          print(e);
+          jsonMapContent[mapKey] = null;
+        }
+      }
+    }
+
+    jsonMapContent.addAll({"isOffline": true});
+
+    print("callWsAddMobileFromLocale jsonMapContent ==> ${jsonMapContent}");
+
+    FormData formData = FormData.fromMap(jsonMapContent);
     print(formData);
 
-
-    Response apiRespon ;
+    Response apiRespon;
     try {
       print("**************doPOST***********");
       Dio dio = new Dio();
       dio.interceptors.add(dioLoggerInterceptor);
 
-
       apiRespon =
-      await dio.post("https://telcabo.castlit.com/traitements/add_mobile",
-          data: formData,
-          options: Options(
-            method: "POST",
-            headers: {
-              'Content-Type': 'multipart/form-data;charset=UTF-8',
-              'Charset': 'utf-8'
-            },
-          ));
+          await dio.post("${Tools.baseUrl}/traitements/add_mobile",
+              data: formData,
+              options: Options(
+                method: "POST",
+                headers: {
+                  'Content-Type': 'multipart/form-data;charset=UTF-8',
+                  'Charset': 'utf-8'
+                },
+              ));
 
       print("Image Upload ${apiRespon}");
 
       print(apiRespon);
 
-      if(apiRespon.data == "000"){
-        return true ;
+      if (apiRespon.data == "000") {
+        return true;
       }
 
       // if (apiRespon.statusCode == 201) {
@@ -480,8 +529,6 @@ class Tools{
       // } else {
       //   print('errr');
       // }
-
-
 
     } on DioError catch (e) {
       print("**************DioError***********");
@@ -493,47 +540,40 @@ class Tools{
         //        print(e.response.headers);
         //        print(e.response.);
         //           print("**->REQUEST ${e.response?.re.uri}#${Transformer.urlEncodeMap(e.response?.request.data)} ");
-        throw (e.response?.statusMessage ?? "");
+        // throw (e.response?.statusMessage ?? "");
       } else {
         // Something happened in setting up or sending the request that triggered an Error
         //        print(e.request);
         //        print(e.message);
       }
     } catch (e) {
-      throw ('API ERROR');
+      // throw ('API ERROR');
     }
 
-    return false ;
-
+    return false;
   }
-
 
   static ResponseGetListEtat readfileEtatsList() {
     ResponseGetListEtat responseListEtat;
 
     print("Read to readfileEtatsList!");
     try {
-
-      String fileContent =  fileDemandesList.readAsStringSync();
+      String fileContent = fileDemandesList.readAsStringSync();
       print("file content ==> ${fileContent}");
 
-      if(!fileContent.isEmpty){
+      if (!fileContent.isEmpty) {
         Map<String, dynamic> etatsListMap =
-        json.decode(fileEtatsList.readAsStringSync());
+            json.decode(fileEtatsList.readAsStringSync());
         print(etatsListMap);
 
         responseListEtat = ResponseGetListEtat.fromJson(etatsListMap);
 
-
         print("OK");
 
-        return responseListEtat ;
-
-      }else{
+        return responseListEtat;
+      } else {
         print("empty file");
       }
-
-
     } catch (e) {
       print("exeption -- " + e.toString());
     }
@@ -547,26 +587,22 @@ class Tools{
 
     print("Read to readfileListType!");
 
-    String fileContent =  fileDemandesList.readAsStringSync();
+    String fileContent = fileDemandesList.readAsStringSync();
     print("file content ==> ${fileContent}");
 
-    if(!fileContent.isEmpty){
+    if (!fileContent.isEmpty) {
       Map<String, dynamic> etatsListMap =
-      json.decode(fileListType.readAsStringSync());
+          json.decode(fileListType.readAsStringSync());
       print(etatsListMap);
 
       responseGetListType = ResponseGetListType.fromJson(etatsListMap);
 
       print("OK");
 
-      return responseGetListType ;
-
-
-    }else{
+      return responseGetListType;
+    } else {
       print("empty file");
     }
-
-
 
     return ResponseGetListType(types: []);
   }
@@ -576,23 +612,20 @@ class Tools{
 
     print("Read to readfileDemandesList!");
     try {
-
-      String fileContent =  fileDemandesList.readAsStringSync();
+      String fileContent = fileDemandesList.readAsStringSync();
       print("file content ==> ${fileContent}");
 
-      if(!fileContent.isEmpty){
+      if (!fileContent.isEmpty) {
         Map<String, dynamic> demandeListMap = json.decode(fileContent);
         print(demandeListMap);
 
-        responseGetDemandesList = ResponseGetDemandesList.fromJson(demandeListMap);
+        responseGetDemandesList =
+            ResponseGetDemandesList.fromJson(demandeListMap);
 
         print("OK");
 
-        return responseGetDemandesList ;
+        return responseGetDemandesList;
       }
-
-
-
     } catch (e) {
       print("exeption -- " + e.toString());
     }
@@ -600,115 +633,139 @@ class Tools{
     return ResponseGetDemandesList(demandes: []);
   }
 
-  static Future<ResponseGetListEtat> getListEtatFromLocalAndINternet() async{
+  static Future<ResponseGetListEtat> getListEtatFromLocalAndINternet() async {
     print("****** getListEtatFromLocalAndINternet ***");
     ResponseGetListEtat responseListEtat;
 
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    if(await Tools.tryConnection()){
       responseListEtat = await Tools.callWSGetEtats();
 
     }else{
-      responseListEtat =  Tools.readfileEtatsList() ;
+      responseListEtat = Tools.readfileEtatsList();
+
     }
 
-    print("****** getListEtatFromLocalAndINternet *** return  ${responseListEtat.toJson()} " );
+
+    print(
+        "****** getListEtatFromLocalAndINternet *** return  ${responseListEtat.toJson()} ");
 
     return responseListEtat;
+  }
+
+  static Future<bool> tryConnection() async {
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    print("tryConnection ==> connectivityResult : ${connectivityResult}");
+
+    if (connectivityResult == ConnectivityResult.none) {
+      return false;
+    }
+
+
+    try {
+      final response = await InternetAddress.lookup('www.google.com');
+
+      print("tryConnection ==> response : ${response}");
+      if(response.isEmpty){
+        return false;
+
+      }
+
+      if (response.isNotEmpty && response[0].rawAddress.isNotEmpty) {
+        return true ;
+      }else{
+        return false;
+      }
+
+    } on SocketException catch (e) {
+      print("tryConnection ==> SocketException : ${e}");
+      return false;
+
+    }
+
+    return false ;
 
   }
-  static Future<ResponseGetListType> getTypeListFromLocalAndINternet() async{
+  static Future<ResponseGetListType> getTypeListFromLocalAndINternet() async {
     print("****** getTYpeListFromLocalAndINternet ***");
     ResponseGetListType responseGetListType;
 
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    if(await Tools.tryConnection()){
       responseGetListType = await Tools.callWSGetlisteTypes();
 
     }else{
-      responseGetListType =  Tools.readfileListType() ;
+      responseGetListType = Tools.readfileListType();
+
     }
 
     return responseGetListType;
-
   }
-  static Future<ResponseGetDemandesList> getListDemandeFromLocalAndINternet() async{
+
+  static Future<ResponseGetDemandesList>
+      getListDemandeFromLocalAndINternet() async {
     ResponseGetDemandesList responseGetDemandesList;
 
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.mobile || connectivityResult == ConnectivityResult.wifi) {
+    if(await Tools.tryConnection()){
       print("read from ws");
       responseGetDemandesList = await Tools.getDemandes();
-
     }else{
-      responseGetDemandesList =  Tools.readfileDemandesList() ;
+      responseGetDemandesList = Tools.readfileDemandesList();
+
     }
 
-    return responseGetDemandesList;
 
+    return responseGetDemandesList;
   }
 
-
-
   static Future<bool> callWsLogin(Map<String, dynamic> formDateValues) async {
+    print("Tools.deviceToken = " + Tools.deviceToken);
 
-    print("Tools.deviceToken = "+ Tools.deviceToken);
-
-    formDateValues.addAll({
-      "registration_id"  : Tools.deviceToken
-    });
+    formDateValues.addAll({"registration_id": Tools.deviceToken});
 
     print(formDateValues);
 
     FormData formData = FormData.fromMap(formDateValues);
 
-    Response apiRespon ;
+    Response apiRespon;
     try {
       print("************** callWsLogin ***********");
       Dio dio = new Dio();
 
-
       apiRespon =
-      await dio.post("http://telcabo.castlit.com/users/login_android",
-          data: formData,
-          options: Options(
-            // followRedirects: false,
-            // validateStatus: (status) { return status < 500; },
-            method: "POST",
-            headers: {
-              'Content-Type': 'multipart/form-data;charset=UTF-8',
-              'Charset': 'utf-8',
-              'Accept': 'application/json',
-            },
-          ));
-
+          await dio.post("${Tools.baseUrl}/users/login_android",
+              data: formData,
+              options: Options(
+                // followRedirects: false,
+                // validateStatus: (status) { return status < 500; },
+                method: "POST",
+                headers: {
+                  'Content-Type': 'multipart/form-data;charset=UTF-8',
+                  'Charset': 'utf-8',
+                  'Accept': 'application/json',
+                },
+              ));
 
       print(apiRespon);
 
-      Map result = json.decode(apiRespon.data) as Map ;
+      Map result = json.decode(apiRespon.data) as Map;
 
       String userId = result["id"];
       String userName = result["name"];
 
-      if(userId.isNotEmpty && userId != "0"){
+      if (userId.isNotEmpty && userId != "0") {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isOnline', true);
         await prefs.setString('userId', userId);
         await prefs.setString('userName', userName);
         await prefs.setString('userEmail', formDateValues["username"]);
 
+        Tools.userId = userId;
+        Tools.userName = userName;
+        Tools.userEmail = formDateValues["username"];
 
-        Tools.userId =  userId ;
-        Tools.userName =  userName ;
-        Tools.userEmail = formDateValues["username"] ;
-
-        return true ;
-
+        return true;
       }
       // print(json.decode(apiRespon).toString());
-
-
-
 
     } on DioError catch (e) {
       print("**************DioError***********");
@@ -724,17 +781,16 @@ class Tools{
       } else {
         // Something happened in setting up or sending the request that triggered an Error
         //        print(e.request);
-        //        print(e.message);
+         print(e.message);
+         throw (e);
+
       }
     } catch (e) {
       throw ('API ERROR');
     }
 
-    return false ;
-
+    return false;
   }
-
-
 
   static Future<Position> determinePosition() async {
     bool serviceEnabled;
@@ -746,7 +802,8 @@ class Tools{
       // Location services are not enabled don't continue
       // accessing the position and request users of the
       // App to enable the location services.
-      return Future.error('Location services are disabled.');
+      // return Future.error('Location services are disabled.');
+      return Future.error('Les services de localisation sont désactivés.');
     }
 
     permission = await Geolocator.checkPermission();
@@ -758,14 +815,17 @@ class Tools{
         // Android's shouldShowRequestPermissionRationale
         // returned true. According to Android guidelines
         // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
+        // return Future.error('Location permissions are denied');
+        return Future.error('Les autorisations de localisation sont refusées');
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       // Permissions are denied forever, handle appropriately.
+      // return Future.error(
+      //     'Location permissions are permanently denied, we cannot request permissions.');
       return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
+          'Les autorisations de localisation sont définitivement refusées, nous ne pouvons pas demander d\'autorisations.');
     }
 
     // When we reach here, permissions are granted and we can
@@ -773,30 +833,22 @@ class Tools{
     return await Geolocator.getCurrentPosition();
   }
 
-
-
-
-
-
-
-  static  Future<bool> refreshSelectedDemande() async {
+  static Future<bool> refreshSelectedDemande() async {
     print("****** callWSRefreshSelectedDEmande ***");
 
-    FormData formData = FormData.fromMap({
-      "demande_id" : Tools.selectedDemande?.id ?? ""
-    });
+    FormData formData =
+        FormData.fromMap({"demande_id": Tools.selectedDemande?.id ?? ""});
 
     print(formData);
 
-    Response apiRespon ;
+    Response apiRespon;
     try {
       print("************** getDemandes ***********");
       Dio dio = new Dio();
       dio.interceptors.add(dioLoggerInterceptor);
 
-
-      apiRespon =
-      await dio.post("http://telcabo.castlit.com/demandes/get_demandes_byid",
+      apiRespon = await dio.post(
+          "${Tools.baseUrl}/demandes/get_demandes_byid",
           data: formData,
           options: Options(
             // followRedirects: false,
@@ -809,28 +861,31 @@ class Tools{
             },
           ));
 
-
       print('Response status: ${apiRespon.statusCode}');
       print('Response body: ${apiRespon.data}');
 
       if (apiRespon.statusCode == 200) {
         var responseApiHome = jsonDecode(apiRespon.data);
 
-        ResponseGetDemandesList demandesList = ResponseGetDemandesList.fromJson(responseApiHome);
+        ResponseGetDemandesList demandesList =
+            ResponseGetDemandesList.fromJson(responseApiHome);
         print(demandesList);
 
-        Tools.selectedDemande = demandesList.demandes?.first ;
+        Tools.selectedDemande = demandesList.demandes?.first;
 
-        return true ;
+        int? selectedIndex = Tools.demandesListSaved?.demandes
+            ?.indexWhere((element) => element.id == Tools.selectedDemande?.id);
 
+        if (selectedIndex != null && Tools.selectedDemande != null) {
+          Tools.demandesListSaved?.demandes?[selectedIndex] =
+              Tools.selectedDemande!;
+        }
+
+        return true;
       } else {
         throw Exception('error fetching posts');
       }
-
-
-
     } on DioError catch (e) {
-
       print("**************DioError***********");
       print(e);
       // The request was made and the server responded with a status code
@@ -850,20 +905,92 @@ class Tools{
       throw ('API ERROR');
     }
 
-
-    return false ;
-
+    return false;
   }
 
-  static  Future<File?> compressAndGetFile(File file, String targetPath) async {
+  // static Future<File?> compressAndGetFile(File file, String targetPath) async {
+  //   var result = await FlutterImageCompress.compressAndGetFile(
+  //       file.absolute.path, targetPath,
+  //       quality: 60, minWidth: 800, minHeight: 600);
+  //
+  //   return result;
+  // }
+
+  static ConnectivityResult? connectivityResult;
+
+  static getStateFromConnectivity() {
+    if (Tools.connectivityResult == ConnectivityResult.wifi) {
+      return InternetConnected(connectionType: ConnectionType.wifi);
+    } else if (Tools.connectivityResult == ConnectivityResult.mobile) {
+      return InternetConnected(connectionType: ConnectionType.mobile);
+    } else if (Tools.connectivityResult == ConnectivityResult.none) {
+      return InternetDisconnected();
+    }
+
+    return InternetLoading();
+  }
+
+
+
+
+
+
+  static Future<String> getAddressFromLatLng() async {
+
+    print("call function getAddressFromLatLng");
+    String coordinateString = "" ;
+
+    // try {
+
+      Position? position = await determinePosition();
+
+      if (position != null) {
+
+        coordinateString =   "( latitude = ${position.latitude}   longitude =  ${position.longitude} )" ;
+
+
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+            position.latitude, position.longitude);
+        Placemark place = placemarks[0];
+        print(place);
+
+        String fullAddess =  " ${place.locality}, ${place.postalCode}, ${place.country}";
+
+        return coordinateString + " " + fullAddess ;
+        // return "${position.}, ${place.postalCode}, ${place.country}"
+      }
+
+
+    // } catch (e) {
+    //   // print()
+    //   print(e);
+    // }
+
+    return coordinateString  ;
+  }
+
+  static Future<File?> compressAndGetFile(File file, String targetPath, [int quality = 80]) async {
     var result = await FlutterImageCompress.compressAndGetFile(
       file.absolute.path, targetPath,
-      quality: 60,
-      minWidth: 800,
-      minHeight: 600
+      quality: quality,
     );
 
+    print(file.lengthSync());
+    print(result?.lengthSync());
+
     return result;
+  }
+
+  static getColorByEtatId(int etatId) {
+    if (Tools.arr_d.contains(etatId)) {
+      return Colors.red;
+    } else if (Tools.arr_s.contains(etatId)) {
+      return Colors.green;
+    } else if (Tools.arr_w.contains(etatId)) {
+      return Colors.orange;
+    }
+
+    return Colors.transparent;
   }
 
 }

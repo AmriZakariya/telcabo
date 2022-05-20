@@ -79,7 +79,10 @@ class QrScannerTextFieldBlocBuilder extends StatelessWidget {
                   borderRadius: 10,
                   borderLength: 30,
                   borderWidth: 10,
-                  cutOutSize: scanArea),
+                  cutOutWidth: MediaQuery.of(context).size.width / 1.2,
+                  cutOutHeight: MediaQuery.of(context).size.width / 1.6
+                  // cutOutSize: scanArea
+              ),
               onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
             );
           },

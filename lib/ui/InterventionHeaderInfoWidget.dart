@@ -5,6 +5,8 @@ import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:expand_widget/expand_widget.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
@@ -18,8 +20,6 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:telcabo/DetailIntervention.dart';
 import 'package:telcabo/FormStepper.dart';
-import 'package:telcabo/InterventionFormStep2.dart';
-import 'package:telcabo/InterventionWidgetStep1.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/models/response_get_demandes.dart';
 import 'package:telcabo/models/response_get_liste_etats.dart';
@@ -37,7 +37,7 @@ class DemandeListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 15),
+      margin: const EdgeInsets.only(left: 15),
       decoration: BoxDecoration(
           border: Border.all(
             color: Colors.transparent,
@@ -45,11 +45,11 @@ class DemandeListItem extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: getColorByEtatId(int.parse(demande.etatId ?? "0"))
+              color: Tools.getColorByEtatId(int.parse(demande.etatId ?? "0"))
                   .withOpacity(0.5),
               spreadRadius: 1,
               blurRadius: 1,
-              offset: Offset(1, 0), // changes position of shadow
+              offset: Offset(0, 0), // changes position of shadow
             ),
           ],
           borderRadius: BorderRadius.circular(
@@ -63,7 +63,7 @@ class DemandeListItem extends StatelessWidget {
             width: double.infinity,
             height: 65,
             decoration: BoxDecoration(
-                color: getColorByEtatId(int.parse(demande.etatId ?? "0")),
+                color: Tools.getColorByEtatId(int.parse(demande.etatId ?? "0")),
                 border: Border.all(
                   color: Colors.transparent,
                 ),
@@ -87,7 +87,7 @@ class DemandeListItem extends StatelessWidget {
                 ),
               ),
               Container(
-                width: 200,
+                width: MediaQuery.of(context).size.width - 175,
                 child: Text('${demande.client}',
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -96,7 +96,7 @@ class DemandeListItem extends StatelessWidget {
                     )),
               ),
 
-              Spacer(),
+              // Spacer(),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -133,23 +133,31 @@ class DemandeListItem extends StatelessWidget {
                       print(
                           "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
 
-                      navigator.push(MaterialPageRoute(
+                      navigator
+                          .push(MaterialPageRoute(
                         builder: (_) => WizardForm(),
-                      ));
+                      ))
+                          .then((_) {
+                        // This method gets callback after your SecondScreen is popped from the stack or finished.
+                      });
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                            color: Tools.colorPrimary, shape: BoxShape.circle),
-                        child: Center(
-                            child: FaIcon(
-                          FontAwesomeIcons.screwdriver,
-                          color: Colors.white,
-                          size: 15,
-                        )),
+                    child: Tooltip(
+                      message: "Voir",
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                              color: Tools.colorPrimary,
+                              shape: BoxShape.circle),
+                          child: Center(
+                              child: FaIcon(
+                            FontAwesomeIcons.screwdriver,
+                            color: Colors.white,
+                            size: 15,
+                          )),
+                        ),
                       ),
                     ),
                   ),
@@ -235,7 +243,11 @@ class DemandeListItem extends StatelessWidget {
 
                   InfoItemWidget(
                     iconData: Icons.location_city_sharp,
-                    title: "Type :",
+                    icon: FaIcon(
+                      FontAwesomeIcons.city,
+                      size: 18,
+                    ),
+                    title: "Ville :",
                     description: demande.ville ?? "",
                   ),
                   SizedBox(
@@ -244,6 +256,10 @@ class DemandeListItem extends StatelessWidget {
 
                   InfoItemWidget(
                     iconData: Icons.list_alt,
+                    icon: FaIcon(
+                      FontAwesomeIcons.signHanging,
+                      size: 18,
+                    ),
                     title: "PLaque :",
                     description: demande.plaqueName ?? "",
                   ),
@@ -253,6 +269,10 @@ class DemandeListItem extends StatelessWidget {
 
                   InfoItemWidget(
                     iconData: Icons.list_alt,
+                    icon: FaIcon(
+                      FontAwesomeIcons.projectDiagram,
+                      size: 18,
+                    ),
                     title: "Login SIP :",
                     description: demande.loginSip ?? "",
                   ),
@@ -262,6 +282,10 @@ class DemandeListItem extends StatelessWidget {
 
                   InfoItemWidget(
                     iconData: Icons.list_alt,
+                    icon: FaIcon(
+                      FontAwesomeIcons.lightbulb,
+                      size: 18,
+                    ),
                     title: "Opportunité :",
                     description: demande.sousTypeOpportunite ?? "",
                   ),
@@ -271,6 +295,10 @@ class DemandeListItem extends StatelessWidget {
 
                   InfoItemWidget(
                     iconData: Icons.list_alt,
+                    icon: FaIcon(
+                      FontAwesomeIcons.boxOpen,
+                      size: 18,
+                    ),
                     title: "Portabilité :",
                     description: demande.loginSip ?? "",
                   ),
@@ -384,24 +412,14 @@ class DemandeListItem extends StatelessWidget {
     );
   }
 
-  getColorByEtatId(int etatId) {
-    if (Tools.arr_d.contains(etatId)) {
-      return Colors.red;
-    } else if (Tools.arr_s.contains(etatId)) {
-      return Colors.green;
-    } else if (Tools.arr_w.contains(etatId)) {
-      return Colors.orange;
-    }
 
-    return Colors.transparent;
-  }
 }
 
 class InterventionHeaderInfoClientWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+      // margin: const EdgeInsets.only(left: 20.0, right: 20.0),
       decoration: BoxDecoration(
           border: Border.all(
             color: Colors.black,
@@ -459,6 +477,13 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                   ),
                   InfoItemWidget(
                     iconData: Icons.circle,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: FaIcon(
+                        FontAwesomeIcons.certificate,
+                        size: 18,
+                      ),
+                    ),
                     title: "Offre :",
                     description: Tools.selectedDemande?.offre ?? "",
                   ),
@@ -467,6 +492,13 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                   ),
                   InfoItemWidget(
                     iconData: Icons.phone,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: FaIcon(
+                        FontAwesomeIcons.phone,
+                        size: 18,
+                      ),
+                    ),
                     title: "Téléphone :",
                     description: Tools.selectedDemande?.contactClient ?? "",
                   ),
@@ -475,6 +507,13 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                   ),
                   InfoItemWidget(
                     iconData: Icons.phone_android,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: FaIcon(
+                        FontAwesomeIcons.mobileAlt,
+                        size: 18,
+                      ),
+                    ),
                     title: "Numéro de la personne mandatée :",
                     description: Tools.selectedDemande?.numPersMandatee ?? "",
                   ),
@@ -483,6 +522,13 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                   ),
                   InfoItemWidget(
                     iconData: Icons.person_pin_outlined,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: FaIcon(
+                        FontAwesomeIcons.userTag,
+                        size: 18,
+                      ),
+                    ),
                     title: "Nom de la personne mandatée :",
                     description: Tools.selectedDemande?.nomPerMandatee ?? "",
                   ),
@@ -491,6 +537,13 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                   ),
                   InfoItemWidget(
                     iconData: Icons.person_pin_outlined,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: FaIcon(
+                        FontAwesomeIcons.house,
+                        size: 18,
+                      ),
+                    ),
                     title: "Type logement :",
                     description: Tools.selectedDemande?.typeLogement ?? "",
                   ),
@@ -499,6 +552,13 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                   ),
                   InfoItemWidget(
                     iconData: Icons.location_on,
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right: 5),
+                      child: FaIcon(
+                        FontAwesomeIcons.houseChimney,
+                        size: 18,
+                      ),
+                    ),
                     title: "Adresse :",
                     description:
                         Tools.selectedDemande?.adresseInstallation ?? "",
@@ -520,7 +580,7 @@ class InterventionHeaderInfoProjectWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(left: 20.0, right: 20.0),
+      // margin: const EdgeInsets.only(left: 20.0, right: 20.0),
       decoration: BoxDecoration(
           border: Border.all(
             color: Colors.black,
@@ -848,47 +908,64 @@ class ImagesModelTest {
 }
 
 class InterventionHeaderImagesWidget extends StatelessWidget {
-  ValueNotifier<ImagesModelTest> commentaireCuuntValueNotifer =
+  ValueNotifier<ImagesModelTest> imageModelValueNotifer =
       ValueNotifier(ImagesModelTest(
-    "https://telcabo.castlit.com/img/demandes/" +
-        (Tools.selectedDemande?.pPbiAvant ?? ""),
+    "${Tools.baseUrl}/img/demandes/" + (Tools.selectedDemande?.pPbiAvant ?? ""),
     "Photo PBI avant l’installation",
   ));
-
-
 
   List<CardItem> items = [
     ImageCarditem(
         image: Image(
-      image: CachedNetworkImageProvider(
-          "https://telcabo.castlit.com/img/demandes/" +
-              (Tools.selectedDemande?.pPbiAvant ?? "")),
+      errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
+        return Center(
+          child: Container(
+            child: Icon(Icons.image_not_supported_outlined),
+          ),
+        );
+      },
+      image: CachedNetworkImageProvider("${Tools.baseUrl}/img/demandes/" +
+          (Tools.selectedDemande?.pPbiAvant ?? "")),
     )),
     ImageCarditem(
         image: Image(
       errorBuilder:
           (BuildContext context, Object error, StackTrace? stackTrace) {
-        return Container();
+        return Center(
+          child: Container(
+            child: Icon(Icons.image_not_supported_outlined),
+          ),
+        );
       },
-      image: CachedNetworkImageProvider(
-          "https://telcabo.castlit.com/img/demandes/" +
-              (Tools.selectedDemande?.pPbiApres ?? "")),
-    )),
-    ImageCarditem(
-        image: Image(
-      image: CachedNetworkImageProvider(
-          "https://telcabo.castlit.com/img/demandes/" +
-              (Tools.selectedDemande?.pPboApres ?? "")),
+      image: CachedNetworkImageProvider("${Tools.baseUrl}/img/demandes/" +
+          (Tools.selectedDemande?.pPbiApres ?? "")),
     )),
     ImageCarditem(
         image: Image(
       errorBuilder:
           (BuildContext context, Object error, StackTrace? stackTrace) {
-        return Container();
+        return Center(
+          child: Container(
+            child: Icon(Icons.image_not_supported_outlined),
+          ),
+        );
       },
-      image: CachedNetworkImageProvider(
-          "https://telcabo.castlit.com/img/demandes/" +
-              (Tools.selectedDemande?.pPboApres ?? "")),
+      image: CachedNetworkImageProvider("${Tools.baseUrl}/img/demandes/" +
+          (Tools.selectedDemande?.pPboAvant ?? "")),
+    )),
+    ImageCarditem(
+        image: Image(
+      errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
+        return Center(
+          child: Container(
+            child: Icon(Icons.image_not_supported_outlined),
+          ),
+        );
+      },
+      image: CachedNetworkImageProvider("${Tools.baseUrl}/img/demandes/" +
+          (Tools.selectedDemande?.pPboApres ?? "")),
     )),
   ];
 
@@ -941,13 +1018,13 @@ class InterventionHeaderImagesWidget extends StatelessWidget {
           ]),
           ExpandChild(
               child: ValueListenableBuilder(
-            valueListenable: commentaireCuuntValueNotifer,
-            builder: (BuildContext context, ImagesModelTest commentaireCount,
+            valueListenable: imageModelValueNotifer,
+            builder: (BuildContext context, ImagesModelTest imageModelTest,
                 Widget? child) {
               return Column(
                 children: [
                   Text(
-                    commentaireCount.selectedImageTxt ?? "",
+                    imageModelTest.selectedImageTxt ?? "",
                     style: TextStyle(
                         fontWeight: FontWeight.w900,
                         fontFamily: 'Open Sans',
@@ -960,14 +1037,87 @@ class InterventionHeaderImagesWidget extends StatelessWidget {
                       horizontal: 20.0,
                     ),
                     height: 200.0,
-                    child: ClipRect(
-                      child: PhotoView(
-                        imageProvider: CachedNetworkImageProvider(
-                            commentaireCount.selectedImage ?? ""),
-                        maxScale: PhotoViewComputedScale.covered * 2.0,
-                        minScale: PhotoViewComputedScale.contained * 0.8,
-                        initialScale: PhotoViewComputedScale.covered,
-                      ),
+                    child: Stack(
+                      children: [
+                        GestureDetector(
+                          onDoubleTap: () {
+                            Navigator.of(context)
+                                .push(MaterialPageRoute(builder: (context) {
+                              return FullScreenImageWidget(
+                                title: imageModelTest.selectedImageTxt ?? "",
+                                imagePath: imageModelTest.selectedImage ?? "",
+                              );
+                            }));
+                          },
+                          child: ClipRect(
+                            // child: PhotoView(
+                            //   imageProvider: CachedNetworkImageProvider(
+                            //       imageModelTest.selectedImage ?? ""),
+                            //   maxScale: PhotoViewComputedScale.covered * 2.0,
+                            //   minScale: PhotoViewComputedScale.contained * 0.8,
+                            //   initialScale: PhotoViewComputedScale.covered,
+                            // ),
+                            child: Image(
+                              errorBuilder: (BuildContext context, Object error,
+                                  StackTrace? stackTrace) {
+                                return Center(
+                                  child: Container(
+                                    child: Icon(
+                                        Icons.image_not_supported_outlined),
+                                  ),
+                                );
+                              },
+                              image: CachedNetworkImageProvider(
+                                  imageModelTest.selectedImage ?? ""),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 10,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.of(context)
+                                  .push(MaterialPageRoute(builder: (context) {
+                                return FullScreenImageWidget(
+                                  title: imageModelTest.selectedImageTxt ?? "",
+                                  imagePath: imageModelTest.selectedImage ?? "",
+                                );
+                              }));
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                // color: Colors.black12,
+                                borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(10),
+                                    topRight: Radius.circular(10),
+                                    bottomLeft: Radius.circular(10),
+                                    bottomRight: Radius.circular(10)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 5,
+                                    blurRadius: 7,
+                                    offset: Offset(
+                                        0, 3), // changes position of shadow
+                                  ),
+                                ],
+                              ),
+
+                              // width: 30,
+                              // height: 30,
+                              // padding: const EdgeInsets.all(12.0),
+                              // child: const CircularProgressIndicator(),
+                              child: Icon(
+                                Icons.fullscreen,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
                     ),
                   ),
                   Center(
@@ -976,25 +1126,25 @@ class InterventionHeaderImagesWidget extends StatelessWidget {
                       print("page : $page");
 
                       if (page == 0) {
-                        commentaireCuuntValueNotifer.value = ImagesModelTest(
-                            "https://telcabo.castlit.com/img/demandes/" +
+                        imageModelValueNotifer.value = ImagesModelTest(
+                            "${Tools.baseUrl}/img/demandes/" +
                                 (Tools.selectedDemande?.pPbiAvant ?? ""),
                             "Photo PBI avant l’installation");
                       } else if (page == 1) {
-                        commentaireCuuntValueNotifer.value = ImagesModelTest(
-                            "https://telcabo.castlit.com/img/demandes/" +
+                        imageModelValueNotifer.value = ImagesModelTest(
+                            "${Tools.baseUrl}/img/demandes/" +
                                 (Tools.selectedDemande?.pPbiApres ?? ""),
                             "Photo PBI après l’installation");
                       }
                       if (page == 2) {
-                        commentaireCuuntValueNotifer.value = ImagesModelTest(
-                            "https://telcabo.castlit.com/img/demandes/" +
+                        imageModelValueNotifer.value = ImagesModelTest(
+                            "${Tools.baseUrl}/img/demandes/" +
                                 (Tools.selectedDemande?.pPboAvant ?? ""),
                             "Photo PBO avant l’installation");
                       }
                       if (page == 3) {
-                        commentaireCuuntValueNotifer.value = ImagesModelTest(
-                            "https://telcabo.castlit.com/img/demandes/" +
+                        imageModelValueNotifer.value = ImagesModelTest(
+                            "${Tools.baseUrl}/img/demandes/" +
                                 (Tools.selectedDemande?.pPboApres ?? ""),
                             "Photo PBO après l’installation");
                       }
@@ -1003,6 +1153,7 @@ class InterventionHeaderImagesWidget extends StatelessWidget {
                       print("onSelectedItem : $page");
                     },
                     items: items,
+                    initialPage: 0,
                   )),
 
                   // Container(
@@ -1012,7 +1163,7 @@ class InterventionHeaderImagesWidget extends StatelessWidget {
                   //       builder: (BuildContext context, int index) {
                   //         return PhotoViewGalleryPageOptions(
                   //           imageProvider: CachedNetworkImageProvider(
-                  //               "https://telcabo.castlit.com/img/demandes/" +
+                  //               "${Tools.baseUrl}/img/demandes/" +
                   //                   (Tools.selectedDemande?.pPbiAvant ?? "")),
                   //           initialScale: PhotoViewComputedScale.contained * 0.8,
                   //           heroAttributes:
@@ -1100,9 +1251,6 @@ class InfoItemWidget extends StatelessWidget {
 }
 
 class MapSample extends StatelessWidget {
-  Completer<GoogleMapController> _controller = Completer();
-
-
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
 
   getCurrentLatitudeLongitude() {
@@ -1262,14 +1410,17 @@ class MapSample extends StatelessWidget {
                     // color: Colors.white,
                     height: 300,
                     child: GoogleMap(
+                      gestureRecognizers: Set()
+                        ..add(Factory<PanGestureRecognizer>(
+                            () => PanGestureRecognizer())),
                       mapType: MapType.terrain,
                       initialCameraPosition: CameraPosition(
                         target: getCurrentLatitudeLongitude(),
                         zoom: 14.4746,
                       ),
-                      onMapCreated: (GoogleMapController controller) {
-                        _controller.complete(controller);
-                      },
+                      // onMapCreated: (GoogleMapController controller) {
+                      //   _controller.complete(controller);
+                      // },
                       myLocationButtonEnabled: false,
                       markers: Set<Marker>.of(markers.values),
                     )),
@@ -1282,14 +1433,9 @@ class MapSample extends StatelessWidget {
   }
 }
 
-
-
 class HeaderCommentaireWidget extends StatelessWidget {
-
-
   @override
   Widget build(BuildContext context) {
-
     return Container(
       margin: const EdgeInsets.only(left: 20.0, right: 20.0),
       decoration: BoxDecoration(
@@ -1298,93 +1444,120 @@ class HeaderCommentaireWidget extends StatelessWidget {
           ),
           borderRadius: BorderRadius.circular(
               20) // use instead of BorderRadius.all(Radius.circular(20))
-      ),
+          ),
       child: Center(
           child: Column(
-            children: [
-              Column(children: [
+        children: [
+          Column(children: [
+            SizedBox(
+              height: 15.0,
+            ),
+            // CircleAvatar(
+            //   radius: 32.0,
+            //   backgroundImage: AssetImage('assets/user.png'),
+            //   backgroundColor: Colors.white,
+            // ),
+            ElevatedButton(
+              onPressed: () async {},
+              style: ElevatedButton.styleFrom(
+                // primary: Tools.colorPrimary,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(10),
+              ),
+              child: const Icon(
+                Icons.comment,
+                size: 40,
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Center(
+              child: Text("Commentaires",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16.0,
+                  )),
+            ),
+          ]),
+          ExpandChild(
+            child: Column(
+              children: [
+                Divider(
+                  color: Colors.black,
+                  height: 2,
+                ),
                 SizedBox(
-                  height: 15.0,
+                  height: 15,
                 ),
-                // CircleAvatar(
-                //   radius: 32.0,
-                //   backgroundImage: AssetImage('assets/user.png'),
-                //   backgroundColor: Colors.white,
-                // ),
-                ElevatedButton(
-                  onPressed: () async {},
-                  style: ElevatedButton.styleFrom(
-                    // primary: Tools.colorPrimary,
-                    shape: CircleBorder(),
-                    padding: EdgeInsets.all(10),
-                  ),
-                  child: const Icon(
-                    Icons.comment,
-                    size: 40,
-                  ),
-                ),
-                SizedBox(
-                  height: 12,
-                ),
-                Center(
-                  child: Text("Commentaires",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16.0,
-                      )),
-                ),
-              ]),
-              ExpandChild(
-                child: Column(
-                  children: [
-                    Divider(
-                      color: Colors.black,
-                      height: 2,
-                    ),
-                    SizedBox(
-                      height: 15,
-                    ),
-                    Container(
-                      child: Timeline.tileBuilder(
-                        shrinkWrap: true,
-                        builder: TimelineTileBuilder.fromStyle(
-                          contentsBuilder: (context, index) => Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(Tools.selectedDemande?.commentaires?[index]
-                                  .commentaire ??
-                                  ""),
-                            ),
-                          ),
-                          oppositeContentsBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                                alignment: AlignmentDirectional.centerEnd,
-                                child: Column(
-                                  children: [
-                                    // Text(Tools.selectedDemande?.commentaires?[index].userId ?? ""),
-                                    Text(Tools
-                                        .selectedDemande?.commentaires?[index].created
-                                        ?.trim() ??
-                                        ""),
-                                  ],
-                                )),
-                          ),
-                          contentsAlign: ContentsAlign.alternating,
-                          indicatorStyle: IndicatorStyle.outlined,
-                          connectorStyle: ConnectorStyle.dashedLine,
-                          itemCount: Tools.selectedDemande?.commentaires?.length ?? 0,
+                Container(
+                  child: Timeline.tileBuilder(
+                    shrinkWrap: true,
+                    builder: TimelineTileBuilder.fromStyle(
+                      contentsBuilder: (context, index) => Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(Tools.selectedDemande
+                                  ?.commentaires?[index].commentaire ??
+                              ""),
                         ),
                       ),
+                      oppositeContentsBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: Column(
+                              children: [
+                                // Text(Tools.selectedDemande?.commentaires?[index].userId ?? ""),
+                                Text(Tools.selectedDemande?.commentaires?[index]
+                                        .created
+                                        ?.trim() ??
+                                    ""),
+                              ],
+                            )),
+                      ),
+                      contentsAlign: ContentsAlign.alternating,
+                      indicatorStyle: IndicatorStyle.outlined,
+                      connectorStyle: ConnectorStyle.dashedLine,
+                      itemCount:
+                          Tools.selectedDemande?.commentaires?.length ?? 0,
                     ),
-                  ],
+                  ),
                 ),
-
-              ),
-            ],
-          )),
+              ],
+            ),
+          ),
+        ],
+      )),
     );
   }
 }
 
+class FullScreenImageWidget extends StatelessWidget {
+  final String title;
+  final String imagePath;
+
+  const FullScreenImageWidget(
+      {Key? key, required this.title, required this.imagePath})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: PhotoView(
+        imageProvider: CachedNetworkImageProvider(imagePath),
+      ),
+      // Image.network(
+      // imagePath,
+      // fit: BoxFit.cover,
+      // height: double.infinity,
+      // width: double.infinity,
+      // alignment: Alignment.center,
+      // ),
+    );
+  }
+}

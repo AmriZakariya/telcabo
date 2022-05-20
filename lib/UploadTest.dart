@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:telcabo/Tools.dart';
 
 class UploadTest extends StatelessWidget {
   UploadTest({Key? key}) : super(key: key);
@@ -104,7 +105,7 @@ class UploadTest extends StatelessWidget {
       }));
 
     Response apiRespon =
-        await dio.post("https://telcabo.castlit.com/traitements/add_mobile",
+        await dio.post("${Tools.baseUrl}/traitements/add_mobile",
             data: formData,
             options: Options(
               method: "POST",

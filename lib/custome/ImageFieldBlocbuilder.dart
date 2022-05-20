@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -11,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:stamp_image/stamp_image.dart';
 import 'package:image_watermark/image_watermark.dart';
+import 'package:telcabo/Tools.dart';
 
 class ImageFieldBlocBuilder extends StatefulWidget {
   final InputFieldBloc<XFile?, Object> fileFieldBloc;
@@ -34,11 +36,12 @@ class ImageFieldBlocBuilder extends StatefulWidget {
 
 class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
   final ImagePicker _picker = ImagePicker();
+  String imageSrc = "camera";
 
   @override
   Widget build(BuildContext context) {
-    Future<XFile?> _showDialog() async {
-      XFile? image;
+    Future _showDialog() async {
+      // XFile? image;
       await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -62,8 +65,10 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                 Divider(),
                 ElevatedButton.icon(
                   onPressed: () async {
-                    image = await _picker.pickImage(source: ImageSource.camera,  imageQuality: 50);
+                    // image = await _picker.pickImage(
+                    //     source: ImageSource.camera, imageQuality: 50);
 
+                    imageSrc = "camera";
                     Navigator.of(context).pop();
                   },
                   icon: const Icon(Icons.camera_alt),
@@ -71,9 +76,10 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                 ),
                 ElevatedButton.icon(
                   onPressed: () async {
-                    image =
-                        await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
+                    // image = await _picker.pickImage(
+                    //     source: ImageSource.gallery, imageQuality: 50);
 
+                    imageSrc = "gallery";
                     Navigator.of(context).pop();
                   },
                   icon: const Icon(Icons.image_outlined),
@@ -93,7 +99,6 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
           );
         },
       );
-      return image;
     }
 
     // return CanShowFieldBlocBuilder(
@@ -138,17 +143,50 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                                   ? Colors.red
                                   : Colors.white,
                           child: Opacity(
-                            opacity: formBlocState.canSubmit ? 1 : 0.5,
-                            child: fieldBlocState.value != null
-                                ? Image.file(
-                                    File(fieldBlocState.value?.path ?? ""),
-                                    height: 90,
-                                    width: 90,
-                                    fit: BoxFit.fill,
-                                  )
-                                : Container(
-                                    height: 90, width: 90, child: widget.iconField),
-                          ),
+                              opacity: formBlocState.canSubmit ? 1 : 0.5,
+                              child: fieldBlocState.value != null
+                                  ? Container(
+                                      width: 90,
+                                      height: 90,
+                                      child: Image.file(
+                                        File(fieldBlocState.value?.path ?? ""),
+                                        height: 90,
+                                        width: 90,
+                                        fit: BoxFit.fill,
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 90,
+                                      height: 90,
+                                      child: Image.network(
+                                        getImagePickerExistImageUrl(),
+                                        width: 90,
+                                        height: 90,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (BuildContext context, Widget child,
+                                            ImageChunkEvent? loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder: (BuildContext context,
+                                            Object error,
+                                            StackTrace? stackTrace) {
+                                          return Center(
+                                            child: Container(
+                                              child: Icon(Icons
+                                                  .image_not_supported_outlined),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    )),
                         ),
                         Positioned.fill(
                           child: Material(
@@ -161,12 +199,25 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                               borderRadius: BorderRadius.circular(60),
                               onTap: formBlocState.canSubmit
                                   ? () async {
-                                      final imageResult = await _showDialog();
+                                      // final imageResult = await _showDialog();
+                                      await _showDialog();
 
-                                      final File fileResult = File(imageResult?.path ?? "");
+                                      var imageResult;
+                                      if (imageSrc == "camera") {
+                                        imageResult = await _picker.pickImage(
+                                            source: ImageSource.camera,
+                                            imageQuality: 50);
+                                      } else {
+                                        imageResult = await _picker.pickImage(
+                                            source: ImageSource.gallery,
+                                            imageQuality: 50);
+                                      }
+
+                                      final File fileResult =
+                                          File(imageResult?.path ?? "");
                                       if (await fileResult.exists()) {
-
-                                        widget.fileFieldBloc.updateValue(imageResult);
+                                        widget.fileFieldBloc
+                                            .updateValue(imageResult);
 
                                         // String currentAddress =  await _getAddressFromLatLng();
                                         // String currentDate =  DateTime.now().toString();
@@ -213,10 +264,7 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                                         //
                                         // });
 
-
-
                                         // widget.fileFieldBloc.updateValue(imageResult);
-
 
                                         // StampImage.create(
                                         //   context: context,
@@ -277,22 +325,17 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                         ),
                       ],
                     ),
-                    AnimatedContainer(
-                      duration: Duration(milliseconds: 300),
-                      height: fieldBlocState.canShowError ? 30 : 0,
-                      child: SingleChildScrollView(
-                        physics: ClampingScrollPhysics(),
-                        child: Column(
-                          children: <Widget>[
-                            SizedBox(height: 8),
-                            Text(
-                              "Ce champ est obligatoire",
-                              // fieldBlocState.error.toString(),
-                              style: TextStyle(
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
+                    Visibility(
+                      visible: fieldBlocState.canShowError,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        child: Text(
+                          "Ce champ est obligatoire",
+                          textAlign: TextAlign.center,
+                          // fieldBlocState.error.toString(),
+                          style: TextStyle(
+                            color: Colors.red,
+                          ),
                         ),
                       ),
                     ),
@@ -309,81 +352,32 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
     );
   }
 
-  Future<String> _getAddressFromLatLng() async {
-
-    String coordinateString = "" ;
-    Position? position = await _determinePosition();
-    try {
-      if (position != null) {
-
-        coordinateString =   "( latitude = ${position.latitude}   longitude =  ${position.longitude} )" ;
-
-
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-            position.latitude, position.longitude);
-        Placemark place = placemarks[0];
-        print(place);
-
-        String fullAddess =  " ${place.locality}, ${place.postalCode}, ${place.country}";
-
-        return coordinateString + " " + fullAddess ;
-        // return "${position.}, ${place.postalCode}, ${place.country}"
-      }
-
-
-    } catch (e) {
-      print(e);
+  String getImagePickerExistImageUrl() {
+    String imageUrl = "${Tools.baseUrl}/img/demandes/";
+    if (widget.fileFieldBloc.name == "p_pbi_avant") {
+      imageUrl += Tools.selectedDemande?.pPbiAvant ?? "";
+    } else if (widget.fileFieldBloc.name == "p_pbi_apres") {
+      imageUrl += Tools.selectedDemande?.pPbiApres ?? "";
+    } else if (widget.fileFieldBloc.name == "p_pbo_avant") {
+      imageUrl += Tools.selectedDemande?.pPboAvant ?? "";
+    } else if (widget.fileFieldBloc.name == "p_pbo_apres") {
+      imageUrl += Tools.selectedDemande?.pPboApres ?? "";
+    } else if (widget.fileFieldBloc.name == "p_equipement_installe") {
+      imageUrl += Tools.selectedDemande?.pEquipementInstalle ?? "";
+    } else if (widget.fileFieldBloc.name == "p_test_signal") {
+      imageUrl += Tools.selectedDemande?.pTestSignal ?? "";
+    } else if (widget.fileFieldBloc.name == "p_etiquetage_indoor") {
+      imageUrl += Tools.selectedDemande?.pEtiquetageIndoor ?? "";
+    } else if (widget.fileFieldBloc.name == "p_etiquetage_outdoor") {
+      imageUrl += Tools.selectedDemande?.pEtiquetageOutdoor ?? "";
+    } else if (widget.fileFieldBloc.name == "p_passage_cable") {
+      imageUrl += Tools.selectedDemande?.pPassageCable ?? "";
+    } else if (widget.fileFieldBloc.name == "p_fiche_instalation") {
+      imageUrl += Tools.selectedDemande?.pFicheInstalation ?? "";
+    } else if (widget.fileFieldBloc.name == "p_speed_test") {
+      imageUrl += Tools.selectedDemande?.pSpeedTest ?? "";
     }
 
-    return coordinateString  ;
-  }
-
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    // Test if location services are enabled.
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
-  }
-
-  Future<File?> compressAndGetFile(File file, String targetPath, [int quality = 80]) async {
-    var result = await FlutterImageCompress.compressAndGetFile(
-      file.absolute.path, targetPath,
-      quality: quality,
-    );
-
-    print(file.lengthSync());
-    print(result?.lengthSync());
-
-    return result;
+    return imageUrl;
   }
 }
