@@ -7,7 +7,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:notification_permissions/notification_permissions.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -20,7 +19,6 @@ import 'package:telcabo/TestWatermark.dart';
 import 'package:telcabo/Tools.dart';
 import 'package:telcabo/UploadTest.dart';
 
-import 'InterventionWidget.dart';
 import 'LoginWidget.dart';
 
 
@@ -133,7 +131,6 @@ class _MyAppState extends State<MyApp> {
 
     List<LocalizationsDelegate<dynamic>> localizationsDelegatesList = context.localizationDelegates;
     localizationsDelegatesList.addAll([
-      FormBuilderLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
     ]);

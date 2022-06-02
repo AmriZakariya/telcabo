@@ -14,7 +14,6 @@ import 'package:flutter_form_bloc/flutter_form_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:path_provider/path_provider.dart';
@@ -68,7 +67,7 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance?.removeObserver(this);
+    // WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -76,9 +75,9 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     print("didChangeAppLifecycleState state ==> ${state}");
-    if (state == AppLifecycleState.resumed) {
-      filterListByMap();
-    }
+    // if (state == AppLifecycleState.resumed) {
+    //   filterListByMap();
+    // }
   }
 
   @override
@@ -473,6 +472,8 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
                                                                         onTap: () {
                                                                           Tools.selectedDemande = demande;
                                                                           Tools.currentStep = (Tools.selectedDemande?.etape ?? 1) -1 ;
+                                                                          print("currentStepValueNotifier updateValue => ${Tools.currentStep} ");
+                                                                          currentStepValueNotifier.value = Tools.currentStep ;
 
                                                                           print(
                                                                               "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
@@ -501,6 +502,8 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
                                                                         onTap: () {
                                                                           Tools.selectedDemande = demande;
                                                                           Tools.currentStep = (Tools.selectedDemande?.etape ?? 1) -1 ;
+                                                                          print("currentStepValueNotifier updateValue => ${Tools.currentStep} ");
+                                                                          currentStepValueNotifier.value = Tools.currentStep ;
 
                                                                           print(
                                                                               "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
@@ -729,6 +732,8 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
                                                                                     onPressed: () {
                                                                                       Tools.selectedDemande = demande;
                                                                                       Tools.currentStep = (Tools.selectedDemande?.etape ?? 1) -1 ;
+                                                                                      print("currentStepValueNotifier updateValue => ${Tools.currentStep} ");
+                                                                                      currentStepValueNotifier.value = Tools.currentStep ;
 
                                                                                       print(
                                                                                           "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
@@ -1052,7 +1057,7 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
 
   @override
   void initState() {
-    WidgetsBinding.instance?.addObserver(this);
+    // WidgetsBinding.instance.addObserver(this);
     super.initState();
     Tools.getDemandes();
 

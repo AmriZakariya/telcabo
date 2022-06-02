@@ -90,6 +90,8 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
             actions: <Widget>[
               ElevatedButton.icon(
                 onPressed: () async {
+                  imageSrc = "none";
+
                   Navigator.of(context).pop();
                 },
                 icon: const Icon(Icons.cancel),
@@ -203,6 +205,10 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                                       await _showDialog();
 
                                       var imageResult;
+                                      if (imageSrc == "none") {
+                                        return ;
+                                      }
+
                                       if (imageSrc == "camera") {
                                         imageResult = await _picker.pickImage(
                                             source: ImageSource.camera,
@@ -374,8 +380,16 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
       imageUrl += Tools.selectedDemande?.pPassageCable ?? "";
     } else if (widget.fileFieldBloc.name == "p_fiche_instalation") {
       imageUrl += Tools.selectedDemande?.pFicheInstalation ?? "";
-    } else if (widget.fileFieldBloc.name == "p_speed_test") {
+    }  else if (widget.fileFieldBloc.name == "p_dos_routeur") {
+      imageUrl += Tools.selectedDemande?.pDosRouteur ?? "";
+    }else if (widget.fileFieldBloc.name == "p_speed_test") {
       imageUrl += Tools.selectedDemande?.pSpeedTest ?? "";
+    }
+
+    else if (widget.fileFieldBloc.name == "photo_blocage1") {
+      imageUrl += Tools.selectedDemande?.photoBlocage1 ?? "";
+    }else if (widget.fileFieldBloc.name == "photo_blocage2") {
+      imageUrl += Tools.selectedDemande?.photoBlocage2 ?? "";
     }
 
     return imageUrl;

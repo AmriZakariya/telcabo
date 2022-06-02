@@ -17,7 +17,6 @@ import 'package:horizontal_card_pager/horizontal_card_pager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:telcabo/DetailIntervention.dart';
 import 'package:telcabo/FormStepper.dart';
 import 'package:telcabo/Tools.dart';

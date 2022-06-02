@@ -132,11 +132,15 @@ class LoginForm extends StatelessWidget {
                     onSuccess: (context, state) {
                       LoadingDialog.hide(context);
 
-                      SchedulerBinding.instance?.addPostFrameCallback((_) {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
                           builder: (_) => DemandeList(),
                         ));
-                      });
+
+                      // SchedulerBinding.instance.addPostFrameCallback((_) {
+                      //   Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      //     builder: (_) => DemandeList(),
+                      //   ));
+                      // });
                     },
                     onFailure: (context, state) {
                       LoadingDialog.hide(context);

@@ -63,10 +63,14 @@ class QrScannerTextFieldBlocBuilder extends StatelessWidget {
           context: context,
           builder: (BuildContext context) {
             // return object of type Dialog
+            var width = MediaQuery.of(context).size.width > 280 ? 280 : MediaQuery.of(context).size.width - 20 ;
             return QRView(
               key: qrKey,
               onQRViewCreated: (controller) {
+                controller.resumeCamera();
+
                 controller.scannedDataStream.listen((scanData) async {
+                  controller./**/resumeCamera();
 
                   result = scanData;
                   controller.pauseCamera();
@@ -79,8 +83,8 @@ class QrScannerTextFieldBlocBuilder extends StatelessWidget {
                   borderRadius: 10,
                   borderLength: 30,
                   borderWidth: 10,
-                  cutOutWidth: MediaQuery.of(context).size.width / 1.2,
-                  cutOutHeight: MediaQuery.of(context).size.width / 1.6
+                  cutOutWidth: width.toDouble(),
+                  cutOutHeight: width/2
                   // cutOutSize: scanArea
               ),
               onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),

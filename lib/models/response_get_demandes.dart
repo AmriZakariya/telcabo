@@ -64,18 +64,19 @@ class Demandes {
   String? pPassageCable;
   String? pFicheInstalation;
   String? pSpeedTest;
+  String? pDosRouteur;
   String? newAdresse;
   String? etatImmo;
   String? etatImmeubleId;
   String? newLatitude;
   String? newLongitude;
   String? etatId;
-  String? motifEtatId;
   String? subStatutId;
   String? motifSubstatutId;
   String? dateRdv;
   String? dateIntervention;
   String? dateActivation;
+  String? lastDateUpdate;
   String? archiveId;
   String? prestataireId;
   String? typeInstallationId;
@@ -87,6 +88,7 @@ class Demandes {
   String? routeur;
   String? created;
   String? etatName;
+  String? sousEtatName;
   String? plaqueName;
   List<Commentaires>? commentaires;
   int? etape;
@@ -134,18 +136,19 @@ class Demandes {
         this.pPassageCable,
         this.pFicheInstalation,
         this.pSpeedTest,
+        this.pDosRouteur,
         this.newAdresse,
         this.etatImmo,
         this.etatImmeubleId,
         this.newLatitude,
         this.newLongitude,
         this.etatId,
-        this.motifEtatId,
         this.subStatutId,
         this.motifSubstatutId,
         this.dateRdv,
         this.dateIntervention,
         this.dateActivation,
+        this.lastDateUpdate,
         this.archiveId,
         this.prestataireId,
         this.typeInstallationId,
@@ -157,6 +160,7 @@ class Demandes {
         this.routeur,
         this.created,
         this.etatName,
+        this.sousEtatName,
         this.plaqueName,
         this.commentaires,
         this.etape});
@@ -204,18 +208,19 @@ class Demandes {
     pPassageCable = json['p_passage_cable'];
     pFicheInstalation = json['p_fiche_instalation'];
     pSpeedTest = json['p_speed_test'];
+    pDosRouteur = json['p_dos_routeur'];
     newAdresse = json['new_adresse'];
     etatImmo = json['etat_immo'];
     etatImmeubleId = json['etat_immeuble_id'];
     newLatitude = json['new_latitude'];
     newLongitude = json['new_longitude'];
     etatId = json['etat_id'];
-    motifEtatId = json['motif_etat_id'];
     subStatutId = json['sub_statut_id'];
     motifSubstatutId = json['motif_substatut_id'];
     dateRdv = json['date_rdv'];
     dateIntervention = json['date_intervention'];
     dateActivation = json['date_activation'];
+    lastDateUpdate = json['last_date_update'];
     archiveId = json['archive_id'];
     prestataireId = json['prestataire_id'];
     typeInstallationId = json['type_installation_id'];
@@ -227,6 +232,7 @@ class Demandes {
     routeur = json['routeur'];
     created = json['created'];
     etatName = json['etat_name'];
+    sousEtatName = json['sous_etat_name'];
     plaqueName = json['plaque_name'];
     if (json['commentaires'] != null) {
       commentaires = <Commentaires>[];
@@ -281,18 +287,19 @@ class Demandes {
     data['p_passage_cable'] = this.pPassageCable;
     data['p_fiche_instalation'] = this.pFicheInstalation;
     data['p_speed_test'] = this.pSpeedTest;
+    data['p_dos_routeur'] = this.pDosRouteur;
     data['new_adresse'] = this.newAdresse;
     data['etat_immo'] = this.etatImmo;
     data['etat_immeuble_id'] = this.etatImmeubleId;
     data['new_latitude'] = this.newLatitude;
     data['new_longitude'] = this.newLongitude;
     data['etat_id'] = this.etatId;
-    data['motif_etat_id'] = this.motifEtatId;
     data['sub_statut_id'] = this.subStatutId;
     data['motif_substatut_id'] = this.motifSubstatutId;
     data['date_rdv'] = this.dateRdv;
     data['date_intervention'] = this.dateIntervention;
     data['date_activation'] = this.dateActivation;
+    data['last_date_update'] = this.lastDateUpdate;
     data['archive_id'] = this.archiveId;
     data['prestataire_id'] = this.prestataireId;
     data['type_installation_id'] = this.typeInstallationId;
@@ -304,6 +311,7 @@ class Demandes {
     data['routeur'] = this.routeur;
     data['created'] = this.created;
     data['etat_name'] = this.etatName;
+    data['sous_etat_name'] = this.sousEtatName;
     data['plaque_name'] = this.plaqueName;
     if (this.commentaires != null) {
       data['commentaires'] = this.commentaires!.map((v) => v.toJson()).toList();

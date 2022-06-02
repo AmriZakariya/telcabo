@@ -45,6 +45,8 @@ import 'package:flutter_share_me/flutter_share_me.dart';
 final GlobalKey<ScaffoldState> formStepperScaffoldKey =
     new GlobalKey<ScaffoldState>();
 
+ValueNotifier<int> currentStepValueNotifier = ValueNotifier(Tools.currentStep);
+
 class WizardFormBloc extends FormBloc<String, String> {
   late final ResponseGetListEtat responseListEtat;
   late final ResponseGetListType responseGetListType;
@@ -84,6 +86,34 @@ class WizardFormBloc extends FormBloc<String, String> {
       FieldBlocValidators.required,
     ],
     toJson: (value) => value?.id,
+  );
+
+  final InputFieldBloc<XFile?, Object> photoBlocage1InputFieldBloc =
+      InputFieldBloc(
+    initialValue: null,
+    name: "photo_blocage1",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
+
+  final InputFieldBloc<XFile?, Object> photoBlocage2InputFieldBloc =
+      InputFieldBloc(
+    initialValue: null,
+    name: "photo_blocage2",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
   );
 
   final commentaireTextField = TextFieldBloc(
@@ -362,6 +392,18 @@ class WizardFormBloc extends FormBloc<String, String> {
       return file;
     },
   );
+  final InputFieldBloc<XFile?, Object> pDosRouteur = InputFieldBloc(
+    initialValue: null,
+    name: "p_dos_routeur",
+    validators: [
+      FieldBlocValidators.required,
+    ],
+    toJson: (value) {
+      MultipartFile file = MultipartFile.fromFileSync(value?.path ?? "",
+          filename: value?.name ?? "");
+      return file;
+    },
+  );
 
   /* Step 3 */
 
@@ -386,7 +428,7 @@ class WizardFormBloc extends FormBloc<String, String> {
   );
 
   WizardFormBloc() : super(isLoading: true) {
-    Tools.currentStep = (Tools.selectedDemande?.etape ?? 1) -1 ;
+    Tools.currentStep = (Tools.selectedDemande?.etape ?? 1) - 1;
 
     // Tools.selectedDemande?.etatId = "9" ;
     // Tools.selectedDemande?.etatName = "demooo" ;
@@ -421,6 +463,7 @@ class WizardFormBloc extends FormBloc<String, String> {
         pEtiquetageOutdoor,
         pPassageCable,
         pFicheInstalation,
+        pDosRouteur,
       ],
     );
     addFieldBlocs(
@@ -429,7 +472,8 @@ class WizardFormBloc extends FormBloc<String, String> {
     );
 
     if (Tools.currentStep == 2) {
-      if (Tools.selectedDemande?.etatId == "9"  || Tools.selectedDemande?.etatId == "6") {
+      if (Tools.selectedDemande?.etatId == "9" ||
+          Tools.selectedDemande?.etatId == "6") {
         addFieldBlocs(fieldBlocs: [
           speedTextField,
           pSpeedTest,
@@ -442,13 +486,10 @@ class WizardFormBloc extends FormBloc<String, String> {
       }
     }
 
-
-
     addFieldBlocs(
       step: 3,
       fieldBlocs: [commentaireTextField],
     );
-
 
     etatDropDown.onValueChanges(
       onData: (previous, current) async* {
@@ -463,7 +504,7 @@ class WizardFormBloc extends FormBloc<String, String> {
         print("current.value? ==> ${current.value} ");
         print(current.value?.id ?? "...");
 
-        removeFieldBlocs(fieldBlocs: [motifDropDown, etatImmeubleDropDown]);
+        removeFieldBlocs(fieldBlocs: [motifDropDown]);
 
         removeFieldBlocs(fieldBlocs: [
           // etatImmo,
@@ -471,24 +512,26 @@ class WizardFormBloc extends FormBloc<String, String> {
           newLatitude,
           newLongitude,
           newAdresse,
+
+          photoBlocage2InputFieldBloc,
+          photoBlocage2InputFieldBloc,
         ]);
 
-        if (current.value?.id == "5") { // disable soutetat when en attent dactivation
+        if (current.value?.id == "5") {
+          // disable soutetat when en attent dactivation
 
-          if(Tools.selectedDemande?.subStatutId?.isNotEmpty == true){
-
+          if (Tools.selectedDemande?.subStatutId?.isNotEmpty == true) {
             bool shouldShowSousEtat = false;
 
             current.value?.sousEtat?.forEach((element) {
-              if(element.id == Tools.selectedDemande?.subStatutId){
+              if (element.id == Tools.selectedDemande?.subStatutId) {
                 shouldShowSousEtat = true;
                 return;
               }
             });
-            if(shouldShowSousEtat){
-
+            if (shouldShowSousEtat) {
               var selectedSousEtat =
-              etatDropDown.value?.sousEtat?.firstWhereOrNull((element) {
+                  etatDropDown.value?.sousEtat?.firstWhereOrNull((element) {
                 return element.id == Tools.selectedDemande?.subStatutId;
               });
               print("selectedSousEtat ==> ${selectedSousEtat}");
@@ -504,17 +547,12 @@ class WizardFormBloc extends FormBloc<String, String> {
                   sousEtatDropDown.updateValue(selectedSousEtat);
                 }
               }
-
-
-
             }
-
           }
-          return ;
+          return;
         }
 
-
-          if (current.value?.id == "1") {
+        if (current.value?.id == "1") {
           /* check current RDV date */
           String? selectedRdvDate = Tools.selectedDemande?.dateRdv;
           if (selectedRdvDate?.isNotEmpty == true) {
@@ -586,14 +624,49 @@ class WizardFormBloc extends FormBloc<String, String> {
           newLatitude,
           newLongitude,
           newAdresse,
+
+          photoBlocage2InputFieldBloc,
+          photoBlocage2InputFieldBloc,
         ]);
 
+
+
         if (current.value?.motifList?.isEmpty == true) {
-          removeFieldBlocs(fieldBlocs: [motifDropDown, etatImmeubleDropDown]);
+          removeFieldBlocs(fieldBlocs: [motifDropDown]);
         } else {
           motifDropDown.updateItems(current.value?.motifList ?? []);
           addFieldBloc(fieldBloc: motifDropDown);
+
+
+
         }
+
+        if (etatDropDown.value?.id == "7") if (sousEtatDropDown.value?.id ==
+            "14" //"Blocage syndicat",
+            ||
+            sousEtatDropDown.value?.id == "18" //"Blocage voisin",
+            ||
+            sousEtatDropDown.value?.id ==
+                "17" //"Problème raccordement client",
+
+        ) {
+          addFieldBlocs(fieldBlocs: [
+            // etatImmo,
+            photoBlocage1InputFieldBloc,
+            photoBlocage2InputFieldBloc,
+          ]);
+        } else {
+          removeFieldBlocs(fieldBlocs: [
+            photoBlocage1InputFieldBloc,
+            photoBlocage2InputFieldBloc,
+          ]);
+        }
+
+
+
+
+
+
       },
     );
 
@@ -609,8 +682,9 @@ class WizardFormBloc extends FormBloc<String, String> {
         print("motifDropDown onValueChanges");
         print(current.value?.id ?? "...");
 
-        if (etatDropDown.value?.id == "7" &&
-            sousEtatDropDown.value?.id == "8") {
+
+
+        if (sousEtatDropDown.value?.id == "8") {
           addFieldBlocs(fieldBlocs: [
             // etatImmo,
             etatImmeubleDropDown,
@@ -713,10 +787,22 @@ class WizardFormBloc extends FormBloc<String, String> {
           // jsonMapContent[mapKey] = pFicheInstalation.value?.path;
           jsonMapContent[mapKey] =
               "${pFicheInstalation.value?.path};;${pFicheInstalation.value?.name}";
+        } else if (mapKey == "p_dos_routeur") {
+          // jsonMapContent[mapKey] = pFicheInstalation.value?.path;
+          jsonMapContent[mapKey] =
+              "${pDosRouteur.value?.path};;${pDosRouteur.value?.name}";
         } else if (mapKey == "p_speed_test") {
           // jsonMapContent[mapKey] = pSpeedTest.value?.path;
           jsonMapContent[mapKey] =
               "${pSpeedTest.value?.path};;${pSpeedTest.value?.name}";
+        }else if (mapKey == "photo_blocage1") {
+          // jsonMapContent[mapKey] = pSpeedTest.value?.path;
+          jsonMapContent[mapKey] =
+          "${photoBlocage1InputFieldBloc.value?.path};;${photoBlocage1InputFieldBloc.value?.name}";
+        }else if (mapKey == "photo_blocage2") {
+          // jsonMapContent[mapKey] = pSpeedTest.value?.path;
+          jsonMapContent[mapKey] =
+          "${photoBlocage2InputFieldBloc.value?.path};;${photoBlocage2InputFieldBloc.value?.name}";
         }
 
         /*if(mapKey == "p_pbi_avant"
@@ -786,19 +872,33 @@ class WizardFormBloc extends FormBloc<String, String> {
 
       if (Tools.currentStep == 0) {
         // responseListEtat.etat = responseListEtat.etat?.take(3).toList();
-        etatDropDown.updateItems(responseListEtat.etat?.take(3).toList() ?? []);
+        List<Etat> etatTmp = responseListEtat.etat?.where((element) {
+              return element.id == "1" ||
+                  element.id == "2" ||
+                  element.id == "3" ||
+                  element.id == "7" ||
+                  element.id == "8";
+            }).toList() ??
+            [];
+        etatDropDown.updateItems(etatTmp);
       } else if (Tools.currentStep == 1) {
         // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
         // etatDropDown.updateItems(responseListEtat.etat?.skip(3).toList() ?? []);
 
         List<Etat> etatTmp = responseListEtat.etat?.skip(3).toList() ?? [];
-        etatTmp.removeWhere((element) => (element.id == "5" || element.id == "9"   ));
+        etatTmp
+            .removeWhere((element) => (element.id == "5" || element.id == "9"));
+        etatTmp
+            .removeWhere((element) => (element.id == "7" || element.id == "8"));
+
         etatDropDown.updateItems(etatTmp);
       } else if (Tools.currentStep == 2) {
         // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
 
         List<Etat> etatTmp = responseListEtat.etat?.where((element) {
-              return element.id == "4" || element.id == "5"  || (Tools.selectedDemande?.etatId == "9" && element.id == "6");
+              return element.id == "4" ||
+                  element.id == "5" ||
+                  (Tools.selectedDemande?.etatId == "9" && element.id == "6");
             }).toList() ??
             [];
         etatDropDown.updateItems(etatTmp);
@@ -829,6 +929,8 @@ class WizardFormBloc extends FormBloc<String, String> {
 
     clearInputs();
 
+    currentStepValueNotifier.value = Tools.currentStep;
+
     super.updateCurrentStep(step);
   }
 
@@ -836,6 +938,8 @@ class WizardFormBloc extends FormBloc<String, String> {
   void previousStep() {
     print("override previousStep");
     print("Tools.currentStep ==> ${Tools.currentStep}");
+
+    currentStepValueNotifier.value = Tools.currentStep;
 
     clearInputs();
 
@@ -863,7 +967,10 @@ class WizardFormBloc extends FormBloc<String, String> {
             mapKey == "p_etiquetage_outdoor" ||
             mapKey == "p_passage_cable" ||
             mapKey == "p_fiche_instalation" ||
-            mapKey == "p_speed_test") {
+            mapKey == "p_dos_routeur" ||
+            mapKey == "p_speed_test" ||
+            mapKey == "photo_blocage1" ||
+            mapKey == "photo_blocage2") {
           try {
             if (formDateValues[mapKey] != null) {
               var xfileSrc;
@@ -888,8 +995,14 @@ class WizardFormBloc extends FormBloc<String, String> {
                 xfileSrc = pPassageCable.value;
               } else if (mapKey == "p_fiche_instalation") {
                 xfileSrc = pFicheInstalation.value;
+              } else if (mapKey == "p_dos_routeur") {
+                xfileSrc = pDosRouteur.value;
               } else if (mapKey == "p_speed_test") {
                 xfileSrc = pSpeedTest.value;
+              }else if (mapKey == "photo_blocage1") {
+                xfileSrc = photoBlocage1InputFieldBloc.value;
+              }else if (mapKey == "photo_blocage2") {
+                xfileSrc = photoBlocage2InputFieldBloc.value;
               }
 
               final File fileResult = File(xfileSrc?.path ?? "");
@@ -1048,6 +1161,11 @@ class WizardFormBloc extends FormBloc<String, String> {
           print("Tools.selectedDemande ==> ${Tools.selectedDemande?.etape}");
           print("state.currentStep ==> ${state.currentStep}");
 
+
+
+          Tools.currentStep = (Tools.selectedDemande?.etape ?? 1) -1 ;
+          currentStepValueNotifier.value = Tools.currentStep;
+
           if (((Tools.selectedDemande?.etape ?? 1) - 1) <= state.currentStep) {
             commentaireTextField.updateValue("");
             emitFailure(failureResponse: "sameStep");
@@ -1089,19 +1207,35 @@ class WizardFormBloc extends FormBloc<String, String> {
 
     if (Tools.currentStep == 0) {
       // responseListEtat.etat = responseListEtat.etat?.take(3).toList();
-      etatDropDown.updateItems(responseListEtat.etat?.take(3).toList() ?? []);
+      // etatDropDown.updateItems(responseListEtat.etat?.take(3).toList() ?? []);
+
+      List<Etat> etatTmp = responseListEtat.etat?.where((element) {
+            return element.id == "1" ||
+                element.id == "2" ||
+                element.id == "3" ||
+                element.id == "7" ||
+                element.id == "8";
+          }).toList() ??
+          [];
+      etatDropDown.updateItems(etatTmp);
     } else if (Tools.currentStep == 1) {
       // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
 
       List<Etat> etatTmp = responseListEtat.etat?.skip(3).toList() ?? [];
-      etatTmp.removeWhere((element) => (element.id == "5" || element.id == "9"   ));
+      etatTmp
+          .removeWhere((element) => (element.id == "5" || element.id == "9"));
+      etatTmp
+          .removeWhere((element) => (element.id == "7" || element.id == "8"));
+
       etatDropDown.updateItems(etatTmp);
-    }else if (Tools.currentStep == 2) {
+    } else if (Tools.currentStep == 2) {
       // responseListEtat.etat = responseListEtat.etat?.skip(3).toList();
 
       List<Etat> etatTmp = responseListEtat.etat?.where((element) {
-        return element.id == "4" || element.id == "5" || (Tools.selectedDemande?.etatId == "9" && element.id == "6");
-      }).toList() ??
+            return element.id == "4" ||
+                element.id == "5" ||
+                (Tools.selectedDemande?.etatId == "9" && element.id == "6");
+          }).toList() ??
           [];
       etatDropDown.updateItems(etatTmp);
     }
@@ -1119,10 +1253,14 @@ class WizardFormBloc extends FormBloc<String, String> {
       newLatitude,
       newLongitude,
       newAdresse,
+
+      photoBlocage1InputFieldBloc,
+      photoBlocage2InputFieldBloc,
     ]);
 
     if (Tools.currentStep == 2) {
-      if (Tools.selectedDemande?.etatId == "9"  || Tools.selectedDemande?.etatId == "6") {
+      if (Tools.selectedDemande?.etatId == "9" ||
+          Tools.selectedDemande?.etatId == "6") {
         addFieldBlocs(fieldBlocs: [
           speedTextField,
           pSpeedTest,
@@ -1172,7 +1310,7 @@ class WizardFormBloc extends FormBloc<String, String> {
 
     var selectedMotif =
         sousEtatDropDown.value?.motifList?.firstWhereOrNull((element) {
-      return element.id == Tools.selectedDemande?.motifEtatId;
+      return element.id == Tools.selectedDemande?.motifSubstatutId;
     });
 
     print("selectedMotif ==> ${selectedMotif}");
@@ -1341,6 +1479,16 @@ class WizardFormBloc extends FormBloc<String, String> {
       ]);
     }
 
+    if (Tools.selectedDemande?.pDosRouteur?.isNotEmpty == true) {
+      pDosRouteur.removeValidators([
+        FieldBlocValidators.required,
+      ]);
+    } else {
+      pDosRouteur.addValidators([
+        FieldBlocValidators.required,
+      ]);
+    }
+
     if (Tools.selectedDemande?.pSpeedTest?.isNotEmpty == true) {
       pSpeedTest.removeValidators([
         FieldBlocValidators.required,
@@ -1444,66 +1592,40 @@ class _WizardFormState extends State<WizardForm>
                     FloatingActionButtonLocation.miniStartFloat,
 
                 //Init Floating Action Bubble
-                floatingActionButton: Visibility(
-                  visible: Tools.currentStep == 2,
-                  child: FloatingActionBubble(
-                    // Menu items
-                    items: <Bubble>[
-                      // Floating action menu item
-                      Bubble(
-                        title: "WhatssApp",
-                        iconColor: Colors.white,
-                        bubbleColor: Colors.blue,
-                        icon: Icons.whatsapp,
-                        titleStyle:
-                            TextStyle(fontSize: 16, color: Colors.white),
-                        onPress: () async {
-                          print("share wtsp");
+                floatingActionButton: ValueListenableBuilder(
+                    valueListenable: currentStepValueNotifier,
+                    builder: (BuildContext context, int currentStepNotifier,
+                        Widget? child) {
+                      print(
+                          "ValueListenableBuilder ==> ${currentStepNotifier}");
+                      return Visibility(
+                          visible: currentStepNotifier != 1,
+                          child: FloatingActionBubble(
+                            // Menu items
+                            items: <Bubble>[
+                              // Floating action menu item
+                              Bubble(
+                                title: "WhatssApp",
+                                iconColor: Colors.white,
+                                bubbleColor: Colors.blue,
+                                icon: Icons.whatsapp,
+                                titleStyle: TextStyle(
+                                    fontSize: 16, color: Colors.white),
+                                onPress: () async {
+                                  print("share wtsp");
 
-                          String msgShare = "Merci d'intégrer le client:";
+                                  String msgShare =
+                                      getMsgShare(currentStepNotifier);
 
-                          msgShare +=
-                              "\n SIP = ${Tools.selectedDemande?.loginSip} ";
+                                  print("msgShare ==> ${msgShare}");
 
-                          msgShare +=
-                              "\n Client= ${Tools.selectedDemande?.client} ";
+                                  // shareToWhatsApp({String msg,String imagePath})
+                                  final FlutterShareMe flutterShareMe =
+                                      FlutterShareMe();
+                                  String? response = await flutterShareMe
+                                      .shareToWhatsApp(msg: msgShare);
 
-                          msgShare +=
-                              "\n MAC = ${Tools.selectedDemande?.adresseMac} ";
-
-                          msgShare +=
-                              "\n SN-GPON= ${Tools.selectedDemande?.snRouteur} ";
-
-                          // SN-DN
-                          msgShare +=
-                              "\n SN-DN= ${Tools.selectedDemande?.dnsn} ";
-
-                          msgShare +=
-                              "\n ETAT DEMANDE= ${Tools.selectedDemande?.etatName} ";
-
-                          msgShare +=
-                              "\n TEL= ${Tools.selectedDemande?.snTel} ";
-
-                          msgShare +=
-                              "\n PLAQUE = ${Tools.selectedDemande?.plaqueName} ";
-
-                          // msgShare +=
-                          //     "\n CITY_NAME	 = ${Tools.selectedDemande?.ville} ";
-                          // msgShare +=
-                          //     "\n PROJECT_NAME= ${Tools.selectedDemande?.projet} ";
-                          //
-                          // msgShare +=
-                          //     "\n Adresse= ${Tools.selectedDemande?.adresseInstallation} ";
-
-                          print("msgShare ==> ${msgShare}");
-
-                          // shareToWhatsApp({String msg,String imagePath})
-                          final FlutterShareMe flutterShareMe =
-                              FlutterShareMe();
-                          String? response = await flutterShareMe
-                              .shareToWhatsApp(msg: msgShare);
-
-                          /*
+                                  /*
                           var whatsapp = "+212619993849";
                           var whatsappURl_android =
                               "whatsapp://send?phone=" + whatsapp + "&text=${Uri.parse(msgShare)}";
@@ -1528,49 +1650,53 @@ class _WizardFormState extends State<WizardForm>
                           }
 
                            */
-                          _animationController.reverse();
-                        },
-                      ),
-                      // Floating action menu item
-                      Bubble(
-                        title: "Mail",
-                        iconColor: Colors.white,
-                        bubbleColor: Colors.blue,
-                        icon: Icons.mail_outline,
-                        titleStyle:
-                            TextStyle(fontSize: 16, color: Colors.white),
-                        onPress: () async {
-                          bool success = await Tools.callWSSendMail();
-                          if (success) {
-                            CoolAlert.show(
-                                context: context,
-                                type: CoolAlertType.success,
-                                text: "Email Envoyé avec succès",
-                                autoCloseDuration: Duration(seconds: 5),
-                                title: "Succès");
-                          }
-                          _animationController.reverse();
-                        },
-                      ),
-                      //Floating action menu item
-                    ],
+                                  _animationController.reverse();
+                                },
+                              ),
+                              // Floating action menu item
+                              Bubble(
+                                title: "Mail",
+                                iconColor: Colors.white,
+                                bubbleColor: Colors.blue,
+                                icon: Icons.mail_outline,
+                                titleStyle: TextStyle(
+                                    fontSize: 16, color: Colors.white),
+                                onPress: () async {
+                                  LoadingDialog.show(context);
+                                  bool success = await Tools.callWSSendMail();
+                                  LoadingDialog.hide(context);
 
-                    // animation controller
-                    animation: _animation,
+                                  if (success) {
+                                    CoolAlert.show(
+                                        context: context,
+                                        type: CoolAlertType.success,
+                                        text: "Email Envoyé avec succès",
+                                        autoCloseDuration: Duration(seconds: 5),
+                                        title: "Succès");
+                                  }
+                                  _animationController.reverse();
+                                },
+                              ),
+                              //Floating action menu item
+                            ],
 
-                    // On pressed change animation state
-                    onPress: () => _animationController.isCompleted
-                        ? _animationController.reverse()
-                        : _animationController.forward(),
+                            // animation controller
+                            animation: _animation,
 
-                    // Floating Action button Icon color
-                    iconColor: Tools.colorSecondary,
+                            // On pressed change animation state
+                            onPress: () => _animationController.isCompleted
+                                ? _animationController.reverse()
+                                : _animationController.forward(),
 
-                    // Flaoting Action button Icon
-                    iconData: Icons.whatsapp,
-                    backGroundColor: Colors.white,
-                  ),
-                ),
+                            // Floating Action button Icon color
+                            iconColor: Tools.colorSecondary,
+
+                            // Flaoting Action button Icon
+                            iconData: Icons.whatsapp,
+                            backGroundColor: Colors.white,
+                          ));
+                    }),
+
                 appBar: AppBar(
                   leading: Builder(
                     builder: (BuildContext context) {
@@ -1747,6 +1873,7 @@ class _WizardFormState extends State<WizardForm>
                                           style: ElevatedButton.styleFrom(
                                             // shape: CircleBorder(),
                                             minimumSize: Size(280, 50),
+
                                             // primary: Tools.colorPrimary,
                                             shape: RoundedRectangleBorder(
                                               borderRadius:
@@ -1766,7 +1893,7 @@ class _WizardFormState extends State<WizardForm>
                                       //       // formBloc.readJson();
                                       //       // formBloc.fileTraitementList.writeAsStringSync("");
                                       //
-                                      //       // context.read<WizardFormBloc>().clear();
+                                      //       // context.read<formBloc>().clear();
                                       //
                                       //
                                       //
@@ -1816,6 +1943,7 @@ class _WizardFormState extends State<WizardForm>
                             Tools.currentStep = step;
                             print(formBloc);
                             formBloc?.updateCurrentStep(step);
+
                             // formBloc?.emit(FormBlocLoaded(currentStep: Tools.currentStep));
                           },
                         ),
@@ -1872,154 +2000,9 @@ class _WizardFormState extends State<WizardForm>
     );
   }
 
-  FormBlocStep _step1(WizardFormBloc wizardFormBloc) {
+  FormBlocStep _step1(WizardFormBloc formBloc) {
     return FormBlocStep(
       title: Text('Etape 1'),
-      content: Column(
-        children: <Widget>[
-          InterventionHeaderInfoClientWidget(),
-          SizedBox(
-            height: 20,
-          ),
-          Divider(
-            color: Colors.black,
-            height: 2,
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          InterventionHeaderInfoProjectWidget(),
-          SizedBox(
-            height: 20,
-          ),
-          if (Tools.selectedDemande?.etatId == "9")
-            Container(
-              padding: const EdgeInsets.only(bottom: 30),
-              child: Text(
-                Tools.selectedDemande?.etatName ?? "",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          // if (Tools.selectedDemande?.etatId != "9")
-          DropdownFieldBlocBuilder<Etat>(
-            selectFieldBloc: wizardFormBloc.etatDropDown,
-            decoration: const InputDecoration(
-              labelText: 'Etat',
-              prefixIcon: Icon(Icons.list),
-            ),
-            itemBuilder: (context, value) => FieldItem(
-              child: Text(value.name ?? ""),
-            ),
-          ),
-          DateTimeFieldBlocBuilder(
-            dateTimeFieldBloc: wizardFormBloc.dateRdvInputFieldBLoc,
-            format: DateFormat('yyyy-MM-dd HH:mm'),
-            //  Y-m-d H:i:s
-            initialDate: DateTime.now(),
-            firstDate: DateTime.now(),
-            lastDate: DateTime(2100),
-            canSelectTime: true,
-            decoration: const InputDecoration(
-              labelText: 'Rendez-vous',
-              prefixIcon: Icon(Icons.date_range),
-            ),
-          ),
-          DropdownFieldBlocBuilder<SousEtat>(
-            selectFieldBloc: wizardFormBloc.sousEtatDropDown,
-            decoration: const InputDecoration(
-              labelText: 'Sous Etat',
-              prefixIcon: Padding(
-                padding: const EdgeInsets.only(top: 10, left: 12),
-                child: FaIcon(
-                  FontAwesomeIcons.scribd,
-                ),
-              ),
-            ),
-            itemBuilder: (context, value) => FieldItem(
-              child: Text(value.name ?? ""),
-            ),
-          ),
-          DropdownFieldBlocBuilder<MotifList>(
-            selectFieldBloc: wizardFormBloc.motifDropDown,
-            decoration: const InputDecoration(
-              labelText: 'Morif',
-            ),
-            itemBuilder: (context, value) => FieldItem(
-              child: Text(value.name ?? ""),
-            ),
-          ),
-          Container(
-              // margin: const EdgeInsets.only(top: 20),
-              child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //Center Row contents horizontally,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            //Center Row contents vertically,
-            children: [
-              Flexible(
-                child: ImageFieldBlocBuilder(
-                  formBloc: wizardFormBloc,
-                  fileFieldBloc: wizardFormBloc.pPbiAvantTextField,
-                  labelText: "PBI avant ",
-                  iconField: Icon(Icons.image_not_supported),
-                ),
-              ),
-              Flexible(
-                // flex: 2,
-                child: ImageFieldBlocBuilder(
-                  formBloc: wizardFormBloc,
-                  fileFieldBloc: wizardFormBloc.pPbiApresTextField,
-                  labelText: "PBI apres ",
-                  iconField: Icon(Icons.image_not_supported),
-                ),
-              ),
-            ],
-          )),
-          Container(
-              // margin: const EdgeInsets.only(top: 20),
-              child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            //Center Row contents horizontally,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            //Center Row contents vertically,
-            children: [
-              Flexible(
-                child: ImageFieldBlocBuilder(
-                  formBloc: wizardFormBloc,
-                  fileFieldBloc: wizardFormBloc.pPboAvantTextField,
-                  labelText: "PBO avant ",
-                  iconField: Icon(Icons.image_not_supported),
-                ),
-              ),
-              Flexible(
-                // flex: 2,
-                child: ImageFieldBlocBuilder(
-                  formBloc: wizardFormBloc,
-                  fileFieldBloc: wizardFormBloc.pPboApresTextField,
-                  labelText: "PBO apres ",
-                  iconField: Icon(Icons.image_not_supported),
-                ),
-              ),
-            ],
-          )),
-          TextFieldBlocBuilder(
-            textFieldBloc: wizardFormBloc.commentaireTextField,
-            keyboardType: TextInputType.text,
-            minLines: 6,
-            maxLines: 20,
-            decoration: InputDecoration(
-              labelText: "Commentaire",
-              prefixIcon: Icon(Icons.comment),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  FormBlocStep _step2(WizardFormBloc formBloc) {
-    return FormBlocStep(
-      title: Text('Etape 2'),
       content: Column(
         children: <Widget>[
           InterventionHeaderInfoClientWidget(),
@@ -2058,10 +2041,12 @@ class _WizardFormState extends State<WizardForm>
           ),
           DateTimeFieldBlocBuilder(
             dateTimeFieldBloc: formBloc.dateRdvInputFieldBLoc,
-            format: DateFormat('dd-MM-yyyy'),
+            format: DateFormat('yyyy-MM-dd HH:mm'),
+            //  Y-m-d H:i:s
             initialDate: DateTime.now(),
             firstDate: DateTime.now(),
             lastDate: DateTime(2100),
+            canSelectTime: true,
             decoration: const InputDecoration(
               labelText: 'Rendez-vous',
               prefixIcon: Icon(Icons.date_range),
@@ -2071,7 +2056,12 @@ class _WizardFormState extends State<WizardForm>
             selectFieldBloc: formBloc.sousEtatDropDown,
             decoration: const InputDecoration(
               labelText: 'Sous Etat',
-              prefixIcon: Icon(Icons.list),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(top: 10, left: 12),
+                child: FaIcon(
+                  FontAwesomeIcons.scribd,
+                ),
+              ),
             ),
             itemBuilder: (context, value) => FieldItem(
               child: Text(value.name ?? ""),
@@ -2080,8 +2070,7 @@ class _WizardFormState extends State<WizardForm>
           DropdownFieldBlocBuilder<MotifList>(
             selectFieldBloc: formBloc.motifDropDown,
             decoration: const InputDecoration(
-              labelText: 'Morif',
-              prefixIcon: Icon(Icons.list),
+              labelText: 'Motif',
             ),
             itemBuilder: (context, value) => FieldItem(
               child: Text(value.name ?? ""),
@@ -2224,6 +2213,173 @@ class _WizardFormState extends State<WizardForm>
             decoration: InputDecoration(
               labelText: "Nouvelle adresse ",
               prefixIcon: Icon(Icons.gps_fixed),
+            ),
+          ),
+          Container(
+              // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //Center Row contents horizontally,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            //Center Row contents vertically,
+            children: [
+              Flexible(
+                child: ImageFieldBlocBuilder(
+                  formBloc: formBloc,
+                  fileFieldBloc: formBloc.pPbiAvantTextField,
+                  labelText: "PBI avant ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+              Flexible(
+                // flex: 2,
+                child: ImageFieldBlocBuilder(
+                  formBloc: formBloc,
+                  fileFieldBloc: formBloc.pPbiApresTextField,
+                  labelText: "PBI apres ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+            ],
+          )),
+          Container(
+              // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            //Center Row contents horizontally,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            //Center Row contents vertically,
+            children: [
+              Flexible(
+                child: ImageFieldBlocBuilder(
+                  formBloc: formBloc,
+                  fileFieldBloc: formBloc.pPboAvantTextField,
+                  labelText: "PBO avant ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+              Flexible(
+                // flex: 2,
+                child: ImageFieldBlocBuilder(
+                  formBloc: formBloc,
+                  fileFieldBloc: formBloc.pPboApresTextField,
+                  labelText: "PBO apres ",
+                  iconField: Icon(Icons.image_not_supported),
+                ),
+              ),
+            ],
+          )),
+
+          Container(
+            // margin: const EdgeInsets.only(top: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                //Center Row contents horizontally,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                //Center Row contents vertically,
+                children: [
+                  Flexible(
+                    child: ImageFieldBlocBuilder(
+                      formBloc: formBloc,
+                      fileFieldBloc: formBloc.photoBlocage1InputFieldBloc,
+                      labelText: "Photo Blockage 1 ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                  Flexible(
+                    // flex: 2,
+                    child: ImageFieldBlocBuilder(
+                      formBloc: formBloc,
+                      fileFieldBloc: formBloc.photoBlocage2InputFieldBloc,
+                      labelText: "Photo Blockage 2 ",
+                      iconField: Icon(Icons.image_not_supported),
+                    ),
+                  ),
+                ],
+              )),
+          TextFieldBlocBuilder(
+            textFieldBloc: formBloc.commentaireTextField,
+            keyboardType: TextInputType.text,
+            minLines: 6,
+            maxLines: 20,
+            decoration: InputDecoration(
+              labelText: "Commentaire",
+              prefixIcon: Icon(Icons.comment),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  FormBlocStep _step2(WizardFormBloc formBloc) {
+    return FormBlocStep(
+      title: Text('Etape 2'),
+      content: Column(
+        children: <Widget>[
+          InterventionHeaderInfoClientWidget(),
+          SizedBox(
+            height: 20,
+          ),
+          Divider(
+            color: Colors.black,
+            height: 2,
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          InterventionHeaderInfoProjectWidget(),
+          SizedBox(
+            height: 20,
+          ),
+          if (Tools.selectedDemande?.etatId == "9")
+            Container(
+              padding: const EdgeInsets.only(bottom: 30),
+              child: Text(
+                Tools.selectedDemande?.etatName ?? "",
+                style: TextStyle(fontSize: 20),
+              ),
+            ),
+          // if (Tools.selectedDemande?.etatId != "9")
+          DropdownFieldBlocBuilder<Etat>(
+            selectFieldBloc: formBloc.etatDropDown,
+            decoration: const InputDecoration(
+              labelText: 'Etat',
+              prefixIcon: Icon(Icons.list),
+            ),
+            itemBuilder: (context, value) => FieldItem(
+              child: Text(value.name ?? ""),
+            ),
+          ),
+          DateTimeFieldBlocBuilder(
+            dateTimeFieldBloc: formBloc.dateRdvInputFieldBLoc,
+            format: DateFormat('dd-MM-yyyy'),
+            initialDate: DateTime.now(),
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2100),
+            decoration: const InputDecoration(
+              labelText: 'Rendez-vous',
+              prefixIcon: Icon(Icons.date_range),
+            ),
+          ),
+          DropdownFieldBlocBuilder<SousEtat>(
+            selectFieldBloc: formBloc.sousEtatDropDown,
+            decoration: const InputDecoration(
+              labelText: 'Sous Etat',
+              prefixIcon: Icon(Icons.list),
+            ),
+            itemBuilder: (context, value) => FieldItem(
+              child: Text(value.name ?? ""),
+            ),
+          ),
+          DropdownFieldBlocBuilder<MotifList>(
+            selectFieldBloc: formBloc.motifDropDown,
+            decoration: const InputDecoration(
+              labelText: 'Motif',
+              prefixIcon: Icon(Icons.list),
+            ),
+            itemBuilder: (context, value) => FieldItem(
+              child: Text(value.name ?? ""),
             ),
           ),
 
@@ -2596,6 +2752,14 @@ class _WizardFormState extends State<WizardForm>
               ),
             ],
           )),
+          Center(
+            child: ImageFieldBlocBuilder(
+              formBloc: formBloc,
+              fileFieldBloc: formBloc.pDosRouteur,
+              labelText: "Dos routeur ",
+              iconField: Icon(Icons.image_not_supported),
+            ),
+          ),
           TextFieldBlocBuilder(
             textFieldBloc: formBloc.commentaireTextField,
             keyboardType: TextInputType.text,
@@ -2611,7 +2775,7 @@ class _WizardFormState extends State<WizardForm>
     );
   }
 
-  FormBlocStep _step3(WizardFormBloc wizardFormBloc) {
+  FormBlocStep _step3(WizardFormBloc formBloc) {
     return FormBlocStep(
       title: Text('Etape 3'),
       content: Column(
@@ -2641,7 +2805,7 @@ class _WizardFormState extends State<WizardForm>
             ),
           // if (Tools.selectedDemande?.etatId != "9")
           DropdownFieldBlocBuilder<Etat>(
-            selectFieldBloc: wizardFormBloc.etatDropDown,
+            selectFieldBloc: formBloc.etatDropDown,
             decoration: const InputDecoration(
               labelText: 'Etat',
               prefixIcon: Icon(Icons.list),
@@ -2651,7 +2815,7 @@ class _WizardFormState extends State<WizardForm>
             ),
           ),
           DateTimeFieldBlocBuilder(
-            dateTimeFieldBloc: wizardFormBloc.dateRdvInputFieldBLoc,
+            dateTimeFieldBloc: formBloc.dateRdvInputFieldBLoc,
             format: DateFormat('dd-MM-yyyy'),
             initialDate: DateTime.now(),
             firstDate: DateTime.now(),
@@ -2662,7 +2826,7 @@ class _WizardFormState extends State<WizardForm>
             ),
           ),
           DropdownFieldBlocBuilder<SousEtat>(
-            selectFieldBloc: wizardFormBloc.sousEtatDropDown,
+            selectFieldBloc: formBloc.sousEtatDropDown,
             decoration: const InputDecoration(
               labelText: 'Sous Etat',
               prefixIcon: Icon(Icons.list),
@@ -2672,9 +2836,9 @@ class _WizardFormState extends State<WizardForm>
             ),
           ),
           DropdownFieldBlocBuilder<MotifList>(
-            selectFieldBloc: wizardFormBloc.motifDropDown,
+            selectFieldBloc: formBloc.motifDropDown,
             decoration: const InputDecoration(
-              labelText: 'Morif',
+              labelText: 'Motif',
               prefixIcon: Icon(Icons.list),
             ),
             itemBuilder: (context, value) => FieldItem(
@@ -2683,7 +2847,7 @@ class _WizardFormState extends State<WizardForm>
           ),
 
           TextFieldBlocBuilder(
-            textFieldBloc: wizardFormBloc.speedTextField,
+            textFieldBloc: formBloc.speedTextField,
             keyboardType: TextInputType.text,
             decoration: InputDecoration(
               labelText: "Speed",
@@ -2692,8 +2856,8 @@ class _WizardFormState extends State<WizardForm>
           ),
           Center(
             child: ImageFieldBlocBuilder(
-              formBloc: wizardFormBloc,
-              fileFieldBloc: wizardFormBloc.pSpeedTest,
+              formBloc: formBloc,
+              fileFieldBloc: formBloc.pSpeedTest,
               labelText: "Speed test ",
               iconField: Icon(Icons.image_not_supported),
             ),
@@ -2703,15 +2867,113 @@ class _WizardFormState extends State<WizardForm>
     );
   }
 
-  // isVisibleSHare() {
-  //   return ValueListenableBuilder(
-  //     valueListenable: commentaireCuuntValueNotifer,
-  //     builder: (BuildContext context, int commentaireCount,
-  //         Widget? child) {
-  //       return true ;
-  //     },
-  //   )
-  // }
+  String getMsgShare(int currentStepNotifier) {
+    String msgShare = "";
+
+    print("msgShare currentStepNotifier ==> ${currentStepNotifier}");
+
+    if (currentStepNotifier == 2) {
+      msgShare +=
+          "SIP                          : ${Tools.selectedDemande?.loginSip ?? ""}";
+
+      msgShare +=
+          "\nCLIENT                  : ${Tools.selectedDemande?.client ?? ""}";
+
+      msgShare +=
+          "\n MAC           : ${Tools.selectedDemande?.adresseMac ?? ""}";
+
+      msgShare +=
+          "\n SN-GPON       : ${Tools.selectedDemande?.snRouteur ?? ""}";
+
+      // SN-DN
+      msgShare += "\n SN-DN         : ${Tools.selectedDemande?.dnsn ?? ""}";
+
+      // msgShare +=
+      //     "\n ETAT DEMANDE= ${Tools.selectedDemande?.etatName ?? "" }";
+
+      msgShare += "\nETAT DEMANDE  : Client installé";
+
+      if (Tools.selectedDemande?.sousEtatName?.isNotEmpty == true) {
+
+        ResponseGetListEtat responseGetListEtatShare = Tools.readfileEtatsList();
+
+        bool canAddSousEtat = false ;
+
+        responseGetListEtatShare.etat?.firstWhere((element) => element.id == Tools.selectedDemande?.etatId).sousEtat?.forEach((element) {
+          if(element.id == Tools.selectedDemande?.subStatutId){
+            canAddSousEtat = true ;
+            // break;
+          }
+        });
+
+        if(canAddSousEtat){
+          msgShare +=
+          "\nRaison                  : ${Tools.selectedDemande?.sousEtatName ?? ""}";
+        }
+
+      }
+
+      msgShare +=
+          "\nSN-TEL                  : ${Tools.selectedDemande?.snTel ?? ""}";
+
+      msgShare +=
+          "\nTEL                  : ${Tools.selectedDemande?.contactClient ?? ""}";
+
+      msgShare +=
+          "\nPLAQUE                : ${Tools.selectedDemande?.plaqueName ?? ""}";
+    } else {
+      msgShare +=
+          "SIP                          : ${Tools.selectedDemande?.loginSip ?? ""}";
+
+      msgShare +=
+          "\nCLIENT                  : ${Tools.selectedDemande?.client ?? ""}";
+
+      // msgShare += "\n" ;
+
+      msgShare += "\nETAT DEMANDE  : ${Tools.selectedDemande?.etatName ?? ""}";
+
+      if (Tools.selectedDemande?.sousEtatName?.isNotEmpty == true) {
+
+        ResponseGetListEtat responseGetListEtatShare = Tools.readfileEtatsList();
+
+        bool canAddSousEtat = false ;
+
+        responseGetListEtatShare.etat?.firstWhere((element) => element.id == Tools.selectedDemande?.etatId).sousEtat?.forEach((element) {
+          if(element.id == Tools.selectedDemande?.subStatutId){
+            canAddSousEtat = true ;
+            // break;
+          }
+        });
+
+        if(canAddSousEtat){
+          msgShare +=
+          "\nRaison                  : ${Tools.selectedDemande?.sousEtatName ?? ""}";
+        }
+
+      }
+
+      msgShare +=
+          "\nTEL                  : ${Tools.selectedDemande?.contactClient ?? ""}";
+
+      // msgShare +=
+      // "\n TEL              : ${Tools.selectedDemande?.snTel ?? "" }";
+
+      msgShare +=
+          "\nPLAQUE                : ${Tools.selectedDemande?.plaqueName ?? ""}";
+    }
+
+    return msgShare;
+  }
+
+// isVisibleSHare() {
+//   return ValueListenableBuilder(
+//     valueListenable: commentaireCuuntValueNotifer,
+//     builder: (BuildContext context, int commentaireCount,
+//         Widget? child) {
+//       return true ;
+//     },
+//   )
+// }
 }
 
 class CustomRangeTextInputFormatter extends TextInputFormatter {

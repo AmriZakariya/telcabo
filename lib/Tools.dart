@@ -435,7 +435,10 @@ class Tools {
           mapKey == "p_etiquetage_outdoor" ||
           mapKey == "p_passage_cable" ||
           mapKey == "p_fiche_instalation" ||
-          mapKey == "p_speed_test") {
+          mapKey == "p_dos_routeur" ||
+          mapKey == "p_speed_test"  ||
+          mapKey == "photo_blocage1"  ||
+          mapKey == "photo_blocage2") {
         try {
           if (jsonMapContent[mapKey] != null && jsonMapContent[mapKey] != "null" && jsonMapContent[mapKey] != "" )  {
             final splitted = jsonMapContent[mapKey].split(";;");
