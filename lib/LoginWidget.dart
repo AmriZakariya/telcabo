@@ -83,7 +83,7 @@ class LoginFormBloc extends FormBloc<String, String> {
         emitFailure(failureResponse: 'login ou mot de passe incorrect!');
       }
     } catch (e) {
-      print("exception ${e}");
+      print("exception login ${e}");
       emitFailure(failureResponse: "Erreur de connexion au serveur");
       // emitFailure(failureResponse: "eeee");
     }

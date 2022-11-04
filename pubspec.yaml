@@ -2,7 +2,7 @@ name: telcabo
 description: Telcabo
 
 
-version: 1.0.0+20
+version: 1.0.0+21
 
 environment:
   sdk: ">=2.16.0 <3.0.0"
@@ -48,6 +48,8 @@ dependencies:
   http: ^0.13.0
   geolocator: ^8.2.0
   qr_code_scanner: ^1.0.0
+  mobile_scanner: ^2.0.0
+
   font_awesome_flutter: ^10.1.0
 
 #  im_stepper: ^0.1.3
