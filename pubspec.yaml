@@ -2,7 +2,7 @@ name: telcabo
 description: Telcabo
 
 
-version: 1.0.0+21
+version: 1.0.0+23i
 
 environment:
   sdk: ">=2.16.0 <3.0.0"
@@ -47,7 +47,7 @@ dependencies:
   flutter_form_bloc: ^0.30.1
   http: ^0.13.0
   geolocator: ^8.2.0
-  qr_code_scanner: ^1.0.0
+  qr_code_scanner: ^1.0.1
   mobile_scanner: ^2.0.0
 
   font_awesome_flutter: ^10.1.0

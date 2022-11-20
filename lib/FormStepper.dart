@@ -3111,7 +3111,7 @@ class NamedIcon extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 50,
-        padding: const EdgeInsets.only(top: 15),
+        padding: const EdgeInsets.only(top: 10),
         child: Stack(
           alignment: Alignment.center,
           children: [

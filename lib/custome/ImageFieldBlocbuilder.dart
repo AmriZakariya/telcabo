@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:stamp_image/stamp_image.dart';
 import 'package:image_watermark/image_watermark.dart';
 import 'package:telcabo/Tools.dart';
+import 'dart:math' as Math;
 
 class ImageFieldBlocBuilder extends StatefulWidget {
   final InputFieldBloc<XFile?, Object> fileFieldBloc;
@@ -222,8 +223,26 @@ class _ImageFieldBlocBuilderState extends State<ImageFieldBlocBuilder> {
                                       final File fileResult =
                                           File(imageResult?.path ?? "");
                                       if (await fileResult.exists()) {
+
+
+                                        // compress start
+                                        final tempDir = await getTemporaryDirectory();
+                                        final path = tempDir.path;
+                                        int rand = new Math.Random().nextInt(10000);
+
+                                        final image = imagePLugin.decodeImage(fileResult.readAsBytesSync())!;
+                                        final thumbnail = imagePLugin.copyResize(image, width: 120,);
+                                        var compressedImage = new File('$path/img_$rand.jpg')..writeAsBytesSync(imagePLugin.encodeJpg(image, quality: 85));
                                         widget.fileFieldBloc
-                                            .updateValue(imageResult);
+                                            .updateValue(XFile(compressedImage.path));
+                                        // end start
+
+
+                                        // widget.fileFieldBloc
+                                        //     .updateValue(imageResult);
+
+
+
 
                                         // String currentAddress =  await _getAddressFromLatLng();
                                         // String currentDate =  DateTime.now().toString();
