@@ -23,10 +23,12 @@ class QrScannerTextFieldBlocBuilder extends StatefulWidget {
         super(key: key);
 
   @override
-  State<QrScannerTextFieldBlocBuilder> createState() => _QrScannerTextFieldBlocBuilderState();
+  State<QrScannerTextFieldBlocBuilder> createState() =>
+      _QrScannerTextFieldBlocBuilderState();
 }
 
-class _QrScannerTextFieldBlocBuilderState extends State<QrScannerTextFieldBlocBuilder> {
+class _QrScannerTextFieldBlocBuilderState
+    extends State<QrScannerTextFieldBlocBuilder> {
   QRViewController? controller;
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
@@ -52,7 +54,6 @@ class _QrScannerTextFieldBlocBuilderState extends State<QrScannerTextFieldBlocBu
 
   @override
   Widget build(BuildContext context) {
-
     // print("MediaQuery.of(context).size.width / 4.9");
     // print(MediaQuery.of(context).size.width / 4.9);
 
@@ -62,17 +63,16 @@ class _QrScannerTextFieldBlocBuilderState extends State<QrScannerTextFieldBlocBu
 
     // For this example we check how width or tall the device is and change the scanArea and overlay accordingly.
     var scanArea = (MediaQuery.of(context).size.width < 400 ||
-        MediaQuery.of(context).size.height < 400)
+            MediaQuery.of(context).size.height < 400)
         ? 150.0
         : 300.0;
     // To ensure the Scanner view is properly sizes after rotation
     // we need to listen for Flutter SizeChanged notification and update controller
 
-    QRViewController qrController ;
-
+    QRViewController qrController;
 
     Future<Barcode?> _showDialog() async {
-      late Barcode result ;
+      late Barcode result;
       await showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -88,20 +88,18 @@ class _QrScannerTextFieldBlocBuilderState extends State<QrScannerTextFieldBlocBu
                 qrController.pauseCamera();
                 qrController.resumeCamera();
 
-
                 result = scanData;
                 qrController.pauseCamera();
                 await _popTime();
-
               });
             },
             overlay: QrScannerOverlayShape(
-                borderColor: Colors.red,
-                borderRadius: 10,
-                borderLength: 30,
-                borderWidth: 10,
-                cutOutWidth: MediaQuery.of(context).size.width / 1.2,
-                cutOutHeight: 70, //MediaQuery.of(context).size.width / 4.9
+              borderColor: Colors.red,
+              borderRadius: 10,
+              borderLength: 30,
+              borderWidth: 10,
+              cutOutWidth: MediaQuery.of(context).size.width / 1.2,
+              cutOutHeight: 70, //MediaQuery.of(context).size.width / 4.9
               // cutOutSize: scanArea
             ),
             onPermissionSet: (ctrl, p) => _onPermissionSet(context, ctrl, p),
@@ -113,59 +111,68 @@ class _QrScannerTextFieldBlocBuilderState extends State<QrScannerTextFieldBlocBu
       return result;
     }
 
-
     return BlocBuilder<TextFieldBloc, TextFieldBlocState>(
       bloc: widget.qrCodeTextFieldBloc,
       builder: (context, state) {
         return Container(
             child: Row(
-              children: [
-                Flexible(
-                  child: TextFieldBlocBuilder(
-                    // isEnabled: false,
-                    textFieldBloc: widget.qrCodeTextFieldBloc,
-                    keyboardType: TextInputType.text,
-                    decoration: InputDecoration(
-                      labelText: widget.labelText,
-                      prefixIcon: widget.iconField,
-                      disabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 1,
-                            // color: Tools.colorPrimary
-                          ),
-                          borderRadius:
-                          BorderRadius.circular(20)),
-                    ),
-                  ),
+          children: [
+            Flexible(
+              child: TextFieldBlocBuilder(
+                // isEnabled: false,
+                textFieldBloc: widget.qrCodeTextFieldBloc,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  labelText: widget.labelText,
+                  prefixIcon: widget.iconField,
+                  disabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        width: 1,
+                        // color: Tools.colorPrimary
+                      ),
+                      borderRadius: BorderRadius.circular(20)),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    // Navigator.of(context).push(MaterialPageRoute(
-                    //   builder: (context) => const QRViewExample(),
-                    // ));
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Navigator.of(context).push(MaterialPageRoute(
+                //   builder: (context) => const QRViewExample(),
+                // ));
 
-                    final barCodeResult = await _showDialog();
+                final barCodeResult = await _showDialog();
 //                            final image = await ImagePicker.pickImage(
 //                              source: ImageSource.gallery,
 //                            );
 
-                    if (barCodeResult != null) {
-                      widget.qrCodeTextFieldBloc.updateValue(barCodeResult.code ?? "000000");
+                if (barCodeResult != null) {
+                  if (widget.qrCodeTextFieldBloc.name == "adresse_mac") {
+                    String result = barCodeResult.code ?? "000000";
+                    String formattedMAC = "";
+                    for (int i = 0; i < result.length; i++) {
+                      var char = result[i];
+                      formattedMAC += char;
+                      if ((i % 2 != 0) && (i < result.length - 1)) {
+                        formattedMAC += "-";
+                      }
                     }
 
-
-
-
-                  },
-                  style: ElevatedButton.styleFrom(
-                    // primary: Tools.colorPrimary,
-                    shape: CircleBorder(),
-                    padding: EdgeInsets.all(10),
-                  ),
-                  child: const Icon(Icons.qr_code),
-                ),
-              ],
-            ));
+                    widget.qrCodeTextFieldBloc.updateValue(formattedMAC);
+                  } else {
+                    widget.qrCodeTextFieldBloc
+                        .updateValue(barCodeResult.code ?? "000000");
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                // primary: Tools.colorPrimary,
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(10),
+              ),
+              child: const Icon(Icons.qr_code),
+            ),
+          ],
+        ));
       },
     );
   }

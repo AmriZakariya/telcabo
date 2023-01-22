@@ -25,395 +25,6 @@ import 'package:telcabo/models/response_get_liste_etats.dart';
 import 'package:timelines/timelines.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DemandeListItem extends StatelessWidget {
-  final Demandes demande;
-  final NavigatorState navigator;
-
-  const DemandeListItem(
-      {Key? key, required this.demande, required this.navigator})
-      : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(left: 15),
-      decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.transparent,
-            // style: BorderStyle.values
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Tools.getColorByEtatId(int.parse(demande.etatId ?? "0"))
-                  .withOpacity(0.5),
-              spreadRadius: 1,
-              blurRadius: 1,
-              offset: Offset(0, 0), // changes position of shadow
-            ),
-          ],
-          borderRadius: BorderRadius.circular(
-              20) // use instead of BorderRadius.all(Radius.circular(20))
-          ),
-      child: Center(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: double.infinity,
-            height: 65,
-            decoration: BoxDecoration(
-                color: Tools.getColorByEtatId(int.parse(demande.etatId ?? "0")),
-                border: Border.all(
-                  color: Colors.transparent,
-                ),
-                borderRadius: BorderRadius.circular(
-                    20) // use instead of BorderRadius.all(Radius.circular(20))
-                ),
-            child: Row(children: [
-              SizedBox(
-                height: 5.0,
-              ),
-              // CircleAvatar(
-              //   radius: 32.0,
-              //   backgroundImage: AssetImage('assets/user.png'),
-              //   backgroundColor: Colors.white,
-              // ),
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: Icon(
-                  Icons.person,
-                  size: 22,
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width - 175,
-                child: Text('${demande.client}',
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16.0,
-                    )),
-              ),
-
-              // Spacer(),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Tools.selectedDemande = demande;
-                      print(
-                          "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-
-                      navigator.push(MaterialPageRoute(
-                        builder: (_) => DetailIntervention(),
-                      ));
-                    },
-                    child: Tooltip(
-                      message: "Voir",
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                            color: Tools.colorPrimary, shape: BoxShape.circle),
-                        child: Center(
-                            child: FaIcon(
-                          FontAwesomeIcons.solidEye,
-                          color: Colors.white,
-                          size: 15,
-                        )),
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Tools.selectedDemande = demande;
-                      print(
-                          "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-
-                      navigator
-                          .push(MaterialPageRoute(
-                        builder: (_) => WizardForm(),
-                      ))
-                          .then((_) {
-                        // This method gets callback after your SecondScreen is popped from the stack or finished.
-                      });
-                    },
-                    child: Tooltip(
-                      message: "Voir",
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                              color: Tools.colorPrimary,
-                              shape: BoxShape.circle),
-                          child: Center(
-                              child: FaIcon(
-                            FontAwesomeIcons.screwdriver,
-                            color: Colors.white,
-                            size: 15,
-                          )),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // ElevatedButton(
-                  //   child: Icon(Icons.remove_red_eye, size: 20),
-                  //   onPressed: () {
-                  //     Tools.selectedDemande = demande ;
-                  //
-                  //   },
-                  //   style: ElevatedButton .styleFrom(
-                  //     // minimumSize: Size.zero, // Set this
-                  //     // padding: EdgeInsets.zero,
-                  //     shape: const CircleBorder(),
-                  //   ),
-                  // ),
-                  // ElevatedButton(
-                  //   child: FaIcon(FontAwesomeIcons.screwdriver, size: 20),
-                  //   onPressed: () {
-                  //     Tools.selectedDemande = demande ;
-                  //     print("Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-                  //
-                  //     if(demande.etatId == "3"
-                  //         && demande.pPbiAvant != ""
-                  //         && demande.pPbiApres != ""){
-                  //       // Navigator.of(context).push(MaterialPageRoute(
-                  //       //   builder: (_) => InterventionFormStep2(),
-                  //       // ));
-                  //       Tools.currentStep = 1 ;
-                  //     }else{
-                  //       // Navigator.of(context).push(MaterialPageRoute(
-                  //       //   builder: (_) => InterventionFormStep1(),
-                  //       // ));
-                  //       Tools.currentStep = 0 ;
-                  //
-                  //     }
-                  //
-                  //     // FormBlocState.currentStep = Tools.currentStep ;
-                  //
-                  //     Navigator.of(context).push(MaterialPageRoute(
-                  //       builder: (_) => WizardForm(),
-                  //     ));
-                  //
-                  //   },
-                  //   style: ElevatedButton.styleFrom(
-                  //     // minimumSize: Size.zero, // Set this
-                  //     // padding: EdgeInsets.zero,
-                  //     shape: const CircleBorder(),
-                  //   ),
-                  // ),
-                ],
-              ),
-            ]),
-          ),
-          ExpandChild(
-            arrowSize: 25,
-            arrowPadding: EdgeInsets.all(0),
-            child: Container(
-                // color: Colors.white,
-                child: Padding(
-              padding: EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Divider(color: Colors.black, height: 2,),
-                  // SizedBox(height: 15,),
-                  InfoItemWidget(
-                    iconData: Icons.phone,
-                    title: "Contact CLient :",
-                    description: demande.contactClient ?? "",
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-
-                  InfoItemWidget(
-                    iconData: Icons.list,
-                    title: "Type :",
-                    description: demande.typeDemande ?? "",
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-
-                  InfoItemWidget(
-                    iconData: Icons.location_city_sharp,
-                    icon: FaIcon(
-                      FontAwesomeIcons.city,
-                      size: 18,
-                    ),
-                    title: "Ville :",
-                    description: demande.ville ?? "",
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-
-                  InfoItemWidget(
-                    iconData: Icons.list_alt,
-                    icon: FaIcon(
-                      FontAwesomeIcons.signHanging,
-                      size: 18,
-                    ),
-                    title: "PLaque :",
-                    description: demande.plaqueName ?? "",
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-
-                  InfoItemWidget(
-                    iconData: Icons.list_alt,
-                    icon: FaIcon(
-                      FontAwesomeIcons.projectDiagram,
-                      size: 18,
-                    ),
-                    title: "Login SIP :",
-                    description: demande.loginSip ?? "",
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-
-                  InfoItemWidget(
-                    iconData: Icons.list_alt,
-                    icon: FaIcon(
-                      FontAwesomeIcons.lightbulb,
-                      size: 18,
-                    ),
-                    title: "Opportunité :",
-                    description: demande.sousTypeOpportunite ?? "",
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-
-                  InfoItemWidget(
-                    iconData: Icons.list_alt,
-                    icon: FaIcon(
-                      FontAwesomeIcons.boxOpen,
-                      size: 18,
-                    ),
-                    title: "Portabilité :",
-                    description: demande.loginSip ?? "",
-                  ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-
-                  InfoItemWidget(
-                    iconData: Icons.edit_attributes_sharp,
-                    title: "Etat :",
-                    description: demande.etatName ?? "",
-                  ),
-
-                  SizedBox(
-                    height: 20.0,
-                  ),
-                  Divider(),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            child: Icon(Icons.remove_red_eye, size: 20),
-                            onPressed: () {
-                              Tools.selectedDemande = demande;
-
-                              navigator.push(MaterialPageRoute(
-                                builder: (_) => DetailIntervention(),
-                              ));
-                            },
-                            style: ElevatedButton.styleFrom(
-                              fixedSize: const Size(10, 10),
-                              shape: const CircleBorder(),
-                            ),
-                          ),
-                          Text("Voir")
-                        ],
-                      ),
-
-                      Column(
-                        children: [
-                          ElevatedButton(
-                            child:
-                                FaIcon(FontAwesomeIcons.screwdriver, size: 20),
-                            onPressed: () {
-                              Tools.selectedDemande = demande;
-                              print(
-                                  "Tools.selectedDemande => ${Tools.selectedDemande?.toJson()}");
-
-                              // if(demande.etatId == "3"
-                              //     && demande.pPbiAvant != ""
-                              //     && demande.pPbiApres != ""){
-                              //   // Navigator.of(context).push(MaterialPageRoute(
-                              //   //   builder: (_) => InterventionFormStep2(),
-                              //   // ));
-                              //   Tools.currentStep = 1 ;
-                              // }else{
-                              //   // Navigator.of(context).push(MaterialPageRoute(
-                              //   //   builder: (_) => InterventionFormStep1(),
-                              //   // ));
-                              //   Tools.currentStep = 0 ;
-                              //
-                              // }
-
-                              // FormBlocState.currentStep = Tools.currentStep ;
-
-                              navigator.push(MaterialPageRoute(
-                                builder: (_) => WizardForm(),
-                              ));
-                            },
-                            style: ElevatedButton.styleFrom(
-                              fixedSize: const Size(10, 10),
-                              shape: const CircleBorder(),
-                            ),
-                          ),
-                          Text("Intervention")
-                        ],
-                      ),
-                      // Column(
-                      //   children: [
-                      //     ElevatedButton(
-                      //         child: Icon(Icons.edit, size: 20),
-                      //         onPressed: () {
-                      //           Tools.selectedDemande = demande ;
-                      //
-                      //         },
-                      //         style: ElevatedButton.styleFrom(
-                      //             fixedSize: const Size(10, 10),
-                      //             shape: const CircleBorder(),
-                      //       ),
-                      //     ),
-                      //     Text("Modifier")
-                      //
-                      //   ],
-                      // ),
-                    ],
-                  ),
-                ],
-              ),
-            )),
-          ),
-          SizedBox(
-            height: 5.0,
-          ),
-        ],
-      )),
-    );
-  }
-
-
-}
-
 class InterventionHeaderInfoClientWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -489,17 +100,31 @@ class InterventionHeaderInfoClientWidget extends StatelessWidget {
                   SizedBox(
                     height: 20.0,
                   ),
-                  InfoItemWidget(
-                    iconData: Icons.phone,
-                    icon: Padding(
-                      padding: const EdgeInsets.only(right: 5),
-                      child: FaIcon(
-                        FontAwesomeIcons.phone,
-                        size: 18,
+                  GestureDetector(
+                    onTap: () {
+                      launch(
+                          "tel://${Tools.selectedDemande?.contactClient ?? ""}");
+                    },
+                    child: InfoItemWidget(
+                      iconData: Icons.phone,
+                      icon: Padding(
+                        padding: const EdgeInsets.only(right: 5),
+                        child: FaIcon(
+                          FontAwesomeIcons.phone,
+                          size: 18,
+                        ),
+                      ),
+                      title: "Téléphone :",
+                      description: Tools.selectedDemande?.contactClient ?? "",
+                      iconEnd: Padding(
+                        padding: const EdgeInsets.only(right: 5),
+                        child: FaIcon(
+                          FontAwesomeIcons.phoneVolume,
+                          size: 22,
+                          color: Colors.green,
+                        ),
                       ),
                     ),
-                    title: "Téléphone :",
-                    description: Tools.selectedDemande?.contactClient ?? "",
                   ),
                   SizedBox(
                     height: 20.0,
@@ -694,6 +319,19 @@ class InterventionHeaderInfoProjectWidget extends StatelessWidget {
                     ),
                     title: "Login internet :",
                     description: Tools.selectedDemande?.loginInternet ?? "",
+                    iconEnd:  GestureDetector(
+                      onTap: () async {
+                        await Clipboard.setData(ClipboardData(text: Tools.selectedDemande?.loginInternet ?? ""));
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 5),
+                        child: FaIcon(
+                          FontAwesomeIcons.copy,
+                          size: 22,
+                          color: Colors.green,
+                        ),
+                      ),
+                    ),
                   ),
                   SizedBox(
                     height: 20.0,
@@ -716,7 +354,7 @@ class InterventionHeaderInfoProjectWidget extends StatelessWidget {
                       FontAwesomeIcons.boxOpen,
                       size: 18,
                     ),
-                    title: " Portabilité :",
+                    title: "Portabilité :",
                     description: Tools.selectedDemande?.portabilite ?? "",
                   ),
                   SizedBox(
@@ -1204,46 +842,59 @@ class InfoItemWidget extends StatelessWidget {
     required this.title,
     required this.description,
     this.icon,
+    this.iconEnd,
   }) : super(key: key);
 
   final IconData iconData;
   final String title;
   final String description;
   final Widget? icon;
+  final Widget? iconEnd;
 
   @override
   Widget build(BuildContext context) {
     return Container(
         child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-            margin: const EdgeInsets.only(right: 10.0),
-            child: icon ?? Icon(iconData)),
         Flexible(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 15.0,
-                  color: Tools.colorPrimary,
+              Container(
+                  margin: const EdgeInsets.only(right: 10.0),
+                  child: icon ?? Icon(iconData)),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 15.0,
+                        color: Tools.colorPrimary,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 2,
+                    ),
+                    Text(
+                      description,
+                      // maxLines: 1,
+                      // overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 16.0,
+                      ),
+                    )
+                  ],
                 ),
               ),
-              SizedBox(
-                height: 2,
-              ),
-              Text(
-                description,
-                // maxLines: 1,
-                // overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 16.0,
-                ),
-              )
             ],
           ),
         ),
+        iconEnd != null ?
+        Container(
+            margin: const EdgeInsets.only(right: 10.0),
+            child: iconEnd) : Container(),
       ],
     ));
   }

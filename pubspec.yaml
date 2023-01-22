@@ -2,7 +2,7 @@ name: telcabo
 description: Telcabo
 
 
-version: 1.0.0+23i
+version: 1.0.0+24i
 
 environment:
   sdk: ">=2.16.0 <3.0.0"

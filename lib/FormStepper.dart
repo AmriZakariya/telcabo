@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cool_alert/cool_alert.dart';
+import 'package:dartx/dartx.dart';
 import 'package:dio/dio.dart';
 import 'package:dio_logger/dio_logger.dart';
 import 'package:floating_action_bubble/floating_action_bubble.dart';
@@ -478,6 +479,7 @@ class WizardFormBloc extends FormBloc<String, String> {
           speedTextField,
           pSpeedTest,
         ]);
+
       } else {
         removeFieldBlocs(fieldBlocs: [
           speedTextField,
@@ -549,6 +551,8 @@ class WizardFormBloc extends FormBloc<String, String> {
               }
             }
           }
+
+          //annuler restirctiin sur speed photo et valeur quand on est dans la fase attente dactivation
           return;
         }
 
@@ -601,6 +605,26 @@ class WizardFormBloc extends FormBloc<String, String> {
             sousEtatDropDown.updateItems(current.value?.sousEtat ?? []);
             addFieldBloc(fieldBloc: sousEtatDropDown);
           }
+
+          if (current.value?.id == "5" || Tools.currentStep == 1) {
+            speedTextField.removeValidators([
+              FieldBlocValidators.required,
+            ]);
+
+            pSpeedTest.removeValidators([
+              FieldBlocValidators.required,
+            ]);
+          }else {
+            speedTextField.addValidators([
+              FieldBlocValidators.required,
+            ]);
+
+            pSpeedTest.addValidators([
+              FieldBlocValidators.required,
+            ]);
+          }
+
+
         }
       },
     );
@@ -641,12 +665,12 @@ class WizardFormBloc extends FormBloc<String, String> {
 
         }
 
-        if (etatDropDown.value?.id == "7") if (sousEtatDropDown.value?.id ==
+        if (etatDropDown.value?.id == "7") if (current.value?.id ==
             "14" //"Blocage syndicat",
             ||
-            sousEtatDropDown.value?.id == "18" //"Blocage voisin",
+            current.value?.id == "18" //"Blocage voisin",
             ||
-            sousEtatDropDown.value?.id ==
+            current.value?.id ==
                 "17" //"Problème raccordement client",
 
         ) {
@@ -664,6 +688,28 @@ class WizardFormBloc extends FormBloc<String, String> {
 
 
 
+        if (etatDropDown.value?.id == "7" &&
+            current.value?.id == "8" ) {
+          commentaireTextField.addValidators([
+            FieldBlocValidators.required,
+          ]);
+          longintudeTextField.addValidators([
+            FieldBlocValidators.required,
+          ]);
+          latitudeTextField.removeValidators([
+            FieldBlocValidators.required,
+          ]);
+        } else {
+          commentaireTextField.removeValidators([
+            FieldBlocValidators.required,
+          ]);
+          longintudeTextField.removeValidators([
+            FieldBlocValidators.required,
+          ]);
+          latitudeTextField.removeValidators([
+            FieldBlocValidators.required,
+          ]);
+        }
 
 
 
@@ -1364,15 +1410,6 @@ class WizardFormBloc extends FormBloc<String, String> {
   }
 
   void updateValidatorFromDemande() {
-    // if (Tools.selectedDemande?.etatId == "5") {
-    //   pSpeedTest.removeValidators([
-    //     FieldBlocValidators.required,
-    //   ]);
-    // } else {
-    //   pSpeedTest.addValidators([
-    //     FieldBlocValidators.required,
-    //   ]);
-    // }
 
     if (Tools.selectedDemande?.pPbiAvant?.isNotEmpty == true) {
       print("removeValidators pPbiAvantTextField");
@@ -1494,10 +1531,23 @@ class WizardFormBloc extends FormBloc<String, String> {
         FieldBlocValidators.required,
       ]);
     } else {
+      print("pSpeedTest.addValidat");
       pSpeedTest.addValidators([
         FieldBlocValidators.required,
       ]);
     }
+
+    // if (Tools.selectedDemande?.commentaires?.isNotEmpty == true) {
+    //   commentaireTextField.removeValidators([
+    //     FieldBlocValidators.required,
+    //   ]);
+    // } else {
+    //   commentaireTextField.addValidators([
+    //     FieldBlocValidators.required,
+    //   ]);
+    // }
+
+
   }
 }
 
@@ -1509,6 +1559,7 @@ class WizardForm extends StatefulWidget {
 class _WizardFormState extends State<WizardForm>
     with SingleTickerProviderStateMixin {
   var _type = StepperType.horizontal;
+
 
   void _toggleType() {
     setState(() {
@@ -1662,19 +1713,23 @@ class _WizardFormState extends State<WizardForm>
                                 titleStyle: TextStyle(
                                     fontSize: 16, color: Colors.white),
                                 onPress: () async {
-                                  LoadingDialog.show(context);
-                                  bool success = await Tools.callWSSendMail();
-                                  LoadingDialog.hide(context);
+                                  if( Tools.selectedDemande?.pDosRouteur.isNotNullOrEmpty == true
+                                      && Tools.selectedDemande?.pTestSignal.isNotNullOrEmpty == true){
+                                    LoadingDialog.show(context);
+                                    bool success = await Tools.callWSSendMail();
+                                    LoadingDialog.hide(context);
 
-                                  if (success) {
-                                    CoolAlert.show(
-                                        context: context,
-                                        type: CoolAlertType.success,
-                                        text: "Email Envoyé avec succès",
-                                        autoCloseDuration: Duration(seconds: 5),
-                                        title: "Succès");
+                                    if (success) {
+                                      CoolAlert.show(
+                                          context: context,
+                                          type: CoolAlertType.success,
+                                          text: "Email Envoyé avec succès",
+                                          autoCloseDuration: Duration(seconds: 5),
+                                          title: "Succès");
+                                    }
+                                    _animationController.reverse();
                                   }
-                                  _animationController.reverse();
+
                                 },
                               ),
                               //Floating action menu item

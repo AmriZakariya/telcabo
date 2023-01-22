@@ -607,6 +607,14 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
                                                                               iconData: Icons.phone,
                                                                               title: "Contact Client :",
                                                                               description: demande.contactClient ?? "",
+                                                                              iconEnd: Padding(
+                                                                                padding: const EdgeInsets.only(right: 5),
+                                                                                child: FaIcon(
+                                                                                  FontAwesomeIcons.phoneVolume,
+                                                                                  size: 22,
+                                                                                  color: Tools.colorPrimary,
+                                                                                ),
+                                                                              ),
                                                                             ),
                                                                           ),
                                                                           SizedBox(
@@ -692,7 +700,31 @@ class _DemandeListState extends State<DemandeList> with WidgetsBindingObserver {
                                                                             title: "Etat :",
                                                                             description: demande.etatName ?? "",
                                                                           ),
-
+                                                                          SizedBox(
+                                                                            height: 20.0,
+                                                                          ),
+                                                                          InfoItemWidget(
+                                                                            iconData: Icons.phone_android,
+                                                                            icon: FaIcon(
+                                                                              FontAwesomeIcons.sitemap,
+                                                                              size: 18,
+                                                                            ),
+                                                                            title: "Login internet :",
+                                                                            description: Tools.selectedDemande?.loginInternet ?? "",
+                                                                            iconEnd:  GestureDetector(
+                                                                              onTap: () async {
+                                                                                await Clipboard.setData(ClipboardData(text: Tools.selectedDemande?.loginInternet ?? ""));
+                                                                              },
+                                                                              child: Padding(
+                                                                                padding: const EdgeInsets.only(right: 5),
+                                                                                child: FaIcon(
+                                                                                  FontAwesomeIcons.copy,
+                                                                                  size: 22,
+                                                                                  color: Tools.colorPrimary,
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                          ),
                                                                           SizedBox(
                                                                             height: 20.0,
                                                                           ),
@@ -1329,12 +1361,12 @@ class SearchFieldFormWidget extends StatelessWidget {
 
             return FormBlocListener<SearchFIeldsFormBloc, String, String>(
               onSubmitting: (context, state) {
-                print(" FormBlocListener onSubmitting");
+                print(" SearchFieldFormWidget onSubmitting");
 
                 LoadingDialog.show(context);
               },
               onSuccess: (context, state) {
-                print(" FormBlocListener onSuccess");
+                print(" SearchFieldFormWidget onSuccess");
 
                 LoadingDialog.hide(context);
 
@@ -1346,14 +1378,14 @@ class SearchFieldFormWidget extends StatelessWidget {
                 // filterListByCLient(_searchController.value.text);
               },
               onFailure: (context, state) {
-                print(" FormBlocListener onFailure");
+                print(" SearchFieldFormWidget onFailure");
 
                 LoadingDialog.hide(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(state.failureResponse!)));
               },
               onSubmissionFailed: (context, state) {
-                print(" FormBlocListener onSubmissionFailed " + state.toString());
+                print(" SearchFieldFormWidget onSubmissionFailed " + state.toString());
 
                 LoadingDialog.hide(context);
                 ScaffoldMessenger.of(context)

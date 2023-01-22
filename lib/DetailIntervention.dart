@@ -44,23 +44,19 @@ class _DetailInterventionState extends State<DetailIntervention> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         title: Text('Detail'),
-        actions: <Widget>[
-
-        ],
+        actions: <Widget>[],
       ),
       // endDrawer: EndDrawerWidget(),
       body: Scrollbar(
         child: SingleChildScrollView(
           child: Container(
             decoration: BoxDecoration(
-              // image: DecorationImage(
-              //   image: AssetImage("assets/bg_home.jpeg"),
-              //   fit: BoxFit.cover,
-              // ),
-                color: Tools.colorBackground
-            ),
+                // image: DecorationImage(
+                //   image: AssetImage("assets/bg_home.jpeg"),
+                //   fit: BoxFit.cover,
+                // ),
+                color: Tools.colorBackground),
             child: Column(
               children: [
                 SizedBox(
@@ -87,49 +83,48 @@ class _DetailInterventionState extends State<DetailIntervention> {
                   height: 20,
                 ),
 
-               // Container(
-               //      height: 500,
-               //      child: Expanded(
-               //        child: ExpandChild(
-               //          child: PhotoViewGallery.builder(
-               //            scrollPhysics: const BouncingScrollPhysics(),
-               //            builder: (BuildContext context, int index) {
-               //              return PhotoViewGalleryPageOptions(
-               //                imageProvider: CachedNetworkImageProvider(
-               //                    "${Tools.baseUrl}/img/demandes/" +
-               //                        (Tools.selectedDemande?.pPbiAvant ?? "")),
-               //                initialScale:
-               //                    PhotoViewComputedScale.contained * 0.8,
-               //                heroAttributes:
-               //                    PhotoViewHeroAttributes(tag: "pPbiAvant"),
-               //              );
-               //            },
-               //            itemCount: 4,
-               //            loadingBuilder: (context, event) => Center(
-               //              child: Container(
-               //                width: 20.0,
-               //                height: 20.0,
-               //                child: CircularProgressIndicator(
-               //                  value: event == null
-               //                      ? 0
-               //                      : (event.cumulativeBytesLoaded /
-               //                              (event.expectedTotalBytes ?? 1)) ??
-               //                          0,
-               //                ),
-               //              ),
-               //            ),
-               //            // backgroundDecoration: widget.backgroundDecoration,
-               //            // pageController: widget.pageController,
-               //            // onPageChanged: onPageChanged,
-               //          ),
-               //        ),
-               //      ))
+                // Container(
+                //      height: 500,
+                //      child: Expanded(
+                //        child: ExpandChild(
+                //          child: PhotoViewGallery.builder(
+                //            scrollPhysics: const BouncingScrollPhysics(),
+                //            builder: (BuildContext context, int index) {
+                //              return PhotoViewGalleryPageOptions(
+                //                imageProvider: CachedNetworkImageProvider(
+                //                    "${Tools.baseUrl}/img/demandes/" +
+                //                        (Tools.selectedDemande?.pPbiAvant ?? "")),
+                //                initialScale:
+                //                    PhotoViewComputedScale.contained * 0.8,
+                //                heroAttributes:
+                //                    PhotoViewHeroAttributes(tag: "pPbiAvant"),
+                //              );
+                //            },
+                //            itemCount: 4,
+                //            loadingBuilder: (context, event) => Center(
+                //              child: Container(
+                //                width: 20.0,
+                //                height: 20.0,
+                //                child: CircularProgressIndicator(
+                //                  value: event == null
+                //                      ? 0
+                //                      : (event.cumulativeBytesLoaded /
+                //                              (event.expectedTotalBytes ?? 1)) ??
+                //                          0,
+                //                ),
+                //              ),
+                //            ),
+                //            // backgroundDecoration: widget.backgroundDecoration,
+                //            // pageController: widget.pageController,
+                //            // onPageChanged: onPageChanged,
+                //          ),
+                //        ),
+                //      ))
 
                 InterventionInformationWidget(),
                 SizedBox(
                   height: 20,
                 ),
-
 
                 InterventionHeaderImagesWidget(),
                 SizedBox(
@@ -144,8 +139,6 @@ class _DetailInterventionState extends State<DetailIntervention> {
                 SizedBox(
                   height: 20,
                 ),
-
-
               ],
             ),
           ),
